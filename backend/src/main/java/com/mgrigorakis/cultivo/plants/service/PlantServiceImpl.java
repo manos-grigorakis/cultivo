@@ -1,5 +1,7 @@
 package com.mgrigorakis.cultivo.plants.service;
 
+import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
+import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
@@ -8,9 +10,10 @@ import com.mgrigorakis.cultivo.plants.model.Plant;
 import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,8 +23,11 @@ public class PlantServiceImpl implements PlantService {
     private final PlantMapper plantMapper;
 
     @Override
-    public List<PlantResponse> getAllPlants() {
-        return plantRepository.findAll().stream().map(plantMapper::toResponse).toList();
+    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest) {
+        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort());
+        Page<Plant> plants = plantRepository.findAll(pageable);
+
+        return plants.map(plantMapper::toResponse);
     }
 
     @Override
