@@ -1,1 +1,8 @@
 @import 'tailwindcss';
+@import './theme.css';
+
+@layer base {
+  body {
+    @apply bg-surface-page text-content font-sans;
+  }
+}

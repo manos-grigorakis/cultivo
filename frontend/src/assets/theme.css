@@ -1,0 +1,40 @@
+@theme {
+  /* Primary — Sage */
+  --color-primary-100: #f0fae1;
+  --color-primary-200: #e1eecc;
+  --color-primary-300: #ccdbb2;
+  --color-primary-500: #8fa073;
+  --color-primary-600: #728157;
+  --color-primary-700: #56633f;
+  --color-primary-800: #3d472b;
+  --color-primary-900: #272e1b;
+
+  /* Accent — Terracotta */
+  --color-accent-100: #fff2eb;
+  --color-accent-500: #d67f48;
+  --color-accent-700: #8c491a;
+  --color-accent-800: #643312;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-page: #f9f4ed;
+  --color-surface-muted: #eee7db;
+
+  /* Text */
+  --color-content: #201e1d;
+  --color-content-secondary: #474238;
+  --color-content-muted: #645c50;
+
+  /* Borders */
+  --color-border: #dcd3c4;
+
+  /* Focus */
+  --color-focus: #c67139;
+
+  /* Typography */
+  --font-sans: 'Figtree', sans-serif;
+  --font-display: 'Caprasimo', serif;
+
+  /* Border radius */
+  --radius-card: 1.75rem;
+}
