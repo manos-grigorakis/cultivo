@@ -1,0 +1,46 @@
+name: Feature Request
+description: Propose a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: ["manos-grigorakis"]
+
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: Describe the feature and why it is needed.
+      placeholder: What should be implemented, and what problem does it solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: Describe the expected behavior, constraints, and relevant business rules.
+      placeholder: |
+        - The system should...
+        - Users should be able to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define observable conditions that must be satisfied for this feature to be complete.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any relevant references, screenshots, or supporting information.
+    validations:
+      required: false
