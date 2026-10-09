@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap');
+
 @import 'tailwindcss';
 @import './theme.css';
 
 @layer base {
   body {
-    @apply bg-surface-page text-content font-sans;
+    @apply font-sans bg-surface-page text-content;
   }
 }
