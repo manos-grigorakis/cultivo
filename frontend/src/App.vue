@@ -1,13 +1,15 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import AppNavigationBar from './components/layout/AppNavigationBar.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="flex flex-col md:flex-row min-h-dvh">
+    <AppNavigationBar />
 
-  <p class="text-2xl bg-primary-500">Hello</p>
+    <main class="flex-1 p-6">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
 <style scoped></style>
