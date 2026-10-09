@@ -1,5 +1,6 @@
 package com.mgrigorakis.cultivo.plants.controller;
 
+import com.mgrigorakis.cultivo.common.dto.ApiResponseWrapper;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
 import com.mgrigorakis.cultivo.plants.service.PlantService;
@@ -17,18 +18,18 @@ public class PlantController {
     private final PlantService plantService;
 
     @GetMapping
-    public List<PlantResponse> getAllPlants() {
-        return plantService.getAllPlants();
+    public ApiResponseWrapper<List<PlantResponse>>  getAllPlants() {
+        return new ApiResponseWrapper<>(plantService.getAllPlants());
     }
 
     @GetMapping("/{id}")
-    public PlantResponse getPlantById(@PathVariable Long id) {
-        return plantService.getPlantById(id);
+    public ApiResponseWrapper<PlantResponse> getPlantById(@PathVariable Long id) {
+        return new ApiResponseWrapper<>(plantService.getPlantById(id));
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public PlantResponse createPlant(@RequestBody @Valid PlantRequest request) {
-        return plantService.createPlant(request);
+    public ApiResponseWrapper<PlantResponse> createPlant(@RequestBody @Valid PlantRequest request) {
+        return new ApiResponseWrapper<>(plantService.createPlant(request));
     }
 }
