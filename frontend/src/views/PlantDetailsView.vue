@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
+import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import type { ApiResponse } from '@/types/api-response.interface'
 import type { PlantResponse } from '@/types/plant-response.interface'
-import { LucidePlus } from '@lucide/vue'
+import { LucidePencil, LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -14,6 +15,7 @@ const route = useRoute()
 const plantId = route.params.id
 const plant = ref<PlantResponse | null>(null)
 const errorMessage = ref<string | null>(null)
+const isPlantUpdateFormOpen = ref<boolean>(false)
 
 const fetchPlantDetailsById = async () => {
   try {
@@ -50,12 +52,26 @@ const onAddEventClick = () => {
   // TODO handle event creation event
 }
 
+const onPlantUpdated = async () => {
+  isPlantUpdateFormOpen.value = false
+  await fetchPlantDetailsById()
+}
+
 onMounted(() => {
   fetchPlantDetailsById()
 })
 </script>
 
 <template>
+  <PlantForm
+    v-if="isPlantUpdateFormOpen && plant"
+    mode="update"
+    :plant-id="plant.id"
+    :initial-label="plant.label"
+    @close="isPlantUpdateFormOpen = false"
+    @success="onPlantUpdated"
+  />
+
   <section>
     <div v-if="plant !== null">
       <div
@@ -74,7 +90,15 @@ onMounted(() => {
           >{{ plant.status }}</span
         >
 
-        <AppButton :icon="LucidePlus" label="Add Event" @on-click="onAddEventClick" />
+        <div class="flex items-center gap-2">
+          <AppButton :icon="LucidePlus" label="Add Event" @on-click="onAddEventClick" />
+          <AppButton
+            :icon="LucidePencil"
+            label="Edit Plant"
+            @on-click="isPlantUpdateFormOpen = true"
+            variant="outline"
+          />
+        </div>
       </div>
 
       <PlantDetailsCard :status="plant.status" :created-at="plant.createdAt" />
