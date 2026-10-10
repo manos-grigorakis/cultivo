@@ -122,6 +122,26 @@ public class PlantServiceTest {
     }
 
     @Test
+    void updatePlantById_shouldThrowConflictException_whenPlantIsArchived() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        PlantRequest mockRequest = new PlantRequest("Basil #2");
+        mockPlant.setArchivedAt(LocalDateTime.now());
+
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantService.updatePlantById(1L, mockRequest));
+
+        assertEquals("PLANT_ARCHIVED", exception.getErrorCode());
+
+        verify(plantRepository).findById(1L);
+        verify(plantRepository, never()).save(any(Plant.class));
+        verify(plantMapper, never()).toResponse(mockPlant);
+    }
+
+    @Test
     void updatePlantStatusById_shouldUpdatePlantStatus_ifPlantExists() {
         // Arrange
         Plant mockPlant = Plant.builder().label("Basil").build();
