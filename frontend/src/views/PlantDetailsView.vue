@@ -3,6 +3,7 @@ import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
+import { PLANT_API_URL } from '@/constant/api'
 import type { ApiResponse } from '@/types/api-response.interface'
 import type { PlantResponse } from '@/types/plant-response.interface'
 import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
@@ -20,9 +21,7 @@ const currentPlantStatus = ref<string>(plant.value?.status ?? 'ACTIVE')
 
 const fetchPlantDetailsById = async () => {
   try {
-    const response = await axios.get<ApiResponse<PlantResponse>>(
-      `${import.meta.env.VITE_API_BASE_URL}/v1/plants/${plantId}`,
-    )
+    const response = await axios.get<ApiResponse<PlantResponse>>(`${PLANT_API_URL}/${plantId}`)
 
     plant.value = response.data.data
     currentPlantStatus.value = plant.value.status
@@ -63,12 +62,9 @@ const onPlantStatusUpdate = async () => {
   errorMessage.value = null
 
   try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_API_BASE_URL}/v1/plants/${plantId}/status`,
-      {
-        status: currentPlantStatus.value,
-      },
-    )
+    const response = await axios.patch(`${PLANT_API_URL}/${plantId}/status`, {
+      status: currentPlantStatus.value,
+    })
 
     if (response.status === 204 && plant.value) plant.value.status = currentPlantStatus.value
   } catch (error) {
@@ -95,9 +91,7 @@ const onPlantStatusUpdate = async () => {
 
 const onClickArchivePlant = async () => {
   try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_API_BASE_URL}/v1/plants/${plantId}/archive`,
-    )
+    const response = await axios.patch(`${PLANT_API_URL}/${plantId}/archive`)
     if (response.status === 204) {
       alert('Plant archived successfully')
       fetchPlantDetailsById()
