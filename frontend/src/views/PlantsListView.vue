@@ -28,9 +28,9 @@ const fetchPlants = async () => {
   }
 }
 
-const onPlantCreated = () => {
+const onPlantCreated = async () => {
   isCreatePlantFormOpen.value = false
-  fetchPlants()
+  await fetchPlants()
 }
 
 onMounted(() => {
@@ -41,8 +41,9 @@ onMounted(() => {
 <template>
   <PlantForm
     v-if="isCreatePlantFormOpen"
-    @close-plant-form-click="isCreatePlantFormOpen = false"
-    @plant-created="onPlantCreated"
+    mode="create"
+    @close="isCreatePlantFormOpen = false"
+    @success="onPlantCreated"
   />
 
   <AppSectionWrapper title="Plants">

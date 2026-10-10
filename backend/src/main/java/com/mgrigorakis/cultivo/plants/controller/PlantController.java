@@ -5,6 +5,7 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.service.PlantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,5 +52,30 @@ public class PlantController {
     @PostMapping
     public ApiResponseWrapper<PlantResponse> createPlant(@RequestBody @Valid PlantRequest request) {
         return new ApiResponseWrapper<>(plantService.createPlant(request));
+    }
+
+    @Operation(summary = "Update a Plant by ID", description = "Update an existing plant by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Plant updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed"),
+            @ApiResponse(responseCode = "404", description = "Plant doesn't exist")
+    })
+    @PutMapping("/{id}")
+    public ApiResponseWrapper<PlantResponse> updatePlantById(@PathVariable Long id,
+                                                             @RequestBody @Valid PlantRequest request) {
+        return new ApiResponseWrapper<>(plantService.updatePlantById(id, request));
+    }
+
+    @Operation(summary = "Update a Plant Status by ID", description = "Update an existing plant status by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Plant status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed"),
+            @ApiResponse(responseCode = "404", description = "Plant doesn't exist"),
+            @ApiResponse(responseCode = "409", description = "Plant status transition violation")
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PatchMapping("/{id}/status")
+    public void updatePlantStatus(@PathVariable Long id, @RequestBody @Valid PlantStatusRequest request) {
+        plantService.updatePlantStatusById(id, request);
     }
 }

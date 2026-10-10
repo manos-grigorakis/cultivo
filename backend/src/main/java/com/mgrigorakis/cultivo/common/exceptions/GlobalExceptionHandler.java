@@ -47,6 +47,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ApiResponseWrapper<>(response), HttpStatus.NOT_FOUND);
     }
 
+    // Conflict - 409
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleConflictException(ConflictException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                ex.getErrorCode(),
+                ex.getDetails()
+        );
+
+        return new ResponseEntity<>(new ApiResponseWrapper<>(response), HttpStatus.CONFLICT);
+    }
+
     // Server error - 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseWrapper<Void>> handleException(Exception ex) {

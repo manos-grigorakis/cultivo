@@ -49,4 +49,17 @@ public class Plant {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    /**
+     * Check wether tha plant can transition to the specified status
+     *
+     * <p>Allowed Transition:</p>
+     * <li>ACTIVE -> DEAD</li>
+     * <li>Any status -> same status</li>
+     * @param status The target status
+     * @return {@code true} if the transition is allowed, otherwise {@code false}
+     */
+    public boolean canTransitionTo(PlantStatus status) {
+        return this.status == status || (this.status == PlantStatus.ACTIVE && status == PlantStatus.DEAD);
+    }
 }

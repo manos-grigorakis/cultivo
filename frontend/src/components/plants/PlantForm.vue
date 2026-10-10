@@ -3,15 +3,21 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '../ui/AppErrorContainer.vue'
 import type { PlantRequest } from '@/types/plant-request.interface'
 import { LucideX } from '@lucide/vue'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
 
-const emit = defineEmits<{
-  closePlantFormClick: []
-  plantCreated: []
+const props = defineProps<{
+  mode: 'create' | 'update'
+  plantId?: number
+  initialLabel?: string
 }>()
 
-const label = ref<string>('')
+const emit = defineEmits<{
+  close: []
+  success: []
+}>()
+
+const label = ref<string>(props.initialLabel ?? '')
 const isSubmitting = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
 
@@ -20,13 +26,46 @@ const onSubmit = async () => {
   isSubmitting.value = true
   errorMessage.value = null
 
+  if (props.mode == 'create') {
+    await createPlant(payload)
+  } else if (props.mode == 'update') {
+    if (props.plantId === undefined) {
+      errorMessage.value = 'Plant ID is required'
+      isSubmitting.value = false
+      return
+    }
+
+    await updatePlant(props.plantId, payload)
+  }
+}
+
+const createPlant = async (payload: PlantRequest) => {
   try {
     const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/v1/plants`, payload)
 
-    if (response.status === 201) emit('plantCreated')
+    if (response.status === 201) emit('success')
   } catch (error) {
     console.error(error)
     errorMessage.value = 'Error while creating plant. Please try again'
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const updatePlant = async (plantId: number, payload: PlantRequest) => {
+  try {
+    const response = await axios.put(
+      `${import.meta.env.VITE_API_BASE_URL}/v1/plants/${plantId}`,
+      payload,
+    )
+    if (response.status === 200) emit('success')
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error?.response?.status
+
+      if (status === 404) errorMessage.value = 'Plant with id does not exist'
+      else errorMessage.value = 'Error while creating plant. Please try again'
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -36,7 +75,7 @@ const onSubmit = async () => {
 <template>
   <section
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
-    @click.self="emit('closePlantFormClick')"
+    @click.self="emit('close')"
   >
     <div
       role="dialog"
@@ -45,7 +84,9 @@ const onSubmit = async () => {
     >
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-display text-primary-800">Add plant</h2>
+          <h2 class="text-2xl font-display text-primary-800">
+            {{ mode === 'create' ? 'Add plant' : 'Edit plant' }}
+          </h2>
           <span class="text-sm text-content-muted">Fields marked with * are required</span>
         </div>
 
@@ -53,7 +94,7 @@ const onSubmit = async () => {
           type="button"
           aria-label="Close"
           class="p-1 rounded-full hover:cursor-pointer hover:text-primary-700 hover:bg-surface"
-          @click="emit('closePlantFormClick')"
+          @click="emit('close')"
         >
           <LucideX :size="20" />
         </button>
@@ -75,7 +116,11 @@ const onSubmit = async () => {
         </div>
 
         <div>
-          <AppButton label="Save" type="submit" :disabled="isSubmitting" />
+          <AppButton
+            :label="mode === 'create' ? 'Save' : 'Update'"
+            type="submit"
+            :disabled="isSubmitting"
+          />
         </div>
       </form>
 
