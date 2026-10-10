@@ -6,7 +6,7 @@ type ButtonVariant = 'primary' | 'accent' | 'outline'
 withDefaults(
   defineProps<{
     icon?: Component
-    label: string
+    label?: string
     disabled?: boolean
     type?: 'button' | 'submit'
     variant?: ButtonVariant

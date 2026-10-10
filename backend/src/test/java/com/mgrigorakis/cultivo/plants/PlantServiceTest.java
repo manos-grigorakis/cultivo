@@ -16,10 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -122,6 +122,26 @@ public class PlantServiceTest {
     }
 
     @Test
+    void updatePlantById_shouldThrowConflictException_whenPlantIsArchived() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        PlantRequest mockRequest = new PlantRequest("Basil #2");
+        mockPlant.setArchivedAt(LocalDateTime.now());
+
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantService.updatePlantById(1L, mockRequest));
+
+        assertEquals("PLANT_ARCHIVED", exception.getErrorCode());
+
+        verify(plantRepository).findById(1L);
+        verify(plantRepository, never()).save(any(Plant.class));
+        verify(plantMapper, never()).toResponse(mockPlant);
+    }
+
+    @Test
     void updatePlantStatusById_shouldUpdatePlantStatus_ifPlantExists() {
         // Arrange
         Plant mockPlant = Plant.builder().label("Basil").build();
@@ -170,5 +190,47 @@ public class PlantServiceTest {
 
         verify(plantRepository).findById(1L);
         verify(plantRepository, never()).save(mockPlant);
+    }
+
+    @Test
+    void archivePlantById_shouldArchivePlant_ifPlantIsNotArchived() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+
+        // Act
+        plantService.archivePlantById(1L);
+
+        // Assert
+        assertNotNull(mockPlant.getArchivedAt());
+        verify(plantRepository).findById(1L);
+        verify(plantRepository).save(mockPlant);
+    }
+
+    @Test
+    void archivePlantById_shouldThrowResourceNotFoundException_whenPlantDoesNotExist() {
+        // Arrange
+        when(plantRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> plantService.archivePlantById(1L));
+
+        verify(plantRepository).findById(1L);
+        verify(plantRepository, never()).save(any(Plant.class));
+    }
+
+    @Test
+    void archivePlantById_shouldThrowConflictException_whenPlantIsAlreadyArchived() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        mockPlant.setArchivedAt(LocalDateTime.now());
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () -> plantService.archivePlantById(1L));
+
+        assertEquals("ALREADY_ARCHIVED", exception.getErrorCode());
+        verify(plantRepository).findById(1L);
+        verify(plantRepository, never()).save(any(Plant.class));
     }
 }
