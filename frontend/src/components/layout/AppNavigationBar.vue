@@ -30,7 +30,7 @@ const links: { label: string; url: string; icon: Component }[] = [
   <nav class="md:hidden" aria-label="Mobile navigation">
     <RouterLink to="/" class="p-4 text-2xl font-display text-primary-800">Cultivo</RouterLink>
 
-    <div class="fixed bottom-0 w-full px-2 py-4 bg-surface-muted">
+    <div class="fixed bottom-0 z-50 w-full px-2 py-4 bg-surface-muted">
       <ul class="flex items-center justify-center gap-1">
         <li v-for="link in links" :key="link.url">
           <RouterLink

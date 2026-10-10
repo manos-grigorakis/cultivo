@@ -6,7 +6,7 @@ import AppNavigationBar from './components/layout/AppNavigationBar.vue'
   <div class="flex flex-col md:flex-row min-h-dvh">
     <AppNavigationBar />
 
-    <main class="flex-1 p-6">
+    <main class="flex-1 min-w-0 p-6 pb-28">
       <RouterView />
     </main>
   </div>
