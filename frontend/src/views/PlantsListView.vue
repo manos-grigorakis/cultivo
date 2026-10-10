@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
 import type { ApiResponse } from '@/types/api-response.interface'
@@ -9,10 +10,7 @@ import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 
 const plants = ref<PlantResponse[]>([])
-
-const onCreatePlantClick = () => {
-  // TODO: Redirect to create plant form
-}
+const isCreatePlantFormOpen = ref<boolean>(false)
 
 const fetchPlants = async () => {
   try {
@@ -30,18 +28,29 @@ const fetchPlants = async () => {
   }
 }
 
+const onPlantCreated = () => {
+  isCreatePlantFormOpen.value = false
+  fetchPlants()
+}
+
 onMounted(() => {
   fetchPlants()
 })
 </script>
 
 <template>
+  <PlantForm
+    v-if="isCreatePlantFormOpen"
+    @close-plant-form-click="isCreatePlantFormOpen = false"
+    @plant-created="onPlantCreated"
+  />
+
   <AppSectionWrapper title="Plants">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
         <span class="block text-content-muted">{{ plants.length }} total</span>
 
-        <AppButton :icon="LucidePlus" label="Add plant" @on-click="onCreatePlantClick" />
+        <AppButton :icon="LucidePlus" label="Add plant" @on-click="isCreatePlantFormOpen = true" />
       </div>
 
       <!-- Content -->
