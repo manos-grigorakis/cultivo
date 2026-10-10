@@ -1,8 +1,10 @@
 package com.mgrigorakis.cultivo.plants;
 
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.mapper.PlantMapper;
 import com.mgrigorakis.cultivo.plants.model.Plant;
 import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
@@ -117,5 +119,56 @@ public class PlantServiceTest {
         verify(plantRepository).findById(1L);
         verify(plantRepository, never()).save(any(Plant.class));
         verify(plantMapper, never()).toResponse(any(Plant.class));
+    }
+
+    @Test
+    void updatePlantStatusById_shouldUpdatePlantStatus_ifPlantExists() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        PlantStatusRequest mockRequest = new PlantStatusRequest(PlantStatus.DEAD);
+
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+        when(plantRepository.save(mockPlant)).thenReturn(mockPlant);
+
+        // Act
+        plantService.updatePlantStatusById(1L, mockRequest);
+
+        // Assert
+        assertEquals(PlantStatus.DEAD, mockPlant.getStatus());
+
+        verify(plantRepository).findById(1L);
+        verify(plantRepository).save(mockPlant);
+    }
+
+    @Test
+    void updatePlantStatusById_shouldThrowResourceNotFoundException_whenPlantDoesNotExist() {
+        // Arrange
+        PlantStatusRequest mockRequest = new PlantStatusRequest(PlantStatus.DEAD);
+        when(plantRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> plantService.updatePlantStatusById(1L, mockRequest));
+
+        verify(plantRepository).findById(1L);
+        verify(plantRepository, never()).save(any(Plant.class));
+    }
+
+    @Test
+    void updatePlantStatusById_shouldThrowConflictException_whenDesiredStatusViolatesTransition() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        mockPlant.setStatus(PlantStatus.DEAD);
+        PlantStatusRequest mockRequest = new PlantStatusRequest(PlantStatus.ACTIVE);
+
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantService.updatePlantStatusById(1L, mockRequest));
+
+        assertEquals("STATUS_VIOLATION", exception.getErrorCode());
+
+        verify(plantRepository).findById(1L);
+        verify(plantRepository, never()).save(mockPlant);
     }
 }
