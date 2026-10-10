@@ -29,9 +29,10 @@ public class PlantServiceImpl implements PlantService {
     private final PlantMapper plantMapper;
 
     @Override
-    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest) {
+    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived) {
         Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort());
-        Page<Plant> plants = plantRepository.findAll(pageable);
+        Page<Plant> plants = archived ? plantRepository.findAllByArchivedAtIsNotNull(pageable) :
+                plantRepository.findAllByArchivedAtIsNull(pageable);
 
         return plants.map(plantMapper::toResponse);
     }
@@ -62,6 +63,7 @@ public class PlantServiceImpl implements PlantService {
             return new ResourceNotFoundException("Plant with id " + id + " not found");
         });
 
+        validatePlantIsNotArchived(plant);
         Plant savedPlant = plantMapper.toUpdate(plant, request);
         plantRepository.save(savedPlant);
         log.info("Updated plant with label {}", savedPlant.getLabel());
@@ -75,6 +77,8 @@ public class PlantServiceImpl implements PlantService {
             log.warn("No plant found with id {}", id);
             return new ResourceNotFoundException("Plant with id " + id + " not found");
         });
+
+        validatePlantIsNotArchived(plant);
 
         if(!plant.canTransitionTo(request.status())) {
             log.warn("Plant with id {} can not transition to status {}", id, request.status());
@@ -106,5 +110,13 @@ public class PlantServiceImpl implements PlantService {
         plant.setArchivedAt(LocalDateTime.now());
         plantRepository.save(plant);
         log.info("Archived plant with id {}", id);
+    }
+
+    private void validatePlantIsNotArchived(Plant plant) {
+        if(plant.getArchivedAt() != null) {
+            log.warn("Plant with id {} is archived and cannot modified", plant.getId());
+            throw new ConflictException("Plant with id " + plant.getId() +
+                                                " is archived and cannot modified", "PLANT_ARCHIVED");
+        }
     }
 }

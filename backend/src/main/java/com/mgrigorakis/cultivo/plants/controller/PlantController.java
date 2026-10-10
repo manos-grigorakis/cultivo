@@ -29,8 +29,9 @@ public class PlantController {
     @GetMapping
     public ApiResponseWrapper<Page<PlantResponse>> getAllPlants(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
-            @ModelAttribute PageSortRequest sortRequest) {
-        return new ApiResponseWrapper<>(plantService.getAllPlants(filterRequest, sortRequest));
+            @ModelAttribute PageSortRequest sortRequest,
+            @RequestParam(defaultValue = "false") boolean archived) {
+        return new ApiResponseWrapper<>(plantService.getAllPlants(filterRequest, sortRequest, archived));
     }
 
     @Operation(summary = "Get Plant by ID", description = "Finds a plant by its ID")
@@ -58,7 +59,8 @@ public class PlantController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Plant updated successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),
-            @ApiResponse(responseCode = "404", description = "Plant doesn't exist")
+            @ApiResponse(responseCode = "404", description = "Plant doesn't exist"),
+            @ApiResponse(responseCode = "409", description = "Plant is archived")
     })
     @PutMapping("/{id}")
     public ApiResponseWrapper<PlantResponse> updatePlantById(@PathVariable Long id,
@@ -71,7 +73,7 @@ public class PlantController {
             @ApiResponse(responseCode = "204", description = "Plant status updated successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),
             @ApiResponse(responseCode = "404", description = "Plant doesn't exist"),
-            @ApiResponse(responseCode = "409", description = "Plant status transition violation")
+            @ApiResponse(responseCode = "409", description = "Plant status transition violation or Plant is archived")
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PatchMapping("/{id}/status")

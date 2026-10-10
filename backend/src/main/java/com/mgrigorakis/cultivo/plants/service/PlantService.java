@@ -9,7 +9,7 @@ import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
 import org.springframework.data.domain.Page;
 
 public interface PlantService {
-    Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest);
+    Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived);
 
     PlantResponse getPlantById(Long id);
 
