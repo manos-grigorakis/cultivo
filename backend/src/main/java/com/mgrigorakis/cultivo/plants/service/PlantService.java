@@ -4,6 +4,8 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
+import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
 import org.springframework.data.domain.Page;
 
 public interface PlantService {
@@ -14,4 +16,6 @@ public interface PlantService {
     PlantResponse createPlant(PlantRequest request);
 
     PlantResponse updatePlantById(Long id, PlantRequest request);
+
+    void updatePlantStatusById(Long id, PlantStatusRequest request);
 }
