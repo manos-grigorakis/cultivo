@@ -52,4 +52,16 @@ public class PlantController {
     public ApiResponseWrapper<PlantResponse> createPlant(@RequestBody @Valid PlantRequest request) {
         return new ApiResponseWrapper<>(plantService.createPlant(request));
     }
+
+    @Operation(summary = "Update a Plant by ID", description = "Updated an existing plant by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Plant updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed"),
+            @ApiResponse(responseCode = "404", description = "Plant doesn't exist")
+    })
+    @PutMapping("/{id}")
+    public ApiResponseWrapper<PlantResponse> updatePlantById(@PathVariable Long id,
+                                                             @RequestBody @Valid PlantRequest request) {
+        return new ApiResponseWrapper<>(plantService.updatePlantById(id, request));
+    }
 }

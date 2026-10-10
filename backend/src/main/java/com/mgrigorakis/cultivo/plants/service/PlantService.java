@@ -12,4 +12,6 @@ public interface PlantService {
     PlantResponse getPlantById(Long id);
 
     PlantResponse createPlant(PlantRequest request);
+
+    PlantResponse updatePlantById(Long id, PlantRequest request);
 }

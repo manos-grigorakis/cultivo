@@ -48,4 +48,18 @@ public class PlantServiceImpl implements PlantService {
 
         return plantMapper.toResponse(savedPlant);
     }
+
+    @Override
+    public PlantResponse updatePlantById(Long id, PlantRequest request) {
+        Plant plant = plantRepository.findById(id).orElseThrow(() -> {
+            log.warn("No plant found with id {}", id);
+            return new ResourceNotFoundException("Plant with id " + id + " not found");
+        });
+
+        Plant savedPlant = plantMapper.toUpdate(plant, request);
+        plantRepository.save(savedPlant);
+        log.info("Updated plant with label {}", savedPlant.getLabel());
+
+        return plantMapper.toResponse(savedPlant);
+    }
 }
