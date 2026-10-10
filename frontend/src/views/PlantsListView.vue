@@ -11,11 +11,13 @@ import { onMounted, ref } from 'vue'
 
 const plants = ref<PlantResponse[]>([])
 const isCreatePlantFormOpen = ref<boolean>(false)
+const showArchived = ref<boolean>(false)
 
-const fetchPlants = async () => {
+const fetchPlants = async (archived: boolean = false) => {
   try {
     const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(
       `${import.meta.env.VITE_API_BASE_URL}/v1/plants`,
+      { params: { archived } },
     )
 
     plants.value = response.data.data.content
@@ -30,7 +32,12 @@ const fetchPlants = async () => {
 
 const onPlantCreated = async () => {
   isCreatePlantFormOpen.value = false
-  await fetchPlants()
+  await fetchPlants(showArchived.value)
+}
+
+const toggleArchived = async () => {
+  showArchived.value = !showArchived.value
+  await fetchPlants(showArchived.value)
 }
 
 onMounted(() => {
@@ -52,6 +59,15 @@ onMounted(() => {
         <span class="block text-content-muted">{{ plants.length }} total</span>
 
         <AppButton :icon="LucidePlus" label="Add plant" @on-click="isCreatePlantFormOpen = true" />
+      </div>
+
+      <!-- Filters -->
+      <div>
+        <AppButton
+          :label="showArchived ? 'Show Plants' : 'Show Archived'"
+          @on-click="toggleArchived"
+          variant="outline"
+        />
       </div>
 
       <!-- Content -->
