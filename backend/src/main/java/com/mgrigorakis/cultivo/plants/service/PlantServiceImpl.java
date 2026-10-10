@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Slf4j
@@ -88,5 +89,22 @@ public class PlantServiceImpl implements PlantService {
         plant.setStatus(request.status());
         plantRepository.save(plant);
         log.info("Updated plant with id {} and to status {}", id, plant.getStatus());
+    }
+
+    @Override
+    public void archivePlantById(Long id) {
+        Plant plant = plantRepository.findById(id).orElseThrow(() -> {
+            log.warn("No plant found with id {}", id);
+            return new ResourceNotFoundException("Plant with id " + id + " not found");
+        });
+
+        if(plant.getArchivedAt() != null) {
+            log.warn("Plant with id {} is already archived", id);
+            throw new ConflictException("Plant with id " + id + " is already archived", "ALREADY_ARCHIVED");
+        }
+
+        plant.setArchivedAt(LocalDateTime.now());
+        plantRepository.save(plant);
+        log.info("Archived plant with id {}", id);
     }
 }

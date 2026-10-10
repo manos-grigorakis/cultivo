@@ -18,4 +18,6 @@ public interface PlantService {
     PlantResponse updatePlantById(Long id, PlantRequest request);
 
     void updatePlantStatusById(Long id, PlantStatusRequest request);
+
+    void archivePlantById(Long id);
 }

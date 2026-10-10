@@ -78,4 +78,16 @@ public class PlantController {
     public void updatePlantStatus(@PathVariable Long id, @RequestBody @Valid PlantStatusRequest request) {
         plantService.updatePlantStatusById(id, request);
     }
+
+    @Operation(summary = "Archive a Plant by ID", description = "Archive a plant by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Plant archived successfully"),
+            @ApiResponse(responseCode = "404", description = "Plant doesn't exist"),
+            @ApiResponse(responseCode = "409", description = "Plant is already archived")
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PatchMapping("/{id}/archive")
+    public void archivePlantById(@PathVariable Long id) {
+        plantService.archivePlantById(id);
+    }
 }
