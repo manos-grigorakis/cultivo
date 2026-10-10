@@ -87,6 +87,6 @@ public class PlantServiceImpl implements PlantService {
 
         plant.setStatus(request.status());
         plantRepository.save(plant);
-        log.info("Updated plant with id {} and status {}", id, plant.getStatus());
+        log.info("Updated plant with id {} and to status {}", id, plant.getStatus());
     }
 }
