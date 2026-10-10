@@ -2,6 +2,7 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '../ui/AppErrorContainer.vue'
 import type { PlantRequest } from '@/types/plant-request.interface'
+import type { ApiResponse } from '@/types/api-response.interface.ts'
 import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
@@ -61,10 +62,15 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
     if (response.status === 200) emit('success')
   } catch (error) {
     if (error instanceof AxiosError) {
-      const status = error?.response?.status
+      const axiosError = error as AxiosError<ApiResponse<never>>
+      const status = axiosError?.response?.status
+      const errorCode = axiosError?.response?.data?.error?.errorCode
 
-      if (status === 404) errorMessage.value = 'Plant with id does not exist'
-      else errorMessage.value = 'Error while creating plant. Please try again'
+      if (status === 404) {
+        errorMessage.value = 'Plant with id does not exist'
+      } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
+        errorMessage.value = 'Plant is archived and cannot modified'
+      } else errorMessage.value = 'Error while creating plant. Please try again'
     }
   } finally {
     isSubmitting.value = false

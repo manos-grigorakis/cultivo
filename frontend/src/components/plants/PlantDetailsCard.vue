@@ -2,6 +2,7 @@
 defineProps<{
   status: string
   createdAt: string
+  archivedAt: string | null
 }>()
 </script>
 
@@ -17,6 +18,12 @@ defineProps<{
       <li class="flex justify-between gap-2">
         <p class="text-content-muted">Added</p>
         <p class="text-primary-900">{{ new Date(createdAt).toLocaleDateString() }}</p>
+      </li>
+      <li class="flex justify-between gap-2">
+        <p class="text-content-muted">Archived</p>
+        <p class="text-primary-900">
+          {{ archivedAt != null ? new Date(archivedAt).toLocaleDateString() : '-' }}
+        </p>
       </li>
     </ul>
   </div>

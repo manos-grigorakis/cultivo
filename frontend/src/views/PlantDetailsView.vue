@@ -5,7 +5,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import type { ApiResponse } from '@/types/api-response.interface'
 import type { PlantResponse } from '@/types/plant-response.interface'
-import { LucidePencil, LucidePlus } from '@lucide/vue'
+import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -81,13 +81,39 @@ const onPlantStatusUpdate = async () => {
         errorMessage.value = `Plant with id ${plantId} does not exist`
       } else if (status === 409 && errorCode === 'STATUS_VIOLATION') {
         errorMessage.value = 'Invalid plant status transition'
+      } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
+        errorMessage.value = 'Plant is archived and cannot modified'
       } else {
         errorMessage.value = 'Server error. Please try again'
       }
     }
 
-    // Restore to preivous status if update fails
+    // Restore to previous status if update fails
     currentPlantStatus.value = plant.value?.status ?? 'ACTIVE'
+  }
+}
+
+const onClickArchivePlant = async () => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_API_BASE_URL}/v1/plants/${plantId}/archive`,
+    )
+    if (response.status === 204) {
+      alert('Plant archived successfully')
+      fetchPlantDetailsById()
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<ApiResponse<never>>
+    const status = axiosError?.response?.status
+    const errorCode = axiosError?.response?.data?.error?.errorCode
+
+    if (status === 404) {
+      errorMessage.value = `Plant with id ${plantId} does not exist`
+    } else if (status === 409 && errorCode === 'ALREADY_ARCHIVED') {
+      errorMessage.value = 'Plant is already archived'
+    } else {
+      errorMessage.value = 'Server error. Please try again'
+    }
   }
 }
 
@@ -121,7 +147,8 @@ onMounted(() => {
         <select
           v-model="currentPlantStatus"
           @change="onPlantStatusUpdate"
-          class="px-4 py-2 text-xs rounded-card"
+          class="px-4 py-2 text-xs rounded-card disabled:cursor-not-allowed"
+          :disabled="plant.archivedAt !== null"
           :class="applyPlantStatusBadgeColor(plant.status)"
         >
           <option value="ACTIVE">ACTIVE</option>
@@ -129,17 +156,34 @@ onMounted(() => {
         </select>
 
         <div class="flex items-center gap-2">
-          <AppButton :icon="LucidePlus" label="Add Event" @on-click="onAddEventClick" />
+          <AppButton
+            :icon="LucidePlus"
+            label="Add Event"
+            @on-click="onAddEventClick"
+            :disabled="plant.archivedAt != null"
+          />
           <AppButton
             :icon="LucidePencil"
             label="Edit Plant"
             @on-click="isPlantUpdateFormOpen = true"
             variant="outline"
+            :disabled="plant.archivedAt != null"
+          />
+
+          <AppButton
+            :icon="LucideArchive"
+            @on-click="onClickArchivePlant"
+            :variant="'outline'"
+            :disabled="plant.archivedAt != null"
           />
         </div>
       </div>
 
-      <PlantDetailsCard :status="plant.status" :created-at="plant.createdAt" />
+      <PlantDetailsCard
+        :status="plant.status"
+        :created-at="plant.createdAt"
+        :archived-at="plant.archivedAt"
+      />
     </div>
     <div v-else class="text-center">Loading...</div>
     <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
