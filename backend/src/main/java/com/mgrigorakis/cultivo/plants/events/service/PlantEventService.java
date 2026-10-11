@@ -10,7 +10,7 @@ public interface PlantEventService {
     Page<PlantEventResponse> getAllPlantEventsByPlantId(Long plantId, PageFilterRequest filterRequest,
                                                         PageSortRequest sortRequest);
 
-    PlantEventResponse getPlantEventById(Long plantId, Long plantEventId);
+    PlantEventResponse getPlantEventByIdAndPlantId(Long plantId, Long plantEventId);
 
     PlantEventResponse createPlantEvent(Long plantId, PlantEventRequest request);
 }

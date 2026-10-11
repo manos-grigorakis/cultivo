@@ -41,7 +41,7 @@ public class PlantEventServiceImpl implements PlantEventService {
     }
 
     @Override
-    public PlantEventResponse getPlantEventById(Long plantId, Long plantEventId) {
+    public PlantEventResponse getPlantEventByIdAndPlantId(Long plantId, Long plantEventId) {
         PlantEvent plantEvent = plantEventRepository.findByIdAndPlantId(plantEventId, plantId).orElseThrow(() -> {
             log.warn("Plant event with id {} not found with plant id {}", plantEventId, plantId);
             return new ResourceNotFoundException("Plant event with id " + plantEventId + " not found" + " with plant id " + plantId);

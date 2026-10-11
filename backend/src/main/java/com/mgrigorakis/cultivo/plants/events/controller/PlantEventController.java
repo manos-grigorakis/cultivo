@@ -46,8 +46,8 @@ public class PlantEventController {
             @ApiResponse(responseCode = "404", description = "Plant doesn't exist or Plant event doesn't exist"),
     })
     @GetMapping("/{id}")
-    public ApiResponseWrapper<PlantEventResponse> getPlantEventById(@PathVariable Long plantId, @PathVariable Long id) {
-        return  new ApiResponseWrapper<>(plantEventService.getPlantEventById(plantId, id));
+    public ApiResponseWrapper<PlantEventResponse> getPlantEventByIdAndPlantId(@PathVariable Long plantId, @PathVariable Long id) {
+        return  new ApiResponseWrapper<>(plantEventService.getPlantEventByIdAndPlantId(plantId, id));
     }
 
     @Operation(summary = "Create a Plant Event", description = "Creates a plant event for the selected plant")
