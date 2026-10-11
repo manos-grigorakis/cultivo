@@ -15,8 +15,6 @@ public record PageSortRequest(String sortBy, String sortDirection) {
     }
 
     public Sort createSort() {
-        return sortDirection.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
+        return Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
     }
 }
