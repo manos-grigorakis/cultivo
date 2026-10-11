@@ -9,8 +9,10 @@ import type { Page } from '@/types/pagination.interface'
 import type { Pagination } from '@/types/pagination.interface'
 import type { PlantEventResponse } from '@/types/plant-event-response.interface'
 import axios, { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+
+const props = defineProps<{ refreshKey: number }>()
 
 const route = useRoute()
 const plantId = ref<string | string[] | undefined>(undefined)
@@ -47,6 +49,11 @@ const fetchJournalsByPlant = async (pageNumber: number = 0) => {
 }
 
 onMounted(() => fetchJournalsByPlant())
+
+watch(
+  () => props.refreshKey,
+  () => fetchJournalsByPlant(0),
+)
 </script>
 
 <template>

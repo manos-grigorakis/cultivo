@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PlantDetailsTabs from '@/components/layout/PlantDetailsTabs.vue'
+import PlantEventForm from '@/components/plants/PlantEventForm.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
@@ -18,8 +19,10 @@ const plantId = route.params.id
 const plant = ref<PlantResponse | null>(null)
 const errorMessage = ref<string | null>(null)
 const isPlantUpdateFormOpen = ref<boolean>(false)
+const isPlantEventFormOpen = ref<boolean>(false)
 const currentPlantStatus = ref<string>(plant.value?.status ?? 'ACTIVE')
 const eventsCount = ref<number>(0)
+const journalRefreshKey = ref<number>(0)
 
 const fetchPlantDetailsById = async () => {
   try {
@@ -49,10 +52,6 @@ const applyPlantStatusBadgeColor = (status: string): string => {
     default:
       return 'bg-surface-muted text-content'
   }
-}
-
-const onAddEventClick = () => {
-  // TODO handle event creation event
 }
 
 const onPlantUpdated = async () => {
@@ -126,6 +125,13 @@ const fetchEventsCount = async () => {
   }
 }
 
+const onPlantEventCreation = async () => {
+  isPlantEventFormOpen.value = false
+
+  journalRefreshKey.value++
+  await fetchEventsCount()
+}
+
 onMounted(() => {
   fetchPlantDetailsById()
   fetchEventsCount()
@@ -140,6 +146,12 @@ onMounted(() => {
     :initial-label="plant.label"
     @close="isPlantUpdateFormOpen = false"
     @success="onPlantUpdated"
+  />
+
+  <PlantEventForm
+    v-if="isPlantEventFormOpen"
+    @close="isPlantEventFormOpen = false"
+    @success="onPlantEventCreation()"
   />
 
   <section>
@@ -169,7 +181,7 @@ onMounted(() => {
           <AppButton
             :icon="LucidePlus"
             label="Add Event"
-            @on-click="onAddEventClick"
+            @on-click="isPlantEventFormOpen = true"
             :disabled="plant.archivedAt != null"
           />
           <AppButton
@@ -192,7 +204,12 @@ onMounted(() => {
       <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
 
       <RouterView v-slot="{ Component }">
-        <component :is="Component" :plant="plant" @event-count-changed="eventsCount = $event" />
+        <component
+          :is="Component"
+          :plant="plant"
+          :refresh-key="journalRefreshKey"
+          @event-count-changed="eventsCount = $event"
+        />
       </RouterView>
     </div>
     <div v-else class="text-center">Loading...</div>
