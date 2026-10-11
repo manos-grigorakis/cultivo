@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
+import PlantDetailsTabs from '@/components/layout/PlantDetailsTabs.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
@@ -173,11 +173,11 @@ onMounted(() => {
         </div>
       </div>
 
-      <PlantDetailsCard
-        :status="plant.status"
-        :created-at="plant.createdAt"
-        :archived-at="plant.archivedAt"
-      />
+      <PlantDetailsTabs :plant-id="plantId" />
+
+      <RouterView v-slot="{ Component }">
+        <component :is="Component" :plant="plant" />
+      </RouterView>
     </div>
     <div v-else class="text-center">Loading...</div>
     <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />

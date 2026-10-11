@@ -15,8 +15,25 @@ const router = createRouter({
     },
     {
       path: '/plants/:id',
-      name: 'plant-details',
+
       component: () => import('@/views/PlantDetailsView.vue'),
+      children: [
+        {
+          path: '',
+          name: 'plant-details',
+          redirect: { name: 'plant-details-overview' },
+        },
+        {
+          path: 'overview',
+          name: 'plant-details-overview',
+          component: () => import('@/views/PlantDetailsOverviewView.vue'),
+        },
+        {
+          path: 'journal',
+          name: 'plant-details-journal',
+          component: () => import('@/views/PlantDetailsJournalView.vue'),
+        },
+      ],
     },
   ],
 })
