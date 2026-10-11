@@ -5,6 +5,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import { PLANT_API_URL } from '@/constant/api'
 import type { ApiResponse } from '@/types/api-response.interface'
+import type { Pagination } from '@/types/pagination.interface'
 import type { PlantResponse } from '@/types/plant-response.interface'
 import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
@@ -18,6 +19,7 @@ const plant = ref<PlantResponse | null>(null)
 const errorMessage = ref<string | null>(null)
 const isPlantUpdateFormOpen = ref<boolean>(false)
 const currentPlantStatus = ref<string>(plant.value?.status ?? 'ACTIVE')
+const eventsCount = ref<number>(0)
 
 const fetchPlantDetailsById = async () => {
   try {
@@ -111,8 +113,22 @@ const onClickArchivePlant = async () => {
   }
 }
 
+const fetchEventsCount = async () => {
+  try {
+    const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(
+      `${PLANT_API_URL}/${plantId}/events`,
+      { params: { page: 0, size: 1 } },
+    )
+
+    eventsCount.value = response.data.data.page.totalElements
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 onMounted(() => {
   fetchPlantDetailsById()
+  fetchEventsCount()
 })
 </script>
 
@@ -173,10 +189,10 @@ onMounted(() => {
         </div>
       </div>
 
-      <PlantDetailsTabs :plant-id="plantId" />
+      <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
 
       <RouterView v-slot="{ Component }">
-        <component :is="Component" :plant="plant" />
+        <component :is="Component" :plant="plant" @event-count-changed="eventsCount = $event" />
       </RouterView>
     </div>
     <div v-else class="text-center">Loading...</div>
