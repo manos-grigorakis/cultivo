@@ -43,6 +43,7 @@ public class PlantEvent {
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
 
+    @Builder
     public PlantEvent(String title, String description, PlantEventType type, LocalDateTime occurredAt, Plant plant) {
         this.title = title;
         this.description = description;
