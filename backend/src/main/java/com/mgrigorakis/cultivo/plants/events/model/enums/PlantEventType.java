@@ -5,4 +5,5 @@ public enum PlantEventType {
     HARVEST,
     REPOTTING,
     OBSERVATION,
+    NOTE
 }
