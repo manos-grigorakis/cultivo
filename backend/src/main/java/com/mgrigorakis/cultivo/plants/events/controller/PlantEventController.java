@@ -40,6 +40,16 @@ public class PlantEventController {
                 plantEventService.getAllPlantEventsByPlantId(plantId, filterRequest, sortRequest));
     }
 
+    @Operation(summary = "Get Plant Event by ID", description = "Returns the plant event by the provided ID and plant ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Founded plant event"),
+            @ApiResponse(responseCode = "404", description = "Plant doesn't exist or Plant event doesn't exist"),
+    })
+    @GetMapping("/{id}")
+    public ApiResponseWrapper<PlantEventResponse> getPlantEventById(@PathVariable Long plantId, @PathVariable Long id) {
+        return  new ApiResponseWrapper<>(plantEventService.getPlantEventById(plantId, id));
+    }
+
     @Operation(summary = "Create a Plant Event", description = "Creates a plant event for the selected plant")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Plant event created successfully"),
