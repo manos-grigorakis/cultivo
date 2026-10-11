@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
 import { PLANT_API_URL } from '@/constant/api'
 import type { ApiResponse } from '@/types/api-response.interface'
-import type { Pagination } from '@/types/pagination.interface'
+import { type Page, type Pagination } from '@/types/pagination.interface'
 import type { PlantResponse } from '@/types/plant-response.interface'
 import { LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
@@ -13,14 +14,16 @@ import { onMounted, ref } from 'vue'
 const plants = ref<PlantResponse[]>([])
 const isCreatePlantFormOpen = ref<boolean>(false)
 const showArchived = ref<boolean>(false)
+const page = ref<Page>()
 
-const fetchPlants = async (archived: boolean = false) => {
+const fetchPlants = async (archived: boolean = false, pageNumber: number = 0) => {
   try {
     const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(PLANT_API_URL, {
-      params: { archived },
+      params: { archived, page: pageNumber },
     })
 
     plants.value = response.data.data.content
+    page.value = response.data.data.page
   } catch (error) {
     if (error instanceof AxiosError) {
       if (error.response?.status === 500) {
@@ -56,7 +59,7 @@ onMounted(() => {
   <AppSectionWrapper title="Plants">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
-        <span class="block text-content-muted">{{ plants.length }} total</span>
+        <span class="block text-content-muted">{{ page?.totalElements }} total</span>
 
         <AppButton :icon="LucidePlus" label="Add plant" @on-click="isCreatePlantFormOpen = true" />
       </div>
@@ -90,5 +93,7 @@ onMounted(() => {
         </li>
       </ul>
     </div>
+
+    <AppPagination :data="page" @page-changed="fetchPlants(showArchived, $event)" />
   </AppSectionWrapper>
 </template>
