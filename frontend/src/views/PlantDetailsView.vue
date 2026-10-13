@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
+import PlantDetailsTabs from '@/components/layout/PlantDetailsTabs.vue'
+import PlantEventForm from '@/components/plants/PlantEventForm.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import { PLANT_API_URL } from '@/constant/api'
 import type { ApiResponse } from '@/types/api-response.interface'
+import type { Pagination } from '@/types/pagination.interface'
 import type { PlantResponse } from '@/types/plant-response.interface'
 import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
@@ -17,7 +19,10 @@ const plantId = route.params.id
 const plant = ref<PlantResponse | null>(null)
 const errorMessage = ref<string | null>(null)
 const isPlantUpdateFormOpen = ref<boolean>(false)
+const isPlantEventFormOpen = ref<boolean>(false)
 const currentPlantStatus = ref<string>(plant.value?.status ?? 'ACTIVE')
+const eventsCount = ref<number>(0)
+const journalRefreshKey = ref<number>(0)
 
 const fetchPlantDetailsById = async () => {
   try {
@@ -47,10 +52,6 @@ const applyPlantStatusBadgeColor = (status: string): string => {
     default:
       return 'bg-surface-muted text-content'
   }
-}
-
-const onAddEventClick = () => {
-  // TODO handle event creation event
 }
 
 const onPlantUpdated = async () => {
@@ -111,8 +112,29 @@ const onClickArchivePlant = async () => {
   }
 }
 
+const fetchEventsCount = async () => {
+  try {
+    const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(
+      `${PLANT_API_URL}/${plantId}/events`,
+      { params: { page: 0, size: 1 } },
+    )
+
+    eventsCount.value = response.data.data.page.totalElements
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const onPlantEventCreation = async () => {
+  isPlantEventFormOpen.value = false
+
+  journalRefreshKey.value++
+  await fetchEventsCount()
+}
+
 onMounted(() => {
   fetchPlantDetailsById()
+  fetchEventsCount()
 })
 </script>
 
@@ -124,6 +146,12 @@ onMounted(() => {
     :initial-label="plant.label"
     @close="isPlantUpdateFormOpen = false"
     @success="onPlantUpdated"
+  />
+
+  <PlantEventForm
+    v-if="isPlantEventFormOpen"
+    @close="isPlantEventFormOpen = false"
+    @success="onPlantEventCreation()"
   />
 
   <section>
@@ -153,7 +181,7 @@ onMounted(() => {
           <AppButton
             :icon="LucidePlus"
             label="Add Event"
-            @on-click="onAddEventClick"
+            @on-click="isPlantEventFormOpen = true"
             :disabled="plant.archivedAt != null"
           />
           <AppButton
@@ -173,11 +201,16 @@ onMounted(() => {
         </div>
       </div>
 
-      <PlantDetailsCard
-        :status="plant.status"
-        :created-at="plant.createdAt"
-        :archived-at="plant.archivedAt"
-      />
+      <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
+
+      <RouterView v-slot="{ Component }">
+        <component
+          :is="Component"
+          :plant="plant"
+          :refresh-key="journalRefreshKey"
+          @event-count-changed="eventsCount = $event"
+        />
+      </RouterView>
     </div>
     <div v-else class="text-center">Loading...</div>
     <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
