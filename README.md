@@ -34,7 +34,6 @@ Cultivo is a plant lifecycle tracker, that allows users to track their plants by
 2. Copy & Configure environment variables
 
    ```bash
-   cp frontend/.env.example frontend/.env.local
    cp backend/.env.example backend/.env
    ```
 
