@@ -1,4 +1,4 @@
-name: cultivo
+name: cultivo-dev
 
 services:
   db:

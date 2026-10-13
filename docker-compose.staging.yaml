@@ -1,0 +1,55 @@
+name: cultivo-staging
+
+services:
+  frontend:
+    container_name: frontend-staging
+    image: "manosgrigorakis/cultivo-frontend:pr-23"
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    depends_on:
+      - backend
+    networks:
+      - cultivo-network
+
+  backend:
+    container_name: backend-staging
+    image: "manosgrigorakis/cultivo-backend:pr-23"
+    restart: unless-stopped
+    expose:
+      - "8080"
+    env_file:
+      - ./backend/.env.staging
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - cultivo-network
+
+  db:
+    container_name: postgres-staging
+    image: "postgres:18"
+    restart: unless-stopped
+    expose:
+      - "5432"
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    env_file:
+      - .env.staging
+    volumes:
+      - pg_data:/var/lib/postgresql/18/docker
+    healthcheck:
+      test:
+        ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cultivo-network
+
+networks:
+  cultivo-network:
+    driver: bridge
+
+volumes:
+  pg_data:
