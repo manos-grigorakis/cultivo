@@ -1,3 +1,9 @@
+![Issues](https://img.shields.io/github/issues/manos-grigorakis/cultivo)
+![Open PRs](https://img.shields.io/github/issues-pr/manos-grigorakis/cultivo)
+![CI](https://img.shields.io/github/actions/workflow/status/manos-grigorakis/cultivo/ci.yaml?branch=main&label=CI)
+![Docker Publish](https://img.shields.io/github/actions/workflow/status/manos-grigorakis/cultivo/docker-publish.yaml?branch=main&label=Docker%20Publish)
+![Latest Release](https://img.shields.io/github/v/release/manos-grigorakis/cultivo)
+
 # Cultivo
 
 ## Overview
