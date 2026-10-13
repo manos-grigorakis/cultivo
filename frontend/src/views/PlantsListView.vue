@@ -59,7 +59,7 @@ onMounted(() => {
   <AppSectionWrapper title="Plants">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
-        <span class="block text-content-muted">{{ page?.totalElements }} total</span>
+        <span class="text-content-muted block">{{ page?.totalElements }} total</span>
 
         <AppButton :icon="LucidePlus" label="Add plant" @on-click="isCreatePlantFormOpen = true" />
       </div>
@@ -77,17 +77,17 @@ onMounted(() => {
       <ul
         class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
       >
-        <li v-for="plant of plants" :key="plant.id" class="bg-white rounded-card drop-shadow-sm">
+        <li v-for="plant of plants" :key="plant.id" class="rounded-card bg-white drop-shadow-sm">
           <RouterLink :to="{ name: 'plant-details', params: { id: plant.id } }">
             <div
-              class="w-full aspect-video rounded-tl-card rounded-tr-card"
+              class="rounded-tl-card rounded-tr-card aspect-video w-full"
               :style="{
                 background: `repeating-linear-gradient(135deg,#EFFBE5 0px,#EFFBE5 18px,#DDEECC 18px,#DDEECC 36px)`,
               }"
             />
 
             <div class="px-2 py-3">
-              <h2 class="pl-1 text-lg truncate font-display">{{ plant.label }}</h2>
+              <h2 class="font-display truncate pl-1 text-lg">{{ plant.label }}</h2>
             </div>
           </RouterLink>
         </li>

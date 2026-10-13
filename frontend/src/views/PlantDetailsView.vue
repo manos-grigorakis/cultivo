@@ -157,19 +157,19 @@ onMounted(() => {
   <section>
     <div v-if="plant !== null">
       <div
-        class="w-50 h-50 rounded-card max-w-150"
+        class="rounded-card h-50 w-50 max-w-150"
         :style="{
           background: `repeating-linear-gradient(135deg,#EFFBE5 0px,#EFFBE5 18px,#DDEECC 18px,#DDEECC 36px)`,
         }"
       />
 
-      <h2 class="mt-4 text-4xl truncate font-display">{{ plant.label }}</h2>
+      <h2 class="font-display mt-4 truncate text-4xl">{{ plant.label }}</h2>
 
-      <div class="flex flex-wrap items-center justify-between mt-2">
+      <div class="mt-2 flex flex-wrap items-center justify-between">
         <select
           v-model="currentPlantStatus"
           @change="onPlantStatusUpdate"
-          class="px-4 py-2 text-xs rounded-card disabled:cursor-not-allowed"
+          class="rounded-card px-4 py-2 text-xs disabled:cursor-not-allowed"
           :disabled="plant.archivedAt !== null"
           :class="applyPlantStatusBadgeColor(plant.status)"
         >
