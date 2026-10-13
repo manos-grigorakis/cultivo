@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   release:
     types: [published]
-  pull_request:
-    branches: [main]
 
 permissions:
   contents: read
@@ -28,7 +26,6 @@ jobs:
             type=semver,pattern={{version}}
             type=raw,value=test,enable=${{ github.event_name == 'workflow_dispatch' }}
             type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
-            type=ref,event=pr
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -66,7 +63,6 @@ jobs:
             type=semver,pattern={{version}}
             type=raw,value=test,enable=${{ github.event_name == 'workflow_dispatch' }}
             type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
-            type=ref,event=pr
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
