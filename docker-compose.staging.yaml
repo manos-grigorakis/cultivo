@@ -3,9 +3,7 @@ name: cultivo-staging
 services:
   frontend:
     container_name: frontend-staging
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: "manosgrigorakis/cultivo-frontend:pr-23"
     restart: unless-stopped
     ports:
       - "8000:80"
@@ -16,9 +14,7 @@ services:
 
   backend:
     container_name: backend-staging
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: "manosgrigorakis/cultivo-backend:pr-23"
     restart: unless-stopped
     expose:
       - "8080"
