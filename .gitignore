@@ -81,6 +81,7 @@ $RECYCLE.BIN/
 .env
 .env.*
 !.env.example
+!.env.staging
 
 # IDE / Editor
 .idea/
