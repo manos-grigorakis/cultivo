@@ -31,7 +31,7 @@ const isLastPage = computed(() => !props.data || props.data.number >= props.data
   <nav
     v-if="data && data.totalPages > 1"
     aria-label="Pagination"
-    class="flex items-center justify-center mt-8"
+    class="mt-8 flex items-center justify-center"
   >
     <ul class="flex items-center gap-2">
       <li>
@@ -40,8 +40,8 @@ const isLastPage = computed(() => !props.data || props.data.number >= props.data
           aria-label="Previous page"
           @click="previousPage"
           :disabled="isFirstPage"
-          class="p-2 transition-colors cursor-pointer rounded-card disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-content-muted"
-          :class="!isFirstPage ? 'bg-white text-content hover:bg-primary-100' : ''"
+          class="rounded-card disabled:bg-surface-muted disabled:text-content-muted cursor-pointer p-2 transition-colors disabled:cursor-not-allowed"
+          :class="!isFirstPage ? 'text-content hover:bg-primary-100 bg-white' : ''"
         >
           <LucideArrowLeft />
         </button>
@@ -52,9 +52,9 @@ const isLastPage = computed(() => !props.data || props.data.number >= props.data
           type="button"
           @click="$emit('page-changed', page - 1)"
           :aria-label="`Go to page ${page}`"
-          class="px-4 py-2 transition-colors cursor-pointer rounded-card"
+          class="rounded-card cursor-pointer px-4 py-2 transition-colors"
           :class="
-            page - 1 === data.number ? 'bg-primary-700 text-white' : 'bg-white hover:bg-primary-100'
+            page - 1 === data.number ? 'bg-primary-700 text-white' : 'hover:bg-primary-100 bg-white'
           "
         >
           {{ page }}
@@ -67,8 +67,8 @@ const isLastPage = computed(() => !props.data || props.data.number >= props.data
           aria-label="Next page"
           @click="nextPage"
           :disabled="isLastPage"
-          class="p-2 transition-colors cursor-pointer rounded-card disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-content-muted"
-          :class="!isLastPage ? 'bg-white text-content hover:bg-primary-100' : ''"
+          class="rounded-card disabled:bg-surface-muted disabled:text-content-muted cursor-pointer p-2 transition-colors disabled:cursor-not-allowed"
+          :class="!isLastPage ? 'text-content hover:bg-primary-100 bg-white' : ''"
         >
           <LucideArrowRight />
         </button>

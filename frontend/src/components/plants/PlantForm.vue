@@ -78,33 +78,33 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
 
 <template>
   <section
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     @click.self="emit('close')"
   >
     <div
       role="dialog"
       aria-modal="true"
-      class="w-full max-w-md p-6 shadow-xl rounded-card bg-surface-muted"
+      class="rounded-card bg-surface-muted w-full max-w-md p-6 shadow-xl"
     >
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-display text-primary-800">
+          <h2 class="font-display text-primary-800 text-2xl">
             {{ mode === 'create' ? 'Add plant' : 'Edit plant' }}
           </h2>
-          <span class="text-sm text-content-muted">Fields marked with * are required</span>
+          <span class="text-content-muted text-sm">Fields marked with * are required</span>
         </div>
 
         <button
           type="button"
           aria-label="Close"
-          class="p-1 rounded-full hover:cursor-pointer hover:text-primary-700 hover:bg-surface"
+          class="hover:text-primary-700 hover:bg-surface rounded-full p-1 hover:cursor-pointer"
           @click="emit('close')"
         >
           <LucideX :size="20" />
         </button>
       </div>
 
-      <form class="flex flex-col gap-6 mt-6" @submit.prevent="onSubmit">
+      <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
         <div class="flex flex-col gap-1">
           <label for="label" class="text-sm font-semibold"
             ><span class="text-red-500">*</span>Label
@@ -113,7 +113,7 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
             type="text"
             id="label"
             required
-            class="w-full px-4 py-2 bg-white border border-border rounded-card focus:outline-none focus:ring-2 focus:ring-primary-600"
+            class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
             placeholder="e.g. Basil"
             v-model="label"
           />

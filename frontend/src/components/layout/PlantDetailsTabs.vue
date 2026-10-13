@@ -6,12 +6,12 @@ defineProps<{
 </script>
 
 <template>
-  <nav class="p-2 mt-4 mb-6 shadow-xs bg-primary-100 rounded-card">
+  <nav class="bg-primary-100 rounded-card mt-4 mb-6 p-2 shadow-xs">
     <ul class="flex items-center gap-2">
       <li>
         <RouterLink
           :to="{ name: 'plant-details-overview', params: { id: plantId } }"
-          class="block px-8 py-4 text-xl font-medium rounded-card"
+          class="rounded-card block px-8 py-4 text-xl font-medium"
           active-class="bg-white shadow-sm"
           >Overview</RouterLink
         >
@@ -19,9 +19,9 @@ defineProps<{
       <li>
         <RouterLink
           :to="{ name: 'plant-details-journal', params: { id: plantId } }"
-          class="block px-8 py-4 text-xl font-medium rounded-card"
+          class="rounded-card block px-8 py-4 text-xl font-medium"
           active-class="bg-white shadow-sm"
-          >Journal <span class="text-sm text-content-muted">{{ eventsCount }}</span></RouterLink
+          >Journal <span class="text-content-muted text-sm">{{ eventsCount }}</span></RouterLink
         >
       </li>
     </ul>
