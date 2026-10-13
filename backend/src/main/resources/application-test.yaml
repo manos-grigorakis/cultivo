@@ -21,3 +21,7 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+app:
+  frontend:
+    url: http://localhost:5173
