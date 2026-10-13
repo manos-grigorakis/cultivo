@@ -8,13 +8,13 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
 
-    jpa:
-      hibernate:
-        ddl-auto: validate
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
 
-    flyway:
-      enabled: true
+  flyway:
+    enabled: true
 
 app:
   frontend:
