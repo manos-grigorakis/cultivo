@@ -22,7 +22,7 @@ const applyEventTypeBadgeColor = (type: string): string => {
 </script>
 
 <template>
-  <div class="rounded-card bg-white px-6 py-4">
+  <div class="rounded-card bg-white px-6 py-4 shadow-sm">
     <div class="flex items-center gap-2">
       <span class="rounded-card px-2 py-1 text-sm" :class="applyEventTypeBadgeColor(event.type)">{{
         event.type
@@ -41,5 +41,6 @@ const applyEventTypeBadgeColor = (type: string): string => {
       </span>
     </div>
     <h3 class="mt-2 text-lg font-semibold">{{ event.title }}</h3>
+    <p class="text-content-muted mt-1 w-2/3 truncate">{{ event.description }}</p>
   </div>
 </template>
