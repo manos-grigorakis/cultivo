@@ -7,8 +7,8 @@ defineProps<{
 </script>
 
 <template>
-  <div class="px-4 py-3 mt-6 bg-white rounded-card drop-shadow-sm max-w-70">
-    <h3 class="mb-2 text-xl text-primary-900 font-display">Details</h3>
+  <div class="rounded-card mt-6 max-w-70 bg-white px-4 py-3 drop-shadow-sm">
+    <h3 class="text-primary-900 font-display mb-2 text-xl">Details</h3>
 
     <ul>
       <li class="flex justify-between gap-2">

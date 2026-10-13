@@ -23,9 +23,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 <template>
   <button
-    class="flex items-center gap-2 px-4 py-2 font-display rounded-card"
+    class="font-display rounded-card flex gap-2 px-4 py-2"
     :class="
-      disabled ? 'cursor-not-allowed bg-content-muted' : ['cursor-pointer', variantClasses[variant]]
+      disabled ? 'bg-content-muted cursor-not-allowed' : ['cursor-pointer', variantClasses[variant]]
     "
     :disabled="disabled"
     :type="type"
