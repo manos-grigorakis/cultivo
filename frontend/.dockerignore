@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.git/
+
+# Environment
+.env
+.env.*
+!.env.production
+
+# Other
+README.md
+.vscode/
+.idea/
