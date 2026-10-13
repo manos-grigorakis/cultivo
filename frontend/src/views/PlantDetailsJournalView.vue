@@ -11,8 +11,10 @@ import type { PlantEventResponse } from '@/types/plant-event-response.interface'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import PlantEventForm from '@/components/plants/PlantEventForm.vue'
+import type { PlantResponse } from '@/types/plant-response.interface.ts'
 
-const props = defineProps<{ refreshKey: number }>()
+const props = defineProps<{ refreshKey: number; plant: PlantResponse }>()
 
 const route = useRoute()
 const plantId = ref<string | string[] | undefined>(undefined)
@@ -20,6 +22,9 @@ const isLoading = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
 const plantEvents = ref<PlantEventResponse[]>([])
 const page = ref<Page>()
+
+const selectedPlantEvent = ref<PlantEventResponse | null>(null)
+const isEditPlantEventOpen = ref<boolean>(false)
 
 plantId.value = route.params.id
 
@@ -48,6 +53,17 @@ const fetchJournalsByPlant = async (pageNumber: number = 0) => {
   }
 }
 
+const openEditPlantEventForm = (event: PlantEventResponse) => {
+  selectedPlantEvent.value = event
+  isEditPlantEventOpen.value = true
+}
+
+const handleEditSuccess = async () => {
+  isEditPlantEventOpen.value = false
+  selectedPlantEvent.value = null
+  await fetchJournalsByPlant()
+}
+
 onMounted(() => fetchJournalsByPlant())
 
 watch(
@@ -58,6 +74,14 @@ watch(
 
 <template>
   <section class="flex flex-col gap-4">
+    <PlantEventForm
+      mode="update"
+      v-if="isEditPlantEventOpen && selectedPlantEvent !== null"
+      :plant-event="selectedPlantEvent"
+      @close="isEditPlantEventOpen = false"
+      @success="handleEditSuccess"
+    />
+
     <div v-if="isLoading">
       <PlantEventCardSkeleton v-for="i in 3" :key="i" />
     </div>
@@ -67,7 +91,13 @@ watch(
     <template v-else>
       <p v-if="plantEvents.length === 0" class="text-center">There are no events recorded yet</p>
 
-      <PlantEventCard v-for="event in plantEvents" :key="event.id" :event="event" />
+      <PlantEventCard
+        v-for="event in plantEvents"
+        :key="event.id"
+        :event="event"
+        :is-plant-archived="props.plant.archivedAt !== null"
+        @on-edit-plant-event-click="openEditPlantEventForm(event)"
+      />
 
       <AppPagination :data="page" @page-changed="fetchJournalsByPlant($event)" />
     </template>

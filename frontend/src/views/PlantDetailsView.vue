@@ -149,6 +149,7 @@ onMounted(() => {
   />
 
   <PlantEventForm
+    mode="create"
     v-if="isPlantEventFormOpen"
     @close="isPlantEventFormOpen = false"
     @success="onPlantEventCreation()"
