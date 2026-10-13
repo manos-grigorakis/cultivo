@@ -63,4 +63,18 @@ public class PlantEventController {
                                                                    @RequestBody @Valid PlantEventRequest request) {
         return new ApiResponseWrapper<>(plantEventService.createPlantEvent(plantId, request));
     }
+
+    @Operation(summary = "Update a Plant Event by ID",
+            description = "Updated a plant event by the provided id and the selected plant")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Plant event updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation failed"),
+            @ApiResponse(responseCode = "404", description = "Plant or Plant Event doesn't exist"),
+            @ApiResponse(responseCode = "409", description = "Plant is archived")
+    })
+    @PutMapping("/{id}")
+    public ApiResponseWrapper<PlantEventResponse> updatePlantEventByIdAndPlantId(
+            @PathVariable Long plantId, @PathVariable Long id, @RequestBody @Valid PlantEventRequest request) {
+        return new ApiResponseWrapper<>(plantEventService.updatePlantEventByIdAndPlantId(plantId, id, request));
+    }
 }

@@ -13,4 +13,6 @@ public interface PlantEventService {
     PlantEventResponse getPlantEventByIdAndPlantId(Long plantId, Long plantEventId);
 
     PlantEventResponse createPlantEvent(Long plantId, PlantEventRequest request);
+
+    PlantEventResponse updatePlantEventByIdAndPlantId(Long plantId, Long plantEventId, PlantEventRequest request);
 }
