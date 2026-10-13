@@ -144,4 +144,68 @@ public class PlantEventServiceTest {
         verify(plantRepository).findById(1L);
         verify(plantEventRepository, never()).save(any(PlantEvent.class));
     }
+
+    @Test
+    void updatePlantEventByIdAndPlantId_shouldUpdatePlantEvent_whenPlantIdAndPlantIdExist() {
+        // Arrange
+        PlantEventRequest mockRequest = new PlantEventRequest("Watering", null, PlantEventType.WATERING, null);
+        PlantEventResponse mockResponse = mock(PlantEventResponse.class);
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        PlantEvent mockPlantEvent = PlantEvent.builder().title("Note #1").type(PlantEventType.NOTE).build();
+        mockPlantEvent.setPlant(mockPlant);
+
+        when(plantEventRepository.findByIdAndPlantId(1L, 1L)).thenReturn(Optional.of(mockPlantEvent));
+        when(plantEventMapper.toUpdate(mockPlantEvent, mockRequest)).thenReturn(mockPlantEvent);
+        when(plantEventRepository.save(mockPlantEvent)).thenReturn(mockPlantEvent);
+        when(plantEventMapper.toResponse(mockPlantEvent)).thenReturn(mockResponse);
+
+        // Act
+        PlantEventResponse result = plantEventService.updatePlantEventByIdAndPlantId(1L, 1L, mockRequest);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(mockResponse, result);
+
+        verify(plantEventRepository).findByIdAndPlantId(1L, 1L);
+        verify(plantEventMapper).toUpdate(mockPlantEvent, mockRequest);
+        verify(plantEventRepository).save(mockPlantEvent);
+        verify(plantEventMapper).toResponse(mockPlantEvent);
+    }
+
+    @Test
+    void updatePlantEventByIdAndPlantId_shouldThrowResourceNotFoundException_whenPlantIdAndPlantEventIdDoesNotExist() {
+        // Arrange
+        when(plantEventRepository.findByIdAndPlantId(1L, 1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                     () -> plantEventService.updatePlantEventByIdAndPlantId(1L, 1L, mock(PlantEventRequest.class)));
+
+        verify(plantEventRepository).findByIdAndPlantId(1L, 1L);
+        verify(plantEventMapper, never()).toUpdate(any(PlantEvent.class), any(PlantEventRequest.class));
+        verify(plantEventRepository, never()).save(any(PlantEvent.class));
+        verify(plantEventMapper, never()).toResponse(any(PlantEvent.class));
+    }
+
+    @Test
+    void updatePlantEventByIdAndPlantId_shouldThrowConflictException_whenPlantIsArchived() {
+        // Arrange
+        Plant mockPlant = Plant.builder().label("Basil").build();
+        PlantEvent mockPlantEvent = PlantEvent.builder().title("Note #1").type(PlantEventType.NOTE).build();
+        mockPlant.setArchivedAt(LocalDateTime.now());
+        mockPlantEvent.setPlant(mockPlant);
+
+        when(plantEventRepository.findByIdAndPlantId(1L, 1L)).thenReturn(Optional.of(mockPlantEvent));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantEventService.updatePlantEventByIdAndPlantId(1L, 1L, mock(PlantEventRequest.class)));
+
+        assertEquals("PLANT_ARCHIVED", exception.getErrorCode());
+
+        verify(plantEventRepository).findByIdAndPlantId(1L, 1L);
+        verify(plantEventMapper, never()).toUpdate(any(PlantEvent.class), any(PlantEventRequest.class));
+        verify(plantEventRepository, never()).save(any(PlantEvent.class));
+        verify(plantEventMapper, never()).toResponse(any(PlantEvent.class));
+    }
 }

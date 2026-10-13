@@ -7,7 +7,9 @@ import { useRoute } from 'vue-router'
 import axios, { AxiosError } from 'axios'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppButton from '../ui/AppButton.vue'
+import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 
+const props = defineProps<{ mode: 'create' | 'update'; plantEvent?: PlantEventResponse }>()
 const emit = defineEmits<{ close: []; success: [] }>()
 
 const route = useRoute()
@@ -20,11 +22,11 @@ const form = reactive<{
   date: string
   time: string
 }>({
-  title: '',
-  type: '',
-  description: null,
-  date: '',
-  time: '',
+  title: props.plantEvent?.title ?? '',
+  type: props.plantEvent?.type ?? '',
+  description: props.plantEvent?.description ?? null,
+  date: props.plantEvent?.occurredAt?.split('T')[0] ?? '',
+  time: props.plantEvent?.occurredAt?.split('T')[1]?.slice(0, 5) ?? '',
 })
 
 const types = ['WATERING', 'HARVEST', 'REPOTTING', 'OBSERVATION', 'NOTE']
@@ -40,29 +42,55 @@ const onSubmit = async () => {
     title: form.title,
     type: form.type,
     occurredAt: form.date ? `${form.date}T${form.time || '00:00'}:00` : null,
-    description: form.description,
+    description: form.description?.trim() || null,
   }
 
   try {
-    const response = await axios.post(`${PLANT_API_URL}/${plantId}/events`, payload)
-
-    if (response.status === 201) emit('success')
+    if (props.mode === 'create') await createPlantEvent(plantId, payload)
+    else if (props.mode === 'update') {
+      if (props.plantEvent == null) errorMessage.value = 'No plant event found'
+      else await updatePlantEvent(plantId, props.plantEvent.id, payload)
+    }
   } catch (error) {
     if (error instanceof AxiosError) {
       const status = error.response?.status
       const errorCode = error.response?.data?.error?.errorCode
 
-      if (error.status === 404) {
-        errorMessage.value = 'Plant does not exist'
+      if (status === 404) {
+        handle404Error()
       } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
         errorMessage.value = 'Plant is archived and cannot be modified'
       } else {
         errorMessage.value = 'Server error. Please try again'
       }
+    } else {
+      errorMessage.value = 'Unexpected error occurred. Please try again'
     }
   } finally {
     isSubmitting.value = false
   }
+}
+
+const createPlantEvent = async (
+  plantId: string | string[] | undefined,
+  payload: PlantEventRequest,
+) => {
+  const response = await axios.post(`${PLANT_API_URL}/${plantId}/events`, payload)
+  if (response.status === 201) emit('success')
+}
+
+const updatePlantEvent = async (
+  plantId: string | string[] | undefined,
+  eventId: number,
+  payload: PlantEventRequest,
+) => {
+  const response = await axios.put(`${PLANT_API_URL}/${plantId}/events/${eventId}`, payload)
+  if (response.status === 200) emit('success')
+}
+
+const handle404Error = () => {
+  if (props.mode === 'create') errorMessage.value = 'Plant does not exist'
+  else if (props.mode === 'update') errorMessage.value = 'Plant or Plant Event does not exist'
 }
 
 const onTypeChange = (type: string) => {
@@ -82,7 +110,9 @@ const onTypeChange = (type: string) => {
     >
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h2 class="font-display text-primary-800 text-2xl">Create a plant event</h2>
+          <h2 class="font-display text-primary-800 text-2xl">
+            {{ props.mode === 'create' ? 'Create' : 'Update' }} a plant event
+          </h2>
           <span class="text-content-muted text-sm">Fields marked with * are required</span>
         </div>
 
@@ -140,27 +170,33 @@ const onTypeChange = (type: string) => {
         <div>
           <div class="flex gap-2">
             <div class="flex-1">
-              <label for="date" class="text-sm font-semibold">Date </label>
+              <label for="date" class="text-sm font-semibold"
+                ><span v-if="props.mode === 'update'" class="text-red-500">*</span>Date</label
+              >
               <input
                 type="date"
                 id="date"
                 v-model="form.date"
+                :required="props.mode === 'update'"
                 class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
               />
             </div>
 
             <div class="flex-1">
-              <label for="time" class="text-sm font-semibold">Time</label>
+              <label for="time" class="text-sm font-semibold"
+                ><span v-if="props.mode === 'update'" class="text-red-500">*</span>Time</label
+              >
               <input
                 type="time"
                 id="time"
                 v-model="form.time"
+                :required="props.mode === 'update'"
                 class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
               />
             </div>
           </div>
 
-          <span class="text-content-muted text-sm"
+          <span v-if="props.mode === 'create'" class="text-content-muted text-sm"
             >Leave date and time blank to automatically use current date</span
           >
         </div>
@@ -178,7 +214,11 @@ const onTypeChange = (type: string) => {
         <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
         <div>
-          <AppButton label="Save" type="submit" :disabled="isSubmitting" />
+          <AppButton
+            :label="props.mode === 'create' ? 'Save' : 'Update'"
+            type="submit"
+            :disabled="isSubmitting"
+          />
         </div>
       </form>
     </div>

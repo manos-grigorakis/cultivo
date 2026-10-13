@@ -70,4 +70,28 @@ public class PlantEventServiceImpl implements PlantEventService {
 
         return plantEventMapper.toResponse(savedPlantEvent);
     }
+
+    @Override
+    public PlantEventResponse updatePlantEventByIdAndPlantId(Long plantId, Long plantEventId,
+                                                             PlantEventRequest request) {
+        PlantEvent plantEvent = plantEventRepository.findByIdAndPlantId(plantEventId, plantId).orElseThrow(() -> {
+            log.warn("Plant event with id {} not found with plant id {}", plantEventId, plantId);
+            return new ResourceNotFoundException(
+                    "Plant event with id " + plantEventId + " not found" + " with plant id " + plantId);
+        });
+
+        if (plantEvent.getPlant().getArchivedAt() != null) {
+            log.warn("Attempted to update plant event for archived plant with id {} and plant event id {}", plantId,
+                     plantEventId);
+            throw new ConflictException(
+                    "Attempted to update plant event for archived plant with id " + plantId + " and plant event id " + plantEventId,
+                    "PLANT_ARCHIVED");
+        }
+
+        PlantEvent updatedPlantEvent = plantEventMapper.toUpdate(plantEvent, request);
+        plantEventRepository.save(updatedPlantEvent);
+        log.info("Plant event with id {} updated for plant with id {}", updatedPlantEvent.getId(), plantId);
+
+        return plantEventMapper.toResponse(updatedPlantEvent);
+    }
 }
