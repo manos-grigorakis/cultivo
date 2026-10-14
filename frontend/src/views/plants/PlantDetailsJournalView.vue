@@ -1,18 +1,18 @@
-<script setup lang="ts">
-import PlantEventCard from '@/components/plants/PlantEventCard.vue'
-import PlantEventCardSkeleton from '@/components/skeleton/PlantEventCardSkeleton.vue'
+<script lang="ts" setup>
+import PlantEventCard from '@/components/plants/events/PlantEventCard.vue'
+import PlantEventCardSkeleton from '@/components/plants/events/PlantEventCardSkeleton.vue'
+import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
-import { PLANT_API_URL } from '@/constant/api'
-import type { ApiResponse } from '@/types/api-response.interface'
-import type { Page } from '@/types/pagination.interface'
-import type { Pagination } from '@/types/pagination.interface'
-import type { PlantEventResponse } from '@/types/plant-event-response.interface'
+import { PLANT_API_URL } from '@/constant/api.ts'
+import type { ApiResponse } from '@/types/api-response.interface.ts'
+import type { Page, Pagination } from '@/types/pagination.interface.ts'
+import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
+import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import PlantEventForm from '@/components/plants/PlantEventForm.vue'
-import type { PlantResponse } from '@/types/plant-response.interface.ts'
 
 const props = defineProps<{ refreshKey: number; plant: PlantResponse }>()
 
@@ -44,10 +44,11 @@ const fetchJournalsByPlant = async (pageNumber: number = 0) => {
     }
   } catch (error) {
     if (error instanceof AxiosError && error?.response?.status === 404) {
-      errorMessage.value = 'Plant does not exist'
-    } else {
-      errorMessage.value = 'Server error. Please try again'
+      errorMessage.value = 'Plant not found'
+      return
     }
+
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isLoading.value = false
   }
@@ -75,9 +76,9 @@ watch(
 <template>
   <section class="flex flex-col gap-4">
     <PlantEventForm
-      mode="update"
       v-if="isEditPlantEventOpen && selectedPlantEvent !== null"
       :plant-event="selectedPlantEvent"
+      mode="update"
       @close="isEditPlantEventOpen = false"
       @success="handleEditSuccess"
     />

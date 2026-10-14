@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import type { PlantEventRequest } from '@/types/plant-event-request.interface.ts'
-import { LucideX } from '@lucide/vue'
+import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
+import AppInput from '@/components/ui/AppInput.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
+import type { PlantEventRequest } from '@/types/plant-event-request.interface.ts'
+import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import { LucideX } from '@lucide/vue'
+import axios, { AxiosError } from 'axios'
 import { reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import axios, { AxiosError } from 'axios'
-import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import AppButton from '../ui/AppButton.vue'
-import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
+import AppButton from '../../ui/AppButton.vue'
 
 const props = defineProps<{ mode: 'create' | 'update'; plantEvent?: PlantEventResponse }>()
 const emit = defineEmits<{ close: []; success: [] }>()
@@ -48,7 +50,7 @@ const onSubmit = async () => {
   try {
     if (props.mode === 'create') await createPlantEvent(plantId, payload)
     else if (props.mode === 'update') {
-      if (props.plantEvent == null) errorMessage.value = 'No plant event found'
+      if (props.plantEvent == null) errorMessage.value = 'Plant event not found'
       else await updatePlantEvent(plantId, props.plantEvent.id, payload)
     }
   } catch (error) {
@@ -58,14 +60,14 @@ const onSubmit = async () => {
 
       if (status === 404) {
         handle404Error()
+        return
       } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
         errorMessage.value = 'Plant is archived and cannot be modified'
-      } else {
-        errorMessage.value = 'Server error. Please try again'
+        return
       }
-    } else {
-      errorMessage.value = 'Unexpected error occurred. Please try again'
     }
+
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isSubmitting.value = false
   }
@@ -89,8 +91,8 @@ const updatePlantEvent = async (
 }
 
 const handle404Error = () => {
-  if (props.mode === 'create') errorMessage.value = 'Plant does not exist'
-  else if (props.mode === 'update') errorMessage.value = 'Plant or Plant Event does not exist'
+  if (props.mode === 'create') errorMessage.value = 'Plant not found'
+  else if (props.mode === 'update') errorMessage.value = 'Plant or Plant Event not found'
 }
 
 const onTypeChange = (type: string) => {
@@ -154,46 +156,25 @@ const onTypeChange = (type: string) => {
           </div>
         </div>
 
-        <div class="flex flex-col gap-1">
-          <label for="title" class="text-sm font-semibold"
-            ><span class="text-red-500">*</span>Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            required
-            class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
-            v-model="form.title"
-          />
-        </div>
+        <AppInput v-model="form.title" label="title" required />
 
         <div>
           <div class="flex gap-2">
-            <div class="flex-1">
-              <label for="date" class="text-sm font-semibold"
-                ><span v-if="props.mode === 'update'" class="text-red-500">*</span>Date</label
-              >
-              <input
-                type="date"
-                id="date"
-                v-model="form.date"
-                :required="props.mode === 'update'"
-                class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
-              />
-            </div>
+            <AppInput
+              v-model="form.date"
+              label="date"
+              type="date"
+              :required="props.mode === 'update'"
+              class="flex-1"
+            />
 
-            <div class="flex-1">
-              <label for="time" class="text-sm font-semibold"
-                ><span v-if="props.mode === 'update'" class="text-red-500">*</span>Time</label
-              >
-              <input
-                type="time"
-                id="time"
-                v-model="form.time"
-                :required="props.mode === 'update'"
-                class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
-              />
-            </div>
+            <AppInput
+              v-model="form.time"
+              label="time"
+              type="time"
+              :required="props.mode === 'update'"
+              class="flex-1"
+            />
           </div>
 
           <span v-if="props.mode === 'create'" class="text-content-muted text-sm"

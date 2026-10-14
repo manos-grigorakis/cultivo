@@ -38,3 +38,13 @@
   /* Border radius */
   --radius-card: 1.75rem;
 }
+
+@utility bg-plant-placeholder {
+  background: repeating-linear-gradient(
+    135deg,
+    #effbe5 0px,
+    #effbe5 18px,
+    #ddeecc 18px,
+    #ddeecc 36px
+  );
+}

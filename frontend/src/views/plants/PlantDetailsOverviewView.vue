@@ -1,6 +1,6 @@
-<script setup lang="ts">
-import type { PlantResponse } from '@/types/plant-response.interface'
+<script lang="ts" setup>
 import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
+import type { PlantResponse } from '@/types/plant-response.interface.ts'
 
 defineProps<{
   plant: PlantResponse
@@ -10,9 +10,9 @@ defineProps<{
 <template>
   <section>
     <PlantDetailsCard
-      :status="plant.status"
-      :created-at="plant.createdAt"
       :archived-at="plant.archivedAt"
+      :created-at="plant.createdAt"
+      :status="plant.status"
     />
   </section>
 </template>

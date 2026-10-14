@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -71,6 +72,7 @@ public class PlantEventServiceImpl implements PlantEventService {
         return plantEventMapper.toResponse(savedPlantEvent);
     }
 
+    @Transactional
     @Override
     public PlantEventResponse updatePlantEventByIdAndPlantId(Long plantId, Long plantEventId,
                                                              PlantEventRequest request) {
