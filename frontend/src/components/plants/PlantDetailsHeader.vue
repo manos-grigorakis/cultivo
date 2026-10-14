@@ -36,12 +36,7 @@ const onStatusChange = (event: Event) => {
 </script>
 
 <template>
-  <div
-    class="rounded-card h-50 w-50 max-w-150"
-    :style="{
-      background: `repeating-linear-gradient(135deg,#EFFBE5 0px,#EFFBE5 18px,#DDEECC 18px,#DDEECC 36px)`,
-    }"
-  />
+  <div class="rounded-card bg-plant-placeholder h-50 w-50 max-w-150" />
 
   <h2 class="font-display mt-4 truncate text-4xl">{{ plant.label }}</h2>
 
