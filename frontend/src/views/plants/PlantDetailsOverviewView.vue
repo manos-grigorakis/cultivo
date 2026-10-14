@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PlantResponse } from '@/types/plant-response.interface'
+import type { PlantResponse } from '@/types/plant-response.interface.ts'
 import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
 
 defineProps<{
