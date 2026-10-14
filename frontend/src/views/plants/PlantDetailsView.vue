@@ -1,19 +1,19 @@
-<script setup lang="ts">
-import PlantDetailsTabs from '@/components/plants/PlantDetailsTabs.vue'
+<script lang="ts" setup>
 import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
+import PlantDetailsHeader from '@/components/plants/PlantDetailsHeader.vue'
+import PlantDetailsSkeleton from '@/components/plants/PlantDetailsSkeleton.vue'
+import PlantDetailsTabs from '@/components/plants/PlantDetailsTabs.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
+import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import PlantDetailsSkeleton from '@/components/plants/PlantDetailsSkeleton.vue'
-import PlantDetailsHeader from '@/components/plants/PlantDetailsHeader.vue'
-import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 
 const route = useRoute()
 
@@ -146,16 +146,16 @@ onMounted(() => {
 <template>
   <PlantForm
     v-if="isPlantUpdateFormOpen && plant"
-    mode="update"
-    :plant-id="plant.id"
     :initial-label="plant.label"
+    :plant-id="plant.id"
+    mode="update"
     @close="isPlantUpdateFormOpen = false"
     @success="onPlantUpdated"
   />
 
   <PlantEventForm
-    mode="create"
     v-if="isPlantEventFormOpen"
+    mode="create"
     @close="isPlantEventFormOpen = false"
     @success="onPlantEventCreation()"
   />
@@ -168,15 +168,15 @@ onMounted(() => {
 
       <template v-if="plant">
         <PlantDetailsHeader
-          :plant="plant"
           :is-updating-status="isUpdatingStatus"
+          :plant="plant"
           @status-change="onPlantStatusUpdate"
           @add-event="isPlantEventFormOpen = true"
           @edit-plant="isPlantUpdateFormOpen = true"
           @archive-plant="onClickArchivePlant"
         />
 
-        <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
+        <PlantDetailsTabs :events-count="eventsCount" :plant-id="plantId" />
 
         <RouterView v-slot="{ Component }">
           <component

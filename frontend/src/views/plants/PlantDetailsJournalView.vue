@@ -1,19 +1,18 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import PlantEventCard from '@/components/plants/events/PlantEventCard.vue'
 import PlantEventCardSkeleton from '@/components/plants/events/PlantEventCardSkeleton.vue'
+import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Page } from '@/types/pagination.interface.ts'
-import type { Pagination } from '@/types/pagination.interface.ts'
+import type { Page, Pagination } from '@/types/pagination.interface.ts'
 import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
+import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
-import type { PlantResponse } from '@/types/plant-response.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 
 const props = defineProps<{ refreshKey: number; plant: PlantResponse }>()
 
@@ -77,9 +76,9 @@ watch(
 <template>
   <section class="flex flex-col gap-4">
     <PlantEventForm
-      mode="update"
       v-if="isEditPlantEventOpen && selectedPlantEvent !== null"
       :plant-event="selectedPlantEvent"
+      mode="update"
       @close="isEditPlantEventOpen = false"
       @success="handleEditSuccess"
     />

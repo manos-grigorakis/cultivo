@@ -1,19 +1,19 @@
-<script setup lang="ts">
+<script lang="ts" setup>
+import PlantCard from '@/components/plants/PlantCard.vue'
+import PlantCardSkeleton from '@/components/plants/PlantCardSkeleton.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import { type Page, type Pagination } from '@/types/pagination.interface.ts'
 import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucidePlus } from '@lucide/vue'
 import axios from 'axios'
 import { onMounted, ref } from 'vue'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import PlantCard from '@/components/plants/PlantCard.vue'
-import PlantCardSkeleton from '@/components/plants/PlantCardSkeleton.vue'
 
 const plants = ref<PlantResponse[]>([])
 const isCreatePlantFormOpen = ref<boolean>(false)
@@ -76,8 +76,8 @@ onMounted(() => {
       <div>
         <AppButton
           :label="showArchived ? 'Show Plants' : 'Show Archived'"
-          @on-click="toggleArchived"
           variant="outline"
+          @on-click="toggleArchived"
         />
       </div>
 

@@ -1,14 +1,14 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import AppButton from '@/components/ui/AppButton.vue'
-import AppErrorContainer from '../ui/AppErrorContainer.vue'
-import type { PlantRequest } from '@/types/plant-request.interface'
+import AppInput from '@/components/ui/AppInput.vue'
+import { PLANT_API_URL } from '@/constant/api'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
+import type { PlantRequest } from '@/types/plant-request.interface'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
-import { PLANT_API_URL } from '@/constant/api'
-import AppInput from '@/components/ui/AppInput.vue'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import AppErrorContainer from '../ui/AppErrorContainer.vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -87,9 +87,9 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
     @click.self="emit('close')"
   >
     <div
-      role="dialog"
       aria-modal="true"
       class="rounded-card bg-surface-muted w-full max-w-md p-6 shadow-xl"
+      role="dialog"
     >
       <div class="flex items-start justify-between gap-4">
         <div>
@@ -100,9 +100,9 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
         </div>
 
         <button
-          type="button"
           aria-label="Close"
           class="hover:text-primary-700 hover:bg-surface rounded-full p-1 hover:cursor-pointer"
+          type="button"
           @click="emit('close')"
         >
           <LucideX :size="20" />
@@ -114,9 +114,9 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
 
         <div>
           <AppButton
+            :disabled="isSubmitting"
             :label="mode === 'create' ? 'Save' : 'Update'"
             type="submit"
-            :disabled="isSubmitting"
           />
         </div>
       </form>
