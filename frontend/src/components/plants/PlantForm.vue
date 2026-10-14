@@ -7,6 +7,7 @@ import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
 import { PLANT_API_URL } from '@/constant/api'
+import AppInput from '@/components/ui/AppInput.vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -105,19 +106,7 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
       </div>
 
       <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
-        <div class="flex flex-col gap-1">
-          <label for="label" class="text-sm font-semibold"
-            ><span class="text-red-500">*</span>Label
-          </label>
-          <input
-            type="text"
-            id="label"
-            required
-            class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
-            placeholder="e.g. Basil"
-            v-model="label"
-          />
-        </div>
+        <AppInput v-model="label" label="label" placeholder="e.g. Basil" required />
 
         <div>
           <AppButton
