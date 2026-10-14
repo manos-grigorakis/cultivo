@@ -6,7 +6,7 @@ import { reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import axios, { AxiosError } from 'axios'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import AppButton from '../ui/AppButton.vue'
+import AppButton from '../../ui/AppButton.vue'
 import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 
 const props = defineProps<{ mode: 'create' | 'update'; plantEvent?: PlantEventResponse }>()

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PlantDetailsTabs from '@/components/layout/PlantDetailsTabs.vue'
-import PlantEventForm from '@/components/plants/PlantEventForm.vue'
+import PlantDetailsTabs from '@/components/plants/PlantDetailsTabs.vue'
+import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'

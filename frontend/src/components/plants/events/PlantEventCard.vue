@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PlantEventResponse } from '@/types/plant-event-response.interface'
+import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 import { LucidePencil } from '@lucide/vue'
 
 defineProps<{

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PlantEventCard from '@/components/plants/PlantEventCard.vue'
-import PlantEventCardSkeleton from '@/components/skeleton/PlantEventCardSkeleton.vue'
+import PlantEventCard from '@/components/plants/events/PlantEventCard.vue'
+import PlantEventCardSkeleton from '@/components/plants/events/PlantEventCardSkeleton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import { PLANT_API_URL } from '@/constant/api'
@@ -11,7 +11,7 @@ import type { PlantEventResponse } from '@/types/plant-event-response.interface'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import PlantEventForm from '@/components/plants/PlantEventForm.vue'
+import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
 import type { PlantResponse } from '@/types/plant-response.interface.ts'
 
 const props = defineProps<{ refreshKey: number; plant: PlantResponse }>()
