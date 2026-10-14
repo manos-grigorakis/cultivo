@@ -9,6 +9,7 @@ import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppButton from '../../ui/AppButton.vue'
 import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 import AppInput from '@/components/ui/AppInput.vue'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 
 const props = defineProps<{ mode: 'create' | 'update'; plantEvent?: PlantEventResponse }>()
 const emit = defineEmits<{ close: []; success: [] }>()
@@ -49,7 +50,7 @@ const onSubmit = async () => {
   try {
     if (props.mode === 'create') await createPlantEvent(plantId, payload)
     else if (props.mode === 'update') {
-      if (props.plantEvent == null) errorMessage.value = 'No plant event found'
+      if (props.plantEvent == null) errorMessage.value = 'Plant event not found'
       else await updatePlantEvent(plantId, props.plantEvent.id, payload)
     }
   } catch (error) {
@@ -59,14 +60,14 @@ const onSubmit = async () => {
 
       if (status === 404) {
         handle404Error()
+        return
       } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
         errorMessage.value = 'Plant is archived and cannot be modified'
-      } else {
-        errorMessage.value = 'Server error. Please try again'
+        return
       }
-    } else {
-      errorMessage.value = 'Unexpected error occurred. Please try again'
     }
+
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isSubmitting.value = false
   }
@@ -90,8 +91,8 @@ const updatePlantEvent = async (
 }
 
 const handle404Error = () => {
-  if (props.mode === 'create') errorMessage.value = 'Plant does not exist'
-  else if (props.mode === 'update') errorMessage.value = 'Plant or Plant Event does not exist'
+  if (props.mode === 'create') errorMessage.value = 'Plant not found'
+  else if (props.mode === 'update') errorMessage.value = 'Plant or Plant Event not found'
 }
 
 const onTypeChange = (type: string) => {

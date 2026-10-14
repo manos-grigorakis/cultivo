@@ -12,6 +12,7 @@ import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 
 const route = useRoute()
 
@@ -25,6 +26,8 @@ const eventsCount = ref<number>(0)
 const journalRefreshKey = ref<number>(0)
 
 const fetchPlantDetailsById = async () => {
+  errorMessage.value = null
+
   try {
     const response = await axios.get<ApiResponse<PlantResponse>>(`${PLANT_API_URL}/${plantId}`)
 
@@ -32,13 +35,12 @@ const fetchPlantDetailsById = async () => {
     currentPlantStatus.value = plant.value.status
   } catch (error) {
     if (error instanceof AxiosError) {
-      const status = error?.response?.status
-
-      if (status === 404) {
-        errorMessage.value = `Plant with id: ${plantId} does not exist`
-      } else {
-        errorMessage.value = 'Server error. Please try again'
+      if (error?.response?.status === 404) {
+        errorMessage.value = `Plant with id: ${plantId} not found`
+        return
       }
+
+      errorMessage.value = handleDefaultApiError(error)
     }
   }
 }
@@ -60,6 +62,7 @@ const onPlantUpdated = async () => {
 }
 
 const onPlantStatusUpdate = async () => {
+  let updateSucceeded: boolean = false
   errorMessage.value = null
 
   try {
@@ -67,7 +70,10 @@ const onPlantStatusUpdate = async () => {
       status: currentPlantStatus.value,
     })
 
-    if (response.status === 204 && plant.value) plant.value.status = currentPlantStatus.value
+    if (response.status === 204 && plant.value) {
+      plant.value.status = currentPlantStatus.value
+      updateSucceeded = true
+    }
   } catch (error) {
     if (error instanceof AxiosError) {
       const axiosError = error as AxiosError<ApiResponse<never>>
@@ -75,40 +81,51 @@ const onPlantStatusUpdate = async () => {
       const errorCode = axiosError?.response?.data?.error?.errorCode
 
       if (status === 404) {
-        errorMessage.value = `Plant with id ${plantId} does not exist`
+        errorMessage.value = `Plant with id ${plantId} not found`
+        return
       } else if (status === 409 && errorCode === 'STATUS_VIOLATION') {
         errorMessage.value = 'Invalid plant status transition'
+        return
       } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
-        errorMessage.value = 'Plant is archived and cannot modified'
-      } else {
-        errorMessage.value = 'Server error. Please try again'
+        errorMessage.value = 'Plant is archived and cannot be modified'
+        return
       }
     }
 
-    // Restore to previous status if update fails
-    currentPlantStatus.value = plant.value?.status ?? 'ACTIVE'
+    errorMessage.value = handleDefaultApiError(error)
+  } finally {
+    if (!updateSucceeded) {
+      // Restore to previous status if update fails
+      currentPlantStatus.value = plant.value?.status ?? 'ACTIVE'
+    }
   }
 }
 
 const onClickArchivePlant = async () => {
+  errorMessage.value = null
+
   try {
     const response = await axios.patch(`${PLANT_API_URL}/${plantId}/archive`)
     if (response.status === 204) {
       alert('Plant archived successfully')
-      fetchPlantDetailsById()
+      await fetchPlantDetailsById()
     }
   } catch (error) {
-    const axiosError = error as AxiosError<ApiResponse<never>>
-    const status = axiosError?.response?.status
-    const errorCode = axiosError?.response?.data?.error?.errorCode
+    if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError<ApiResponse<never>>
+      const status = axiosError?.response?.status
+      const errorCode = axiosError?.response?.data?.error?.errorCode
 
-    if (status === 404) {
-      errorMessage.value = `Plant with id ${plantId} does not exist`
-    } else if (status === 409 && errorCode === 'ALREADY_ARCHIVED') {
-      errorMessage.value = 'Plant is already archived'
-    } else {
-      errorMessage.value = 'Server error. Please try again'
+      if (status === 404) {
+        errorMessage.value = `Plant with id ${plantId} not found`
+        return
+      } else if (status === 409 && errorCode === 'ALREADY_ARCHIVED') {
+        errorMessage.value = 'Plant is already archived'
+        return
+      }
     }
+
+    errorMessage.value = handleDefaultApiError(error)
   }
 }
 
@@ -204,6 +221,8 @@ onMounted(() => {
 
       <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
 
+      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
+
       <RouterView v-slot="{ Component }">
         <component
           :is="Component"
@@ -214,6 +233,5 @@ onMounted(() => {
       </RouterView>
     </div>
     <div v-else class="text-center">Loading...</div>
-    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
   </section>
 </template>

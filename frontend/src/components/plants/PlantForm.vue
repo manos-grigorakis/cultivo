@@ -8,6 +8,7 @@ import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
 import { PLANT_API_URL } from '@/constant/api'
 import AppInput from '@/components/ui/AppInput.vue'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -48,8 +49,7 @@ const createPlant = async (payload: PlantRequest) => {
 
     if (response.status === 201) emit('success')
   } catch (error) {
-    console.error(error)
-    errorMessage.value = 'Error while creating plant. Please try again'
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isSubmitting.value = false
   }
@@ -66,11 +66,15 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
       const errorCode = axiosError?.response?.data?.error?.errorCode
 
       if (status === 404) {
-        errorMessage.value = 'Plant with id does not exist'
+        errorMessage.value = `Plant not found`
+        return
       } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
-        errorMessage.value = 'Plant is archived and cannot modified'
-      } else errorMessage.value = 'Error while creating plant. Please try again'
+        errorMessage.value = 'Plant is archived and cannot be modified'
+        return
+      }
     }
+
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isSubmitting.value = false
   }

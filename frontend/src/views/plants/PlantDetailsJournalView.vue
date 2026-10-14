@@ -13,6 +13,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
 import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 
 const props = defineProps<{ refreshKey: number; plant: PlantResponse }>()
 
@@ -44,10 +45,11 @@ const fetchJournalsByPlant = async (pageNumber: number = 0) => {
     }
   } catch (error) {
     if (error instanceof AxiosError && error?.response?.status === 404) {
-      errorMessage.value = 'Plant does not exist'
-    } else {
-      errorMessage.value = 'Server error. Please try again'
+      errorMessage.value = 'Plant not found'
+      return
     }
+
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isLoading.value = false
   }

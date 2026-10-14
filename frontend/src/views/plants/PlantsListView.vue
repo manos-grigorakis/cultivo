@@ -8,15 +8,20 @@ import type { ApiResponse } from '@/types/api-response.interface.ts'
 import { type Page, type Pagination } from '@/types/pagination.interface.ts'
 import type { PlantResponse } from '@/types/plant-response.interface.ts'
 import { LucidePlus } from '@lucide/vue'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { onMounted, ref } from 'vue'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 
 const plants = ref<PlantResponse[]>([])
 const isCreatePlantFormOpen = ref<boolean>(false)
 const showArchived = ref<boolean>(false)
 const page = ref<Page>()
+const errorMessage = ref<string | null>(null)
 
 const fetchPlants = async (archived: boolean = false, pageNumber: number = 0) => {
+  errorMessage.value = null
+
   try {
     const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(PLANT_API_URL, {
       params: { archived, page: pageNumber },
@@ -25,11 +30,7 @@ const fetchPlants = async (archived: boolean = false, pageNumber: number = 0) =>
     plants.value = response.data.data.content
     page.value = response.data.data.page
   } catch (error) {
-    if (error instanceof AxiosError) {
-      if (error.response?.status === 500) {
-        window.alert('Server error. Please try again')
-      }
-    }
+    errorMessage.value = handleDefaultApiError(error)
   }
 }
 
@@ -73,27 +74,33 @@ onMounted(() => {
         />
       </div>
 
-      <!-- Content -->
-      <ul
-        class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
-      >
-        <li v-for="plant of plants" :key="plant.id" class="rounded-card bg-white drop-shadow-sm">
-          <RouterLink :to="{ name: 'plant-details', params: { id: plant.id } }">
-            <div
-              class="rounded-tl-card rounded-tr-card aspect-video w-full"
-              :style="{
-                background: `repeating-linear-gradient(135deg,#EFFBE5 0px,#EFFBE5 18px,#DDEECC 18px,#DDEECC 36px)`,
-              }"
-            />
+      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
-            <div class="px-2 py-3">
-              <h2 class="font-display truncate pl-1 text-lg">{{ plant.label }}</h2>
-            </div>
-          </RouterLink>
-        </li>
-      </ul>
+      <template v-else>
+        <p v-if="plants.length === 0" class="text-center">There are no plants recorded yet</p>
+
+        <!-- Content -->
+        <ul
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
+        >
+          <li v-for="plant of plants" :key="plant.id" class="rounded-card bg-white drop-shadow-sm">
+            <RouterLink :to="{ name: 'plant-details', params: { id: plant.id } }">
+              <div
+                class="rounded-tl-card rounded-tr-card aspect-video w-full"
+                :style="{
+                  background: `repeating-linear-gradient(135deg,#EFFBE5 0px,#EFFBE5 18px,#DDEECC 18px,#DDEECC 36px)`,
+                }"
+              />
+
+              <div class="px-2 py-3">
+                <h2 class="font-display truncate pl-1 text-lg">{{ plant.label }}</h2>
+              </div>
+            </RouterLink>
+          </li>
+        </ul>
+
+        <AppPagination :data="page" @page-changed="fetchPlants(showArchived, $event)" />
+      </template>
     </div>
-
-    <AppPagination :data="page" @page-changed="fetchPlants(showArchived, $event)" />
   </AppSectionWrapper>
 </template>
