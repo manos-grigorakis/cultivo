@@ -2,17 +2,18 @@
 import PlantDetailsTabs from '@/components/plants/PlantDetailsTabs.vue'
 import PlantEventForm from '@/components/plants/events/PlantEventForm.vue'
 import PlantForm from '@/components/plants/PlantForm.vue'
-import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import type { PlantResponse } from '@/types/plant-response.interface.ts'
-import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import PlantDetailsSkeleton from '@/components/plants/PlantDetailsSkeleton.vue'
+import PlantDetailsHeader from '@/components/plants/PlantDetailsHeader.vue'
+import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
 
 const route = useRoute()
 
@@ -21,38 +22,27 @@ const plant = ref<PlantResponse | null>(null)
 const errorMessage = ref<string | null>(null)
 const isPlantUpdateFormOpen = ref<boolean>(false)
 const isPlantEventFormOpen = ref<boolean>(false)
-const currentPlantStatus = ref<string>(plant.value?.status ?? 'ACTIVE')
 const eventsCount = ref<number>(0)
 const journalRefreshKey = ref<number>(0)
+const isLoading = ref<boolean>(false)
+const isUpdatingStatus = ref<boolean>(false)
 
 const fetchPlantDetailsById = async () => {
+  isLoading.value = true
   errorMessage.value = null
 
   try {
     const response = await axios.get<ApiResponse<PlantResponse>>(`${PLANT_API_URL}/${plantId}`)
-
     plant.value = response.data.data
-    currentPlantStatus.value = plant.value.status
   } catch (error) {
-    if (error instanceof AxiosError) {
-      if (error?.response?.status === 404) {
-        errorMessage.value = `Plant with id: ${plantId} not found`
-        return
-      }
-
-      errorMessage.value = handleDefaultApiError(error)
+    if (error instanceof AxiosError && error?.response?.status === 404) {
+      errorMessage.value = `Plant with id: ${plantId} not found`
+      return
     }
-  }
-}
 
-const applyPlantStatusBadgeColor = (status: string): string => {
-  switch (status) {
-    case 'ACTIVE':
-      return 'bg-primary-200 text-primary-900'
-    case 'DEAD':
-      return 'bg-red-200 text-red-900'
-    default:
-      return 'bg-surface-muted text-content'
+    errorMessage.value = handleDefaultApiError(error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -61,19 +51,20 @@ const onPlantUpdated = async () => {
   await fetchPlantDetailsById()
 }
 
-const onPlantStatusUpdate = async () => {
-  let updateSucceeded: boolean = false
+const onPlantStatusUpdate = async (newStatus: PlantResponse['status']) => {
+  if (!plant.value || isUpdatingStatus.value) return
+
+  const previousStatus = plant.value.status
+
+  if (newStatus === previousStatus) return
+
+  isUpdatingStatus.value = true
   errorMessage.value = null
 
   try {
-    const response = await axios.patch(`${PLANT_API_URL}/${plantId}/status`, {
-      status: currentPlantStatus.value,
-    })
+    const response = await axios.patch(`${PLANT_API_URL}/${plantId}/status`, { status: newStatus })
 
-    if (response.status === 204 && plant.value) {
-      plant.value.status = currentPlantStatus.value
-      updateSucceeded = true
-    }
+    if (response.status === 204) plant.value.status = newStatus
   } catch (error) {
     if (error instanceof AxiosError) {
       const axiosError = error as AxiosError<ApiResponse<never>>
@@ -94,10 +85,7 @@ const onPlantStatusUpdate = async () => {
 
     errorMessage.value = handleDefaultApiError(error)
   } finally {
-    if (!updateSucceeded) {
-      // Restore to previous status if update fails
-      currentPlantStatus.value = plant.value?.status ?? 'ACTIVE'
-    }
+    isUpdatingStatus.value = false
   }
 }
 
@@ -131,7 +119,7 @@ const onClickArchivePlant = async () => {
 
 const fetchEventsCount = async () => {
   try {
-    const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(
+    const response = await axios.get<ApiResponse<Pagination<PlantEventResponse>>>(
       `${PLANT_API_URL}/${plantId}/events`,
       { params: { page: 0, size: 1 } },
     )
@@ -173,65 +161,32 @@ onMounted(() => {
   />
 
   <section>
-    <div v-if="plant !== null">
-      <div
-        class="rounded-card h-50 w-50 max-w-150"
-        :style="{
-          background: `repeating-linear-gradient(135deg,#EFFBE5 0px,#EFFBE5 18px,#DDEECC 18px,#DDEECC 36px)`,
-        }"
-      />
+    <PlantDetailsSkeleton v-if="isLoading" />
 
-      <h2 class="font-display mt-4 truncate text-4xl">{{ plant.label }}</h2>
-
-      <div class="mt-2 flex flex-wrap items-center justify-between">
-        <select
-          v-model="currentPlantStatus"
-          @change="onPlantStatusUpdate"
-          class="rounded-card px-4 py-2 text-xs disabled:cursor-not-allowed"
-          :disabled="plant.archivedAt !== null"
-          :class="applyPlantStatusBadgeColor(plant.status)"
-        >
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="DEAD">DEAD</option>
-        </select>
-
-        <div class="flex items-center gap-2">
-          <AppButton
-            :icon="LucidePlus"
-            label="Add Event"
-            @on-click="isPlantEventFormOpen = true"
-            :disabled="plant.archivedAt != null"
-          />
-          <AppButton
-            :icon="LucidePencil"
-            label="Edit Plant"
-            @on-click="isPlantUpdateFormOpen = true"
-            variant="outline"
-            :disabled="plant.archivedAt != null"
-          />
-
-          <AppButton
-            :icon="LucideArchive"
-            @on-click="onClickArchivePlant"
-            :variant="'outline'"
-            :disabled="plant.archivedAt != null"
-          />
-        </div>
-      </div>
-
-      <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
-
+    <template v-else>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
 
-      <RouterView v-slot="{ Component }">
-        <component
-          :is="Component"
+      <template v-if="plant">
+        <PlantDetailsHeader
           :plant="plant"
-          :refresh-key="journalRefreshKey"
-          @event-count-changed="eventsCount = $event"
+          :is-updating-status="isUpdatingStatus"
+          @status-change="onPlantStatusUpdate"
+          @add-event="isPlantEventFormOpen = true"
+          @edit-plant="isPlantUpdateFormOpen = true"
+          @archive-plant="onClickArchivePlant"
         />
-      </RouterView>
-    </div>
-    <div v-else class="text-center">Loading...</div>
+
+        <PlantDetailsTabs :plant-id="plantId" :events-count="eventsCount" />
+
+        <RouterView v-slot="{ Component }">
+          <component
+            :is="Component"
+            :plant="plant"
+            :refresh-key="journalRefreshKey"
+            @event-count-changed="eventsCount = $event"
+          />
+        </RouterView>
+      </template>
+    </template>
   </section>
 </template>
