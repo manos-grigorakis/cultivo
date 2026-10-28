@@ -35,7 +35,7 @@ public class PlantEventServiceImpl implements PlantEventService {
             return new ResourceNotFoundException("Plant with id " + plantId + " not found");
         });
 
-        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort());
+        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("id"));
         Page<PlantEvent> plantEvents = plantEventRepository.findAllByPlantId(plantId, pageable);
 
         return plantEvents.map(plantEventMapper::toResponse);

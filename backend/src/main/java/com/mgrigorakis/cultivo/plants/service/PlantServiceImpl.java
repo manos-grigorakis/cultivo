@@ -30,7 +30,7 @@ public class PlantServiceImpl implements PlantService {
 
     @Override
     public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived) {
-        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort());
+        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("id"));
         Page<Plant> plants = archived ? plantRepository.findAllByArchivedAtIsNotNull(pageable) :
                 plantRepository.findAllByArchivedAtIsNull(pageable);
 
