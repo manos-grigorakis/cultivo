@@ -13,11 +13,14 @@ import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import PlantCategoryCard from '@/components/plant-categories/PlantCategoryCard.vue'
 import PlantCategoryCardSkeleton from '@/components/plant-categories/PlantCategoryCardSkeleton.vue'
+import PlantCategoryForm from '@/components/plant-categories/PlantCategoryForm.vue'
 
 const plantCategories = ref<PlantCategoryResponse[]>([])
 const page = ref<Page>()
 const isLoading = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
+
+const isCreatePlantCategoryFormOpen = ref<boolean>(false)
 
 const fetchPlantCategories = async (pageNumber: number = 0) => {
   isLoading.value = true
@@ -38,18 +41,34 @@ const fetchPlantCategories = async (pageNumber: number = 0) => {
   }
 }
 
+const onPlantCategoryCreated = async () => {
+  isCreatePlantCategoryFormOpen.value = false
+  await fetchPlantCategories()
+}
+
 onMounted(() => {
   fetchPlantCategories()
 })
 </script>
 
 <template>
+  <PlantCategoryForm
+    v-if="isCreatePlantCategoryFormOpen"
+    mode="create"
+    @close="isCreatePlantCategoryFormOpen = false"
+    @success="onPlantCategoryCreated"
+  />
+
   <AppSectionWrapper title="Plant Categories">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
         <span class="text-content-muted block">{{ page?.totalElements ?? 0 }} total</span>
 
-        <AppButton :icon="LucidePlus" label="Add plant category" />
+        <AppButton
+          :icon="LucidePlus"
+          label="Add plant category"
+          @on-click="isCreatePlantCategoryFormOpen = true"
+        />
       </div>
     </div>
 
