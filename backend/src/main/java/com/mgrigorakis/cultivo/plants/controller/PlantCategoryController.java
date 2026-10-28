@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class PlantCategoryController {
     @Operation(summary = "Get All Plant Categories", description = "Lists all plant categories with pagination")
     @ApiResponse(responseCode = "200", description = "List of all plant categories with pagination")
     @GetMapping
-    public ApiResponseWrapper<List<PlantCategoryResponse>> getAllPlantCategories(
+    public ApiResponseWrapper<Page<PlantCategoryResponse>> getAllPlantCategories(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
             @ModelAttribute PageSortRequest sortRequest) {
         return new ApiResponseWrapper<>(plantCategoryService.getAllPlantCategories(filterRequest, sortRequest));

@@ -4,11 +4,10 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantCategoryRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantCategoryResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface PlantCategoryService {
-    List<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest, PageSortRequest sortRequest);
+    Page<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest, PageSortRequest sortRequest);
 
     PlantCategoryResponse getPlantCategoryById(Long id);
 

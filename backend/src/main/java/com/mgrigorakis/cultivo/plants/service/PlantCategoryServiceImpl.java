@@ -11,11 +11,11 @@ import com.mgrigorakis.cultivo.plants.model.PlantCategory;
 import com.mgrigorakis.cultivo.plants.repository.PlantCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -25,10 +25,10 @@ public class PlantCategoryServiceImpl implements PlantCategoryService {
     private final PlantCategoryMapper plantCategoryMapper;
 
     @Override
-    public List<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest,
+    public Page<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest,
                                                              PageSortRequest sortRequest) {
         Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("name"));
-        return plantCategoryRepository.findAll(pageable).stream().map(plantCategoryMapper::toResponse).toList();
+        return plantCategoryRepository.findAll(pageable).map(plantCategoryMapper::toResponse);
     }
 
     @Override
