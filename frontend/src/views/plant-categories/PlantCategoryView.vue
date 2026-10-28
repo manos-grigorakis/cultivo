@@ -12,6 +12,7 @@ import { LucidePencil, LucideTrash } from '@lucide/vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { formatDate } from '@/utils/format-date.utils.ts'
 import AppModal from '@/components/ui/AppModal.vue'
+import PlantCategorySkeleton from '@/components/plant-categories/PlantCategorySkeleton.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -95,9 +96,7 @@ onMounted(() => {
   />
 
   <section>
-    <div v-if="isLoading">
-      <p>Loading...</p>
-    </div>
+    <PlantCategorySkeleton v-if="isLoading" />
 
     <template v-else>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
