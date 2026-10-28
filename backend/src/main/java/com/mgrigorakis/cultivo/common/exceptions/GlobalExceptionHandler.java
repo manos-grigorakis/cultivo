@@ -60,6 +60,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ApiResponseWrapper<>(response), HttpStatus.CONFLICT);
     }
 
+    // Duplicate Entry - 409
+    @ExceptionHandler(DuplicateEntryException.class)
+    public ResponseEntity<ApiResponseWrapper<Void>> handleDuplicateEntryException(DuplicateEntryException ex) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                null,
+                null
+        );
+
+        return new ResponseEntity<>(new ApiResponseWrapper<>(response), HttpStatus.CONFLICT);
+    }
+
     // Server error - 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseWrapper<Void>> handleException(Exception ex) {

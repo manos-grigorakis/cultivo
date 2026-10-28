@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 
-type ButtonVariant = 'primary' | 'accent' | 'outline'
+type ButtonVariant = 'primary' | 'accent' | 'outline' | 'danger'
 
 withDefaults(
   defineProps<{
@@ -18,6 +18,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-primary-800 text-white hover:bg-primary-900',
   accent: 'bg-accent-700 hover:bg-accent-800 text-white',
   outline: 'bg-transparent text-black border border-primary-700 hover:bg-primary-100 border-2',
+  danger: 'bg-red-600 hover:bg-red-700 text-white',
 }
 </script>
 

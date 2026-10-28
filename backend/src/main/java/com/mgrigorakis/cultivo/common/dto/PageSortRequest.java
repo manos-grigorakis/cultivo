@@ -14,7 +14,10 @@ public record PageSortRequest(String sortBy, String sortDirection) {
         }
     }
 
-    public Sort createSort() {
-        return Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+    public Sort createSort(String defaultSortBy) {
+        String field = sortBy == null ? defaultSortBy : sortBy;
+        String direction = sortDirection == null ? "asc" : sortDirection;
+
+        return Sort.by(Sort.Direction.fromString(direction), field);
     }
 }
