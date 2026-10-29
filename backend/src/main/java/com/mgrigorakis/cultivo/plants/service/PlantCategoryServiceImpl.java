@@ -2,6 +2,7 @@ package com.mgrigorakis.cultivo.plants.service;
 
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantCategoryRequest;
@@ -9,6 +10,7 @@ import com.mgrigorakis.cultivo.plants.dto.PlantCategoryResponse;
 import com.mgrigorakis.cultivo.plants.mapper.PlantCategoryMapper;
 import com.mgrigorakis.cultivo.plants.model.PlantCategory;
 import com.mgrigorakis.cultivo.plants.repository.PlantCategoryRepository;
+import com.mgrigorakis.cultivo.plants.repository.PlantSpeciesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlantCategoryServiceImpl implements PlantCategoryService {
     private final PlantCategoryRepository plantCategoryRepository;
+    private final PlantSpeciesRepository plantSpeciesRepository;
     private final PlantCategoryMapper plantCategoryMapper;
 
     @Override
@@ -79,6 +82,12 @@ public class PlantCategoryServiceImpl implements PlantCategoryService {
             log.warn("Plant category with id {} not found", id);
             return new ResourceNotFoundException("Plant category with id " + id + " not found");
         });
+
+        if(plantSpeciesRepository.existsByPlantCategoryId(id)) {
+            log.warn("Attempt to delete plant category with id {} while plant species are assigned", id);
+            throw new ConflictException("Plant category with id " + id + " has plant species assigned",
+                                        "PLANT_CATEGORY_HAS_SPECIES");
+        }
 
         plantCategoryRepository.delete(plantCategory);
         log.info("Deleted plant category with id {}", id);
