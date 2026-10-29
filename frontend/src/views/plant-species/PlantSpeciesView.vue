@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlantSpeciesForm from '@/components/plant-species/PlantSpeciesForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
@@ -17,10 +18,11 @@ interface GrowingRequirements {
 }
 
 const route = useRoute()
-const speciesId = route.params.id
+const speciesId = Number(route.params.id)
 const species = ref<PlantSpeciesResponse | null>(null)
 const isLoading = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
+const isUpdatePlantSpeciesFormOpen = ref<boolean>(false)
 
 const growingRequirements = computed<GrowingRequirements[]>(() => [
   { icon: CalendarDays, title: 'life cycle', value: species.value?.lifeCycle ?? null },
@@ -47,6 +49,11 @@ const fetchPlantSpeciesById = async () => {
   }
 }
 
+const onPlantSpeciesUpdate = async () => {
+  isUpdatePlantSpeciesFormOpen.value = false
+  await fetchPlantSpeciesById()
+}
+
 onMounted(() => {
   fetchPlantSpeciesById()
 })
@@ -54,7 +61,19 @@ onMounted(() => {
 
 <template>
   <section>
-    <div v-if="isLoading">Loading...</div>
+    <PlantSpeciesForm
+      v-if="isUpdatePlantSpeciesFormOpen && species"
+      mode="update"
+      :species-id="speciesId"
+      :data="species"
+      @success="onPlantSpeciesUpdate"
+      @close="isUpdatePlantSpeciesFormOpen = false"
+    />
+
+    <div v-if="isLoading">
+      <!-- TODO: Add loading skeleton -->
+      Loading...
+    </div>
 
     <template v-else>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
@@ -72,7 +91,12 @@ onMounted(() => {
           </div>
 
           <div class="flex shrink-0 items-center gap-2">
-            <AppButton :icon="LucidePencil" variant="outline" :disabled="isLoading" />
+            <AppButton
+              :icon="LucidePencil"
+              variant="outline"
+              :disabled="isLoading"
+              @on-click="isUpdatePlantSpeciesFormOpen = true"
+            />
             <AppButton :icon="LucideTrash" variant="danger" :disabled="isLoading" />
           </div>
         </div>
@@ -130,8 +154,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-else>
-        <p class="text-center">Plant Species not found</p>
+      <div v-else class="text-content-muted mt-2 text-center">
+        <p>Plant Species not found</p>
       </div>
     </template>
   </section>

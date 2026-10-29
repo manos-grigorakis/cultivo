@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { PlantCategoryRequest } from '@/types/plant-category-request.interface.ts'
-import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
-import axios, { AxiosError } from 'axios'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { LucideX } from '@lucide/vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppInput from '@/components/ui/AppInput.vue'
 import AppTextArea from '@/components/ui/AppTextArea.vue'
-import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
+import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
+import type { PlantCategoryRequest } from '@/types/plant-category-request.interface.ts'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import { LucideX } from '@lucide/vue'
+import axios, { AxiosError } from 'axios'
+import { ref } from 'vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -120,7 +120,7 @@ const updatePlantCategory = async (plantCategoryId: number, payload: PlantCatego
       <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
         <AppInput v-model="name" label="name" placeholder="e.g. Flowers" required />
 
-        <AppTextArea v-model="description" label="description" />
+        <AppTextArea v-model="description" label="description" id="description" />
 
         <div>
           <AppButton

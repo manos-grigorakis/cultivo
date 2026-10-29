@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 
-const model = defineModel<string | number>()
+const model = defineModel<string | number | null>()
 const generatedId = useId()
 
 const props = withDefaults(

@@ -4,6 +4,7 @@ const model = defineModel<string | null>()
 withDefaults(
   defineProps<{
     label: string
+    id: string
     placeholder?: string
     rows?: number
     required?: boolean
@@ -17,12 +18,13 @@ withDefaults(
 
 <template>
   <div class="flex flex-col gap-1">
-    <label class="text-sm font-semibold capitalize">
+    <label :for="id" class="text-sm font-semibold capitalize">
       <span v-if="required" class="text-red-500">*</span>{{ label }}
     </label>
 
     <textarea
       v-model="model"
+      :id="id"
       :required="required"
       :rows="rows"
       :placeholder="placeholder"
