@@ -47,6 +47,18 @@ const router = createRouter({
       name: 'plant-category-view',
       component: () => import('@/views/plant-categories/PlantCategoryView.vue'),
     },
+
+    // Plant Species
+    {
+      path: '/plant-species',
+      name: 'plant-species',
+      component: () => import('@/views/plant-species/PlantSpeciesListView.vue'),
+    },
+    {
+      path: '/plant-species/:id',
+      name: 'plant-species-view',
+      component: () => import('@/views/plant-species/PlantSpeciesView.vue'),
+    },
   ],
 })
 

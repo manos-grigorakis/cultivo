@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { LayoutGrid, Leaf } from '@lucide/vue'
+import { LayoutGrid, Leaf, SproutIcon } from '@lucide/vue'
 import type { Component } from 'vue'
 
 const links: { label: string; url: string; icon: Component }[] = [
   { label: 'plants', url: '/plants', icon: Leaf },
   { label: 'categories', url: '/plant-categories', icon: LayoutGrid },
+  { label: 'species', url: '/plant-species', icon: SproutIcon },
 ]
 </script>
 
