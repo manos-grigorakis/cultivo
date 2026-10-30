@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import PlantCategoryForm from '@/components/plant-categories/PlantCategoryForm.vue'
+import PlantCategorySkeleton from '@/components/plant-categories/PlantCategorySkeleton.vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
+import AppModal from '@/components/ui/AppModal.vue'
 import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
-import axios, { AxiosError } from 'axios'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { PlantCategoryResponse } from '@/types/plant-category-response.interface.ts'
-import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import PlantCategoryForm from '@/components/plant-categories/PlantCategoryForm.vue'
-import { LucidePencil, LucideTrash } from '@lucide/vue'
-import AppButton from '@/components/ui/AppButton.vue'
+import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { formatDate } from '@/utils/format-date.utils.ts'
-import AppModal from '@/components/ui/AppModal.vue'
-import PlantCategorySkeleton from '@/components/plant-categories/PlantCategorySkeleton.vue'
+import { LucidePencil, LucideTrash } from '@lucide/vue'
+import axios, { AxiosError } from 'axios'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -58,15 +58,23 @@ const deletePlantCategory = async () => {
     const res = await axios.delete(`${PLANT_CATEGORY_API_URL}/${plantCategoryId}`)
     if (res.status === 204) await router.push({ name: 'plant-categories' })
   } catch (error) {
-    if (error instanceof AxiosError && error.status === 404) {
-      errorMessage.value = `Plant category with id ${plantCategoryId} not found`
-      return
+    if (error instanceof AxiosError) {
+      if (error.status === 404) {
+        errorMessage.value = `Plant category with id ${plantCategoryId} not found`
+        return
+      } else if (
+        error.status === 409 &&
+        error?.response?.data.error.errorCode === 'PLANT_CATEGORY_HAS_SPECIES'
+      ) {
+        errorMessage.value = `This plant category cannot be deleted because it still has plant species assigned to it`
+        return
+      }
     }
 
     errorMessage.value = handleDefaultApiError(error)
-    isDeletePlantCategoryModalOpen.value = false
   } finally {
     isDeleting.value = false
+    isDeletePlantCategoryModalOpen.value = false
   }
 }
 

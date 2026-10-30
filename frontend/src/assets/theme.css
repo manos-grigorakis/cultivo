@@ -48,3 +48,33 @@
     #ddeecc 36px
   );
 }
+
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+
+  /* Dropdown panel */
+  ::picker(select) {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: 0.25rem;
+  }
+
+  option {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+  }
+
+  option:not(:disabled):hover,
+  option:not(:disabled):focus-visible {
+    background-color: var(--color-primary-600);
+    color: #fff;
+  }
+
+  option:checked {
+    font-weight: 600;
+  }
+}
