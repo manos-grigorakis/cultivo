@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
+import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { PlantEventRequest } from '@/features/plants/events/types/plant-event-request.interface.ts'
 import type { PlantEventResponse } from '@/features/plants/events/types/plant-event-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -101,107 +101,84 @@ const onTypeChange = (type: string) => {
 </script>
 
 <template>
-  <section
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-    @click.self="emit('close')"
+  <AppFormModal
+    :title="mode === 'create' ? 'Create a plant event' : 'Update a plant event'"
+    container-size="2xl"
+    @close="emit('close')"
   >
-    <div
-      role="dialog"
-      aria-modal="true"
-      class="rounded-card bg-surface-muted w-full max-w-2xl p-6 shadow-xl"
-    >
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="font-display text-primary-800 text-2xl">
-            {{ props.mode === 'create' ? 'Create' : 'Update' }} a plant event
-          </h2>
-          <span class="text-content-muted text-sm">Fields marked with * are required</span>
-        </div>
+    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
+      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
-        <button
-          type="button"
-          aria-label="Close"
-          class="hover:text-primary-700 hover:bg-surface rounded-full p-1 hover:cursor-pointer"
-          @click="emit('close')"
-        >
-          <LucideX :size="20" />
-        </button>
-      </div>
-
-      <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
-        <div>
-          <label for="type" class="text-sm font-semibold"
-            ><span class="text-red-500">*</span>Type
-          </label>
-          <div class="mt-1 flex gap-2 overflow-y-auto">
-            <div v-for="type in types" :key="type">
-              <div>
-                <input
-                  :id="type"
-                  v-model="form.type"
-                  type="radio"
-                  name="type"
-                  :value="type"
-                  required
-                  class="peer sr-only"
-                  @change="onTypeChange(type)"
-                />
-                <label
-                  :for="type"
-                  class="peer-focus-visible:ring-primary-600 rounded-card peer-checked:bg-primary-600 peer-hover:bg-primary-600 inline-block cursor-pointer bg-white px-4 py-2 transition-colors peer-checked:text-white peer-hover:text-white peer-focus-visible:ring-2"
-                  >{{ type }}</label
-                >
-              </div>
+      <div>
+        <label for="type" class="text-sm font-semibold"
+          ><span class="text-red-500">*</span>Type
+        </label>
+        <div class="mt-1 flex gap-2 overflow-y-auto">
+          <div v-for="type in types" :key="type">
+            <div>
+              <input
+                :id="type"
+                v-model="form.type"
+                type="radio"
+                name="type"
+                :value="type"
+                required
+                class="peer sr-only"
+                @change="onTypeChange(type)"
+              />
+              <label
+                :for="type"
+                class="peer-focus-visible:ring-primary-600 rounded-card peer-checked:bg-primary-600 peer-hover:bg-primary-600 inline-block cursor-pointer bg-white px-4 py-2 transition-colors peer-checked:text-white peer-hover:text-white peer-focus-visible:ring-2"
+                >{{ type }}</label
+              >
             </div>
           </div>
         </div>
+      </div>
 
-        <AppInput v-model="form.title" label="title" required />
+      <AppInput v-model="form.title" label="title" required />
 
-        <div>
-          <div class="flex gap-2">
-            <AppInput
-              v-model="form.date"
-              label="date"
-              type="date"
-              :required="props.mode === 'update'"
-              class="flex-1"
-            />
+      <div>
+        <div class="flex gap-2">
+          <AppInput
+            v-model="form.date"
+            label="date"
+            type="date"
+            :required="props.mode === 'update'"
+            class="flex-1"
+          />
 
-            <AppInput
-              v-model="form.time"
-              label="time"
-              type="time"
-              :required="props.mode === 'update'"
-              class="flex-1"
-            />
-          </div>
-
-          <span v-if="props.mode === 'create'" class="text-content-muted text-sm"
-            >Leave date and time blank to automatically use current date</span
-          >
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label for="description" class="text-sm font-semibold">Description</label>
-          <textarea
-            id="description"
-            rows="5"
-            v-model="form.description"
-            class="border-border rounded-card focus:ring-primary-600 w-full resize-none border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
-          ></textarea>
-        </div>
-
-        <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
-
-        <div>
-          <AppButton
-            :label="props.mode === 'create' ? 'Save' : 'Update'"
-            type="submit"
-            :disabled="isSubmitting"
+          <AppInput
+            v-model="form.time"
+            label="time"
+            type="time"
+            :required="props.mode === 'update'"
+            class="flex-1"
           />
         </div>
-      </form>
-    </div>
-  </section>
+
+        <span v-if="props.mode === 'create'" class="text-content-muted text-sm"
+          >Leave date and time blank to automatically use current date</span
+        >
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="description" class="text-sm font-semibold">Description</label>
+        <textarea
+          id="description"
+          rows="5"
+          v-model="form.description"
+          class="border-border rounded-card focus:ring-primary-600 w-full resize-none border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
+        ></textarea>
+      </div>
+
+      <div>
+        <AppButton
+          :label="props.mode === 'create' ? 'Save' : 'Update'"
+          type="submit"
+          :disabled="isSubmitting"
+        />
+      </div>
+    </form>
+  </AppFormModal>
 </template>

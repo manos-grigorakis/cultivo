@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import AppButton from '@/components/ui/AppButton.vue'
+import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { PlantRequest } from '@/features/plants/types/plant-request.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
 import AppErrorContainer from '../../../components/ui/AppErrorContainer.vue'
@@ -82,48 +82,23 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
 </script>
 
 <template>
-  <section
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-    @click.self="emit('close')"
+  <AppFormModal
+    :title="mode === 'create' ? 'Add plant' : 'Edit plant'"
+    container-size="md"
+    @close="emit('close')"
   >
-    <div
-      aria-modal="true"
-      class="rounded-card bg-surface-muted w-full max-w-md p-6 shadow-xl"
-      role="dialog"
-    >
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="font-display text-primary-800 text-2xl">
-            {{ mode === 'create' ? 'Add plant' : 'Edit plant' }}
-          </h2>
-          <span class="text-content-muted text-sm">Fields marked with * are required</span>
-        </div>
+    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
+      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
-        <button
-          aria-label="Close"
-          class="hover:text-primary-700 hover:bg-surface rounded-full p-1 hover:cursor-pointer"
-          type="button"
-          @click="emit('close')"
-        >
-          <LucideX :size="20" />
-        </button>
+      <AppInput v-model="label" label="label" placeholder="e.g. Basil" required />
+
+      <div>
+        <AppButton
+          :disabled="isSubmitting"
+          :label="mode === 'create' ? 'Save' : 'Update'"
+          type="submit"
+        />
       </div>
-
-      <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
-        <AppInput v-model="label" label="label" placeholder="e.g. Basil" required />
-
-        <div>
-          <AppButton
-            :disabled="isSubmitting"
-            :label="mode === 'create' ? 'Save' : 'Update'"
-            type="submit"
-          />
-        </div>
-      </form>
-
-      <div class="mt-6">
-        <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
-      </div>
-    </div>
-  </section>
+    </form>
+  </AppFormModal>
 </template>
