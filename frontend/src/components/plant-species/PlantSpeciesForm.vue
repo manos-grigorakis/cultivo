@@ -144,7 +144,7 @@ const fetchPlantCategories = async (
       </div>
 
       <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row">
           <AppInput v-model="name" label="name" placeholder="e.g. Basil" required />
           <AppInput
             v-model="scientificName"
@@ -164,7 +164,7 @@ const fetchPlantCategories = async (
           @error="(e) => (errorMessage = handleDefaultApiError(e))"
         />
 
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row">
           <AppSelect
             v-model="lightRequirement"
             :options="
