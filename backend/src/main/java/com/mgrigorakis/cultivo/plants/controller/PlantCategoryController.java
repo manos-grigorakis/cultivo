@@ -30,8 +30,9 @@ public class PlantCategoryController {
     @GetMapping
     public ApiResponseWrapper<Page<PlantCategoryResponse>> getAllPlantCategories(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
-            @ModelAttribute PageSortRequest sortRequest) {
-        return new ApiResponseWrapper<>(plantCategoryService.getAllPlantCategories(filterRequest, sortRequest));
+            @ModelAttribute PageSortRequest sortRequest,
+            @RequestParam(defaultValue = "") String name) {
+        return new ApiResponseWrapper<>(plantCategoryService.getAllPlantCategories(filterRequest, sortRequest, name));
     }
 
     @Operation(summary = "Get Plant Category by ID", description = "Finds a plant category by its ID")

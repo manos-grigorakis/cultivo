@@ -7,7 +7,8 @@ import com.mgrigorakis.cultivo.plants.dto.PlantCategoryResponse;
 import org.springframework.data.domain.Page;
 
 public interface PlantCategoryService {
-    Page<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest, PageSortRequest sortRequest);
+    Page<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest, PageSortRequest sortRequest,
+                                                      String name);
 
     PlantCategoryResponse getPlantCategoryById(Long id);
 

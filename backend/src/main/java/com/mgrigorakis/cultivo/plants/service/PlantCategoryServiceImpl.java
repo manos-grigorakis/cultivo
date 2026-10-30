@@ -29,9 +29,11 @@ public class PlantCategoryServiceImpl implements PlantCategoryService {
 
     @Override
     public Page<PlantCategoryResponse> getAllPlantCategories(PageFilterRequest filterRequest,
-                                                             PageSortRequest sortRequest) {
+                                                             PageSortRequest sortRequest, String name) {
         Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("name"));
-        return plantCategoryRepository.findAll(pageable).map(plantCategoryMapper::toResponse);
+
+        return plantCategoryRepository.findByNameContainingIgnoreCase(name.strip(), pageable)
+                .map(plantCategoryMapper::toResponse);
     }
 
     @Override
