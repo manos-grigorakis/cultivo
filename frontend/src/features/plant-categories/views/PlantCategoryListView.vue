@@ -72,7 +72,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mt-4" />
 
     <ul
       v-else-if="isLoading || plantCategories.length > 0"
