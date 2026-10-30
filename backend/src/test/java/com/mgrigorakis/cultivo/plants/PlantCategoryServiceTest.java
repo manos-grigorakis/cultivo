@@ -1,5 +1,6 @@
 package com.mgrigorakis.cultivo.plants;
 
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantCategoryRequest;
@@ -7,6 +8,7 @@ import com.mgrigorakis.cultivo.plants.dto.PlantCategoryResponse;
 import com.mgrigorakis.cultivo.plants.mapper.PlantCategoryMapper;
 import com.mgrigorakis.cultivo.plants.model.PlantCategory;
 import com.mgrigorakis.cultivo.plants.repository.PlantCategoryRepository;
+import com.mgrigorakis.cultivo.plants.repository.PlantSpeciesRepository;
 import com.mgrigorakis.cultivo.plants.service.PlantCategoryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,13 @@ public class PlantCategoryServiceTest {
 
     @InjectMocks
     private PlantCategoryServiceImpl plantCategoryService;
+
     @Mock
     private PlantCategoryRepository plantCategoryRepository;
+
+    @Mock
+    private PlantSpeciesRepository plantSpeciesRepository;
+
     @Mock
     private PlantCategoryMapper plantCategoryMapper;
 
@@ -166,6 +173,7 @@ public class PlantCategoryServiceTest {
     void deletePlantCategoryById_shouldDeletePlantCategory_whenPlantCategoryExists() {
         // Arrange
         when(plantCategoryRepository.findById(1L)).thenReturn(Optional.of(mockPlantCategory));
+        when(plantSpeciesRepository.existsByPlantCategoryId(1L)).thenReturn(false);
 
         // Act
         plantCategoryService.deletePlantCategoryById(1L);
@@ -185,5 +193,22 @@ public class PlantCategoryServiceTest {
 
         verify(plantCategoryRepository).findById(1L);
         verify(plantCategoryRepository, never()).delete(any(PlantCategory.class));
+    }
+
+    @Test
+    void deletePlantCategoryById_shouldThrowConflictException_whenPlantSpeciesAreAssigned() {
+        // Arrange
+        when(plantCategoryRepository.findById(1L)).thenReturn(Optional.of(mockPlantCategory));
+        when(plantSpeciesRepository.existsByPlantCategoryId(1L)).thenReturn(true);
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantCategoryService.deletePlantCategoryById(1L));
+
+        assertEquals("PLANT_CATEGORY_HAS_SPECIES", exception.getErrorCode());
+
+        verify(plantCategoryRepository).findById(1L);
+        verify(plantSpeciesRepository).existsByPlantCategoryId(1L);
+        verify(plantCategoryRepository, never()).delete(mockPlantCategory);
     }
 }
