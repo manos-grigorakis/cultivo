@@ -1,0 +1,16 @@
+package com.mgrigorakis.cultivo.catalog.mapper;
+
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesResponse;
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+
+@Mapper(componentModel = "spring")
+public interface PlantSpeciesMapper {
+    PlantSpecies toEntity(PlantSpeciesRequest request);
+
+    PlantSpecies toUpdate(@MappingTarget PlantSpecies entity, PlantSpeciesRequest request);
+
+    PlantSpeciesResponse toResponse(PlantSpecies entity);
+}
