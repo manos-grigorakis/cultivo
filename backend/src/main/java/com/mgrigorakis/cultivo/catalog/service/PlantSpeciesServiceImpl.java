@@ -1,16 +1,16 @@
-package com.mgrigorakis.cultivo.plants.service;
+package com.mgrigorakis.cultivo.catalog.service;
 
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesResponse;
-import com.mgrigorakis.cultivo.plants.mapper.PlantSpeciesMapper;
-import com.mgrigorakis.cultivo.plants.model.PlantCategory;
-import com.mgrigorakis.cultivo.plants.model.PlantSpecies;
-import com.mgrigorakis.cultivo.plants.repository.PlantCategoryRepository;
-import com.mgrigorakis.cultivo.plants.repository.PlantSpeciesRepository;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesResponse;
+import com.mgrigorakis.cultivo.catalog.mapper.PlantSpeciesMapper;
+import com.mgrigorakis.cultivo.catalog.model.PlantCategory;
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
+import com.mgrigorakis.cultivo.catalog.repository.PlantCategoryRepository;
+import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

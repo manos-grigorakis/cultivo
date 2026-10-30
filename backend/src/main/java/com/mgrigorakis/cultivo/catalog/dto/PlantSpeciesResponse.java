@@ -1,8 +1,8 @@
-package com.mgrigorakis.cultivo.plants.dto;
+package com.mgrigorakis.cultivo.catalog.dto;
 
-import com.mgrigorakis.cultivo.plants.model.enums.LifeCycle;
-import com.mgrigorakis.cultivo.plants.model.enums.LightRequirement;
-import com.mgrigorakis.cultivo.plants.model.enums.WaterRequirement;
+import com.mgrigorakis.cultivo.catalog.model.enums.LifeCycle;
+import com.mgrigorakis.cultivo.catalog.model.enums.LightRequirement;
+import com.mgrigorakis.cultivo.catalog.model.enums.WaterRequirement;
 
 import java.time.LocalDateTime;
 

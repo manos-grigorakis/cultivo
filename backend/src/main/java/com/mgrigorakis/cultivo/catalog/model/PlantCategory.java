@@ -1,4 +1,4 @@
-package com.mgrigorakis.cultivo.plants.model;
+package com.mgrigorakis.cultivo.catalog.model;
 
 import jakarta.persistence.*;
 import lombok.*;

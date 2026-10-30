@@ -1,11 +1,11 @@
-package com.mgrigorakis.cultivo.plants.controller;
+package com.mgrigorakis.cultivo.catalog.controller;
 
 import com.mgrigorakis.cultivo.common.dto.ApiResponseWrapper;
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantCategoryRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantCategoryResponse;
-import com.mgrigorakis.cultivo.plants.service.PlantCategoryService;
+import com.mgrigorakis.cultivo.catalog.dto.PlantCategoryRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantCategoryResponse;
+import com.mgrigorakis.cultivo.catalog.service.PlantCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Plant Categories")
 @RequiredArgsConstructor

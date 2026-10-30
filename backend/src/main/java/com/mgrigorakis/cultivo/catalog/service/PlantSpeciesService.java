@@ -1,9 +1,9 @@
-package com.mgrigorakis.cultivo.plants.service;
+package com.mgrigorakis.cultivo.catalog.service;
 
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesResponse;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesResponse;
 import org.springframework.data.domain.Page;
 
 public interface PlantSpeciesService {

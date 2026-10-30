@@ -1,16 +1,16 @@
-package com.mgrigorakis.cultivo.plants;
+package com.mgrigorakis.cultivo.catalog;
 
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
-import com.mgrigorakis.cultivo.plants.dto.PlantCategorySummary;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesResponse;
-import com.mgrigorakis.cultivo.plants.mapper.PlantSpeciesMapper;
-import com.mgrigorakis.cultivo.plants.model.PlantCategory;
-import com.mgrigorakis.cultivo.plants.model.PlantSpecies;
-import com.mgrigorakis.cultivo.plants.repository.PlantCategoryRepository;
-import com.mgrigorakis.cultivo.plants.repository.PlantSpeciesRepository;
-import com.mgrigorakis.cultivo.plants.service.PlantSpeciesServiceImpl;
+import com.mgrigorakis.cultivo.catalog.dto.PlantCategorySummary;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesResponse;
+import com.mgrigorakis.cultivo.catalog.mapper.PlantSpeciesMapper;
+import com.mgrigorakis.cultivo.catalog.model.PlantCategory;
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
+import com.mgrigorakis.cultivo.catalog.repository.PlantCategoryRepository;
+import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
+import com.mgrigorakis.cultivo.catalog.service.PlantSpeciesServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

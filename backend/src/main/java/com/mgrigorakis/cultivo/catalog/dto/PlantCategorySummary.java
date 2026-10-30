@@ -1,4 +1,4 @@
-package com.mgrigorakis.cultivo.plants.dto;
+package com.mgrigorakis.cultivo.catalog.dto;
 
 public record PlantCategorySummary(
         Long id,

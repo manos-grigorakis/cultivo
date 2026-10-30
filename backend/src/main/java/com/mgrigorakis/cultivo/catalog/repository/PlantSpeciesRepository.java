@@ -1,7 +1,6 @@
-package com.mgrigorakis.cultivo.plants.repository;
+package com.mgrigorakis.cultivo.catalog.repository;
 
-import com.mgrigorakis.cultivo.plants.model.PlantCategory;
-import com.mgrigorakis.cultivo.plants.model.PlantSpecies;
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

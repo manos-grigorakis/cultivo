@@ -1,8 +1,8 @@
-package com.mgrigorakis.cultivo.plants.mapper;
+package com.mgrigorakis.cultivo.catalog.mapper;
 
-import com.mgrigorakis.cultivo.plants.dto.PlantCategoryRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantCategoryResponse;
-import com.mgrigorakis.cultivo.plants.model.PlantCategory;
+import com.mgrigorakis.cultivo.catalog.dto.PlantCategoryRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantCategoryResponse;
+import com.mgrigorakis.cultivo.catalog.model.PlantCategory;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 

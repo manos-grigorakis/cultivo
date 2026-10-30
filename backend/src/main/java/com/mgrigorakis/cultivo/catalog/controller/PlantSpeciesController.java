@@ -1,11 +1,11 @@
-package com.mgrigorakis.cultivo.plants.controller;
+package com.mgrigorakis.cultivo.catalog.controller;
 
 import com.mgrigorakis.cultivo.common.dto.ApiResponseWrapper;
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesRequest;
-import com.mgrigorakis.cultivo.plants.dto.PlantSpeciesResponse;
-import com.mgrigorakis.cultivo.plants.service.PlantSpeciesService;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesRequest;
+import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesResponse;
+import com.mgrigorakis.cultivo.catalog.service.PlantSpeciesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
