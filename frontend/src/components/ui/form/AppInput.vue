@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppFormLabel from '@/components/ui/form/AppFormLabel.vue'
 import { computed, useId } from 'vue'
 
 const model = defineModel<string | number | null>()
@@ -20,9 +21,8 @@ const id = computed(() => props.inputId ?? generatedId)
 
 <template>
   <div class="flex flex-col gap-1">
-    <label :for="id" class="text-sm font-semibold capitalize"
-      ><span v-if="required" class="text-red-500">*</span>{{ label }}
-    </label>
+    <AppFormLabel :id="id" :label="label" :required="required" />
+
     <input
       :type="type"
       :id="id"

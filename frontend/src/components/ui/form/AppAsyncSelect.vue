@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends object">
+import AppFormLabel from '@/components/ui/form/AppFormLabel.vue'
 import { nextTick, onBeforeUnmount, ref, shallowRef } from 'vue'
 import VSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
@@ -87,9 +88,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="flex flex-col gap-1">
-    <label :for="id" class="text-sm font-semibold capitalize">
-      <span v-if="required" class="text-red-500">*</span>{{ label }}
-    </label>
+    <AppFormLabel :id="id" :label="label" :required="required" />
 
     <VSelect
       v-model="selectedOption"

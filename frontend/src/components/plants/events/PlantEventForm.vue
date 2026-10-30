@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import AppInput from '@/components/ui/AppInput.vue'
+import AppInput from '@/components/ui/form/AppInput.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
 import type { PlantEventRequest } from '@/types/plant-event-request.interface.ts'
 import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import AppInput from '@/components/ui/AppInput.vue'
-import AppTextArea from '@/components/ui/AppTextArea.vue'
+import AppInput from '@/components/ui/form/AppInput.vue'
+import AppTextArea from '@/components/ui/form/AppTextArea.vue'
 import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
 import type { PlantCategoryRequest } from '@/types/plant-category-request.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'

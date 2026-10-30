@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import AppButton from '@/components/ui/AppButton.vue'
-import AppInput from '@/components/ui/AppInput.vue'
+import AppInput from '@/components/ui/form/AppInput.vue'
 import { PLANT_API_URL } from '@/constant/api'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { PlantRequest } from '@/types/plant-request.interface'

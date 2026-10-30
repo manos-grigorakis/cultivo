@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends string | number">
+import AppFormLabel from '@/components/ui/form/AppFormLabel.vue'
+
 interface SelectOption<T> {
   label: string
   value: T
@@ -20,9 +22,8 @@ withDefaults(
 
 <template>
   <div class="flex flex-col gap-1">
-    <label :for="id" class="text-sm font-semibold capitalize"
-      ><span v-if="required" class="text-red-500">*</span>{{ label }}</label
-    >
+    <AppFormLabel :id="id" :label="label" :required="required" />
+
     <select
       v-model="model"
       :id="id"
