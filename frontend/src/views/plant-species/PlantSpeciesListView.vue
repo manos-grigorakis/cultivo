@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PlantSpeciesCard from '@/components/plant-species/PlantSpeciesCard.vue'
+import PlantSpeciesCardSkeleton from '@/components/plant-species/PlantSpeciesCardSkeleton.vue'
 import PlantSpeciesForm from '@/components/plant-species/PlantSpeciesForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
@@ -74,21 +75,21 @@ onMounted(() => {
       </div>
     </div>
 
-    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
 
     <ul
       v-else-if="isLoading || plantSpecies.length > 0"
       class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
     >
       <template v-if="isLoading">
-        <p>Loading...</p>
+        <PlantSpeciesCardSkeleton v-for="i in 10" :key="i" />
       </template>
       <template v-else>
         <PlantSpeciesCard v-for="species in plantSpecies" :key="species.id" :species="species" />
       </template>
     </ul>
 
-    <p v-else class="text-center">There are no plant species recorded yet</p>
+    <p v-else class="mt-4 text-center">There are no plant species recorded yet</p>
 
     <AppPagination :data="page" @page-changed="fetchPlantSpecies" />
   </AppSectionWrapper>

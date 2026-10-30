@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlantSpeciesDetailsSkeleton from '@/components/plant-species/PlantSpeciesDetailsSkeleton.vue'
 import PlantSpeciesForm from '@/components/plant-species/PlantSpeciesForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
@@ -104,10 +105,7 @@ onMounted(() => {
       @confirm="onPlantSpeciesDelete"
     />
 
-    <div v-if="isLoading">
-      <!-- TODO: Add loading skeleton -->
-      Loading...
-    </div>
+    <PlantSpeciesDetailsSkeleton v-if="isLoading" />
 
     <template v-else>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
