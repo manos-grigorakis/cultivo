@@ -1,4 +1,4 @@
-interface PlantCategorySummary {
+export interface PlantCategorySummary {
   id: number
   name: string
 }

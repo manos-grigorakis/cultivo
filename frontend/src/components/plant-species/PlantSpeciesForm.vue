@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppAsyncSelect from '@/components/ui/AppAsyncSelect.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppInput from '@/components/ui/AppInput.vue'
@@ -12,11 +13,14 @@ import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import type { PlantCategoryResponse } from '@/types/plant-category-response.interface.ts'
 import type { PlantSpeciesRequest } from '@/types/plant-species-request.interface.ts'
-import type { PlantSpeciesResponse } from '@/types/plant-species-response.interface.ts'
+import type {
+  PlantCategorySummary,
+  PlantSpeciesResponse,
+} from '@/types/plant-species-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -27,12 +31,11 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; success: [] }>()
 
 const isSubmitting = ref<boolean>(false)
-const isCategoriesFetching = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
-const plantCategories = ref<PlantCategoryResponse[]>([])
 
 const name = ref<string>(props?.data?.name ?? '')
 const scientificName = ref<string | null>(props?.data?.scientificName ?? null)
+const selectedCategory = ref<PlantCategorySummary | null>(props.data?.plantCategory ?? null)
 const description = ref<string | null>(props?.data?.description ?? null)
 const lifeCycle = ref<LifeCycle | null>((props?.data?.lifeCycle as LifeCycle) ?? null)
 const lightRequirement = ref<LightRequirement | null>(
@@ -41,10 +44,12 @@ const lightRequirement = ref<LightRequirement | null>(
 const waterRequirement = ref<WaterRequirement | null>(
   (props?.data?.waterRequirement as WaterRequirement) ?? null,
 )
-const plantCategoryId = ref<number | null>(props.data?.plantCategory.id ?? null)
 
 const onSubmit = async () => {
-  if (plantCategoryId.value === null) return
+  if (selectedCategory.value === null) {
+    errorMessage.value = 'Please select a plant category'
+    return
+  }
 
   isSubmitting.value = true
   errorMessage.value = null
@@ -56,7 +61,7 @@ const onSubmit = async () => {
     lifeCycle: lifeCycle.value !== null ? lifeCycle.value : null,
     lightRequirement: lightRequirement.value !== null ? lightRequirement.value : null,
     waterRequirement: waterRequirement.value !== null ? waterRequirement.value : null,
-    plantCategoryId: plantCategoryId.value,
+    plantCategoryId: selectedCategory.value.id,
   }
 
   try {
@@ -94,24 +99,20 @@ const updatePlantSpeciesById = async (speciesId: number, payload: PlantSpeciesRe
   if (response.status === 200) emit('success')
 }
 
-const fetchPlantCategories = async () => {
-  isCategoriesFetching.value = true
-  errorMessage.value = null
+const fetchPlantCategories = async (
+  page: number,
+  term: string,
+): Promise<{ items: PlantCategorySummary[]; hasNext: boolean }> => {
+  const { data } = await axios.get<ApiResponse<Pagination<PlantCategoryResponse>>>(
+    PLANT_CATEGORY_API_URL,
+    { params: { page, size: 10, name: term } },
+  )
 
-  try {
-    const response =
-      await axios.get<ApiResponse<Pagination<PlantCategoryResponse>>>(PLANT_CATEGORY_API_URL)
-    if (response.status === 200) plantCategories.value = response.data.data.content
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isCategoriesFetching.value = false
+  return {
+    items: data.data.content,
+    hasNext: page + 1 < data.data.page.totalPages,
   }
 }
-
-onMounted(() => {
-  fetchPlantCategories()
-})
 </script>
 
 <template>
@@ -152,14 +153,15 @@ onMounted(() => {
           />
         </div>
 
-        <!-- TODO: Fix to allow users to dynamically search between pages -->
-        <AppSelect
-          v-model="plantCategoryId"
-          :options="plantCategories.map((p) => ({ label: p.name, value: p.id }))"
-          id="plant-category-id"
+        <AppAsyncSelect
+          v-model="selectedCategory"
+          :fetch-options="fetchPlantCategories"
+          id="plant-category"
           label="plant category"
-          :placeholder="isCategoriesFetching ? 'Loading' : 'Please select plant category'"
+          option-label="name"
+          placeholder="Please select plant category"
           required
+          @error="(e) => (errorMessage = handleDefaultApiError(e))"
         />
 
         <div class="flex gap-2">
