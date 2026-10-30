@@ -2,14 +2,14 @@
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import { PLANT_API_URL } from '@/constant/api.ts'
-import type { PlantEventRequest } from '@/types/plant-event-request.interface.ts'
-import type { PlantEventResponse } from '@/types/plant-event-response.interface.ts'
+import type { PlantEventRequest } from '@/features/plants/events/types/plant-event-request.interface.ts'
+import type { PlantEventResponse } from '@/features/plants/events/types/plant-event-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import AppButton from '../../ui/AppButton.vue'
+import AppButton from '../../../../components/ui/AppButton.vue'
 
 const props = defineProps<{ mode: 'create' | 'update'; plantEvent?: PlantEventResponse }>()
 const emit = defineEmits<{ close: []; success: [] }>()

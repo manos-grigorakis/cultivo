@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import AppButton from '@/components/ui/AppButton.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
-import { PLANT_API_URL } from '@/constant/api'
+import { PLANT_API_URL } from '@/constant/api.ts'
+import type { PlantRequest } from '@/features/plants/types/plant-request.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { PlantRequest } from '@/types/plant-request.interface'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucideX } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { ref } from 'vue'
-import AppErrorContainer from '../ui/AppErrorContainer.vue'
+import AppErrorContainer from '../../../components/ui/AppErrorContainer.vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'

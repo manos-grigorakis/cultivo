@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import PlantDetailsCard from '@/components/plants/PlantDetailsCard.vue'
-import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import PlantDetailsCard from '@/features/plants/components/PlantDetailsCard.vue'
+import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 
 defineProps<{
   plant: PlantResponse

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 
 defineProps<{
   plant: PlantResponse

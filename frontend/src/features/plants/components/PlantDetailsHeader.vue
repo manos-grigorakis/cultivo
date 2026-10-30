@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
-import type { PlantResponse } from '@/types/plant-response.interface.ts'
+import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 import { LucideArchive, LucidePencil, LucidePlus } from '@lucide/vue'
 
 const props = defineProps<{

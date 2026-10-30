@@ -1,4 +1,4 @@
-import PlantsListView from '@/views/plants/PlantsListView.vue'
+import PlantListView from '@/features/plants/views/PlantListView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -8,15 +8,16 @@ const router = createRouter({
       path: '/',
       redirect: '/plants',
     },
+
+    // Plants
     {
       path: '/plants',
-      name: 'plants',
-      component: PlantsListView,
+      name: 'plant',
+      component: PlantListView,
     },
     {
       path: '/plants/:id',
-
-      component: () => import('@/views/plants/PlantDetailsView.vue'),
+      component: () => import('@/features/plants/views/PlantDetailsView.vue'),
       children: [
         {
           path: '',
@@ -26,12 +27,12 @@ const router = createRouter({
         {
           path: 'overview',
           name: 'plant-details-overview',
-          component: () => import('@/views/plants/PlantDetailsOverviewView.vue'),
+          component: () => import('@/features/plants/views/tabs/PlantOverviewView.vue'),
         },
         {
           path: 'journal',
           name: 'plant-details-journal',
-          component: () => import('@/views/plants/PlantDetailsJournalView.vue'),
+          component: () => import('@/features/plants/views/tabs/PlantJournalView.vue'),
         },
       ],
     },
