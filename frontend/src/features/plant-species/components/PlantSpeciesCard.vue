@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PlantSpeciesResponse } from '@/types/plant-species-response.interface.ts'
+import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 
 defineProps<{
   species: PlantSpeciesResponse
@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <li class="rounded-card bg-white shadow-sm hover:shadow-lg">
-    <RouterLink :to="{ name: 'plant-species-view', params: { id: species.id } }">
+    <RouterLink :to="{ name: 'plant-species-details', params: { id: species.id } }">
       <div class="rounded-tl-card rounded-tr-card bg-plant-placeholder aspect-video w-full" />
 
       <div class="px-3 py-3">

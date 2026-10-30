@@ -53,12 +53,12 @@ const router = createRouter({
     {
       path: '/plant-species',
       name: 'plant-species',
-      component: () => import('@/views/plant-species/PlantSpeciesListView.vue'),
+      component: () => import('@/features/plant-species/views/PlantSpeciesListView.vue'),
     },
     {
       path: '/plant-species/:id',
-      name: 'plant-species-view',
-      component: () => import('@/views/plant-species/PlantSpeciesView.vue'),
+      name: 'plant-species-details',
+      component: () => import('@/features/plant-species/views/PlantSpeciesDetailsView.vue'),
     },
   ],
 })
