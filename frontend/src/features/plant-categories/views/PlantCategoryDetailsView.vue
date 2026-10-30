@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
+import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import AppModal from '@/components/ui/AppModal.vue'
 import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
 import PlantCategoryForm from '@/features/plant-categories/components/PlantCategoryForm.vue'
 import PlantCategorySkeleton from '@/features/plant-categories/components/PlantCategorySkeleton.vue'
@@ -93,7 +93,7 @@ onMounted(() => {
     @success="onUpdatedPlantCategory"
   />
 
-  <AppModal
+  <AppConfirmDialog
     v-if="isDeletePlantCategoryModalOpen && plantCategory"
     :text="`Are you sure you want to delete ${plantCategory.name}? This action cannot be undone.`"
     confirmButtonText="Delete"

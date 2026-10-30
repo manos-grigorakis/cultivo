@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppButton from '@/components/ui/AppButton.vue'
+import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import AppModal from '@/components/ui/AppModal.vue'
 import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
 import PlantSpeciesDetailsSkeleton from '@/features/plant-species/components/PlantSpeciesDetailsSkeleton.vue'
 import PlantSpeciesForm from '@/features/plant-species/components/PlantSpeciesForm.vue'
@@ -95,7 +95,7 @@ onMounted(() => {
       @close="isUpdatePlantSpeciesFormOpen = false"
     />
 
-    <AppModal
+    <AppConfirmDialog
       v-if="isPlantSpeciesDeleteModalOpen"
       :text="`Are you sure you want to delete ${species!.name}`"
       confirm-button-text="Delete"
