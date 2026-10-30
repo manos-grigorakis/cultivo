@@ -8,3 +8,8 @@
     @apply font-sans bg-surface-page text-content;
   }
 }
+
+::selection {
+  background: var(--color-primary-600);
+  color: #fff;
+}
