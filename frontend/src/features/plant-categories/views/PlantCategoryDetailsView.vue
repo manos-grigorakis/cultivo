@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import PlantCategoryForm from '@/components/plant-categories/PlantCategoryForm.vue'
-import PlantCategorySkeleton from '@/components/plant-categories/PlantCategorySkeleton.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
+import PlantCategoryForm from '@/features/plant-categories/components/PlantCategoryForm.vue'
+import PlantCategorySkeleton from '@/features/plant-categories/components/PlantCategorySkeleton.vue'
+import type { PlantCategoryResponse } from '@/features/plant-categories/types/plant-category-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { PlantCategoryResponse } from '@/types/plant-category-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { formatDate } from '@/utils/format-date.utils.ts'
 import { LucidePencil, LucideTrash } from '@lucide/vue'
@@ -56,7 +56,7 @@ const deletePlantCategory = async () => {
 
   try {
     const res = await axios.delete(`${PLANT_CATEGORY_API_URL}/${plantCategoryId}`)
-    if (res.status === 204) await router.push({ name: 'plant-categories' })
+    if (res.status === 204) await router.push({ name: 'plant-category-list' })
   } catch (error) {
     if (error instanceof AxiosError) {
       if (error.status === 404) {

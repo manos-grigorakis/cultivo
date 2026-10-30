@@ -39,13 +39,13 @@ const router = createRouter({
     // Plant Categories
     {
       path: '/plant-categories',
-      name: 'plant-categories',
-      component: () => import('@/views/plant-categories/PlantCategoriesListView.vue'),
+      name: 'plant-category-list',
+      component: () => import('@/features/plant-categories/views/PlantCategoryListView.vue'),
     },
     {
       path: '/plant-categories/:id',
-      name: 'plant-category-view',
-      component: () => import('@/views/plant-categories/PlantCategoryView.vue'),
+      name: 'plant-category-details',
+      component: () => import('@/features/plant-categories/views/PlantCategoryDetailsView.vue'),
     },
 
     // Plant Species

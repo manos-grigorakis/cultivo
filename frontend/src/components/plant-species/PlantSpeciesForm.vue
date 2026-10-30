@@ -9,9 +9,9 @@ import { PLANT_CATEGORY_API_URL, PLANT_SPECIES_API_URL } from '@/constant/api.ts
 import { LifeCycle } from '@/enums/life-cycle.enum.ts'
 import { LightRequirement } from '@/enums/light-requirement.enum.ts'
 import { WaterRequirement } from '@/enums/water-requirement.enum.ts'
+import type { PlantCategoryResponse } from '@/features/plant-categories/types/plant-category-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
-import type { PlantCategoryResponse } from '@/types/plant-category-response.interface.ts'
 import type { PlantSpeciesRequest } from '@/types/plant-species-request.interface.ts'
 import type {
   PlantCategorySummary,
