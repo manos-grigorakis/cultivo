@@ -2,6 +2,7 @@
 import PlantSpeciesForm from '@/components/plant-species/PlantSpeciesForm.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
+import AppModal from '@/components/ui/AppModal.vue'
 import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
 import type { PlantSpeciesResponse } from '@/types/plant-species-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
@@ -9,7 +10,7 @@ import { formatDate } from '@/utils/format-date.utils.ts'
 import { CalendarDays, Droplets, LucidePencil, LucideTrash, Sun } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
 import { type Component, computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 interface GrowingRequirements {
   icon: Component
@@ -17,12 +18,15 @@ interface GrowingRequirements {
   value: string | null
 }
 
+const router = useRouter()
 const route = useRoute()
 const speciesId = Number(route.params.id)
 const species = ref<PlantSpeciesResponse | null>(null)
 const isLoading = ref<boolean>(false)
+const isDeleting = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
 const isUpdatePlantSpeciesFormOpen = ref<boolean>(false)
+const isPlantSpeciesDeleteModalOpen = ref<boolean>(false)
 
 const growingRequirements = computed<GrowingRequirements[]>(() => [
   { icon: CalendarDays, title: 'life cycle', value: species.value?.lifeCycle ?? null },
@@ -54,6 +58,26 @@ const onPlantSpeciesUpdate = async () => {
   await fetchPlantSpeciesById()
 }
 
+const onPlantSpeciesDelete = async () => {
+  isDeleting.value = true
+  errorMessage.value = null
+
+  try {
+    await axios.delete(`${PLANT_SPECIES_API_URL}/${speciesId}`)
+    await router.push({ name: 'plant-species' })
+  } catch (error) {
+    if (error instanceof AxiosError && error.status === 404) {
+      errorMessage.value = 'Plant species not found'
+      return
+    }
+
+    errorMessage.value = handleDefaultApiError(error)
+  } finally {
+    isDeleting.value = false
+    isPlantSpeciesDeleteModalOpen.value = false
+  }
+}
+
 onMounted(() => {
   fetchPlantSpeciesById()
 })
@@ -68,6 +92,16 @@ onMounted(() => {
       :data="species"
       @success="onPlantSpeciesUpdate"
       @close="isUpdatePlantSpeciesFormOpen = false"
+    />
+
+    <AppModal
+      v-if="isPlantSpeciesDeleteModalOpen"
+      :text="`Are you sure you want to delete ${species!.name}`"
+      confirm-button-text="Delete"
+      :isSubmitting="isDeleting"
+      is-danger-operation
+      @close="isPlantSpeciesDeleteModalOpen = false"
+      @confirm="onPlantSpeciesDelete"
     />
 
     <div v-if="isLoading">
@@ -97,7 +131,12 @@ onMounted(() => {
               :disabled="isLoading"
               @on-click="isUpdatePlantSpeciesFormOpen = true"
             />
-            <AppButton :icon="LucideTrash" variant="danger" :disabled="isLoading" />
+            <AppButton
+              :icon="LucideTrash"
+              variant="danger"
+              :disabled="isLoading"
+              @on-click="isPlantSpeciesDeleteModalOpen = true"
+            />
           </div>
         </div>
 
