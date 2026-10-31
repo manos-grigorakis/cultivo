@@ -1,6 +1,7 @@
 package com.mgrigorakis.cultivo.catalog;
 
 import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.catalog.dto.PlantCategorySummary;
@@ -244,5 +245,20 @@ public class PlantSpeciesServiceTest {
 
         verify(plantSpeciesRepository).findById(1L);
         verifyNoMoreInteractions(plantSpeciesRepository);
+    }
+
+    @Test
+    void deletePlantSpeciesById_shouldThrowConflictException_whenPlantSpeciesHasVarieties() {
+        // Arrange
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockPlantSpecies));
+        when(plantVarietyRepository.existsByPlantSpeciesId(1L)).thenReturn(true);
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantSpeciesService.deletePlantSpeciesById(1L));
+        
+        assertEquals("PLANT_SPECIES_HAS_VARIETIES", exception.getErrorCode());
+        verify(plantVarietyRepository).existsByPlantSpeciesId(1L);
+        verifyNoMoreInteractions(plantVarietyRepository);
     }
 }
