@@ -1,5 +1,6 @@
 package com.mgrigorakis.cultivo.catalog;
 
+import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.catalog.dto.PlantCategorySummary;
@@ -42,6 +43,9 @@ public class PlantSpeciesServiceTest {
 
     @Mock
     private PlantCategoryRepository plantCategoryRepository;
+
+    @Mock
+    private PlantVarietyRepository plantVarietyRepository;
 
     @Mock
     private PlantSpeciesMapper plantSpeciesMapper;
@@ -220,6 +224,7 @@ public class PlantSpeciesServiceTest {
     void deletePlantSpeciesById_shouldDeletePlantSpecies_whenExists() {
         // Arrange
         when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockPlantSpecies));
+        when(plantVarietyRepository.existsByPlantSpeciesId(1L)).thenReturn(false);
 
         // Act
         plantSpeciesService.deletePlantSpeciesById(1L);
