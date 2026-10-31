@@ -13,4 +13,6 @@ public interface PlantVarietyRepository extends JpaRepository<PlantVariety, Long
     boolean existsByNameIgnoreCaseAndPlantSpecies_Id(String name, Long plantSpeciesId);
 
     boolean existsByNameIgnoreCaseAndIdNotAndPlantSpecies_Id(String name, Long id, Long plantSpeciesId);
+
+    boolean existsByPlantSpeciesId(Long plantSpeciesId);
 }

@@ -69,6 +69,8 @@ public class PlantSpeciesController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Plant species deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Plant species not found"),
+            @ApiResponse(responseCode = "409", description =
+                    "Plant species cannot be deleted because it has plant varieties assigned"),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
