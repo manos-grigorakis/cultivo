@@ -5,6 +5,7 @@ import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
 import { PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import PlantVarietyForm from '@/features/plant-varieties/components/PlantVarietyForm.vue'
 import PlantVarietyTable from '@/features/plant-varieties/components/PlantVarietyTable.vue'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
@@ -22,6 +23,7 @@ const errorMessage = ref<string | null>(null)
 const page = ref<Page>()
 const selectedVariety = ref<PlantVarietyResponse | null>(null)
 const isDeleteDialogOpen = ref<boolean>(false)
+const formMode = ref<'create' | 'update' | null>(null) // null === closed form
 
 const fetchPlantVarieties = async (pageNumber: number = 0) => {
   isLoading.value = true
@@ -85,6 +87,26 @@ const onPlantVarietyDelete = async () => {
   }
 }
 
+const openCreateForm = () => {
+  selectedVariety.value = null
+  formMode.value = 'create'
+}
+
+const openEditForm = (variety: PlantVarietyResponse) => {
+  selectedVariety.value = variety
+  formMode.value = 'update'
+}
+
+const closeForm = () => {
+  formMode.value = null
+  selectedVariety.value = null
+}
+
+const onFormSuccess = async () => {
+  closeForm()
+  await fetchPlantVarieties(page.value?.number ?? 0)
+}
+
 onMounted(() => {
   fetchPlantVarieties()
 })
@@ -101,6 +123,15 @@ onMounted(() => {
     @confirm="onPlantVarietyDelete"
   />
 
+  <PlantVarietyForm
+    v-if="formMode"
+    :mode="formMode"
+    :varieties-id="selectedVariety?.id"
+    :data="selectedVariety ?? undefined"
+    @success="onFormSuccess"
+    @close="closeForm"
+  />
+
   <AppSectionWrapper title="Plant Varieties">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
@@ -114,7 +145,7 @@ onMounted(() => {
             :disabled="isRefreshing"
             :icon-class="isRefreshing ? 'animate-spin' : ''"
           />
-          <AppButton :icon="LucidePlus" label="Add plant variety" />
+          <AppButton :icon="LucidePlus" label="Add plant variety" @click="openCreateForm" />
         </div>
       </div>
     </div>
@@ -125,6 +156,7 @@ onMounted(() => {
       v-else-if="isLoading || plantVarieties.length > 0"
       :plant-varieties="plantVarieties"
       :is-loading="isLoading"
+      @edit="openEditForm($event)"
       @delete="openDeleteDialog($event)"
     />
 
