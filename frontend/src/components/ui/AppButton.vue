@@ -6,6 +6,7 @@ type ButtonVariant = 'primary' | 'accent' | 'outline' | 'danger'
 withDefaults(
   defineProps<{
     icon?: Component
+    iconClass?: string
     label?: string
     disabled?: boolean
     type?: 'button' | 'submit'
@@ -32,6 +33,6 @@ const variantClasses: Record<ButtonVariant, string> = {
     :type="type"
     @click="$emit('onClick')"
   >
-    <component :is="icon" :size="18" /> {{ label }}
+    <component :is="icon" :size="18" :class="iconClass" /> {{ label }}
   </button>
 </template>
