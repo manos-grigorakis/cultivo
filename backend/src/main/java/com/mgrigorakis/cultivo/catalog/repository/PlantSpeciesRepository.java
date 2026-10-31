@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface PlantSpeciesRepository extends JpaRepository<PlantSpecies, Long> {
     @EntityGraph(attributePaths = "plantCategory")
-    Page<PlantSpecies> findAll(Pageable pageable);
+    Page<PlantSpecies> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     @EntityGraph(attributePaths = "plantCategory")
     Optional<PlantSpecies> findWithPlantCategoryById(Long id);

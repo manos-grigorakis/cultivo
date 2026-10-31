@@ -32,9 +32,12 @@ public class PlantSpeciesServiceImpl implements PlantSpeciesService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<PlantSpeciesResponse> getAllPlantSpecies(PageFilterRequest filterRequest, PageSortRequest sortRequest) {
-        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("name"));
-        return plantSpeciesRepository.findAll(pageable).map(plantSpeciesMapper::toResponse);
+    public Page<PlantSpeciesResponse> getAllPlantSpecies(PageFilterRequest filterRequest, PageSortRequest sortRequest,
+                                                         String name) {
+        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(),
+                                           sortRequest.createSort("name"));
+
+        return plantSpeciesRepository.findByNameContainingIgnoreCase(name, pageable).map(plantSpeciesMapper::toResponse);
     }
 
 

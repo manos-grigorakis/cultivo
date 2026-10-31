@@ -26,8 +26,9 @@ public class PlantSpeciesController {
     @GetMapping
     public ApiResponseWrapper<Page<PlantSpeciesResponse>> getAllPlantSpecies(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
-            @ModelAttribute PageSortRequest sortRequest) {
-        return new ApiResponseWrapper<>(plantSpeciesService.getAllPlantSpecies(filterRequest, sortRequest));
+            @ModelAttribute PageSortRequest sortRequest,
+            @RequestParam(defaultValue = "") String name) {
+        return new ApiResponseWrapper<>(plantSpeciesService.getAllPlantSpecies(filterRequest, sortRequest, name));
     }
 
     @Operation(summary = "Get Plant Species by ID", description = "Finds a plant species by its ID")
