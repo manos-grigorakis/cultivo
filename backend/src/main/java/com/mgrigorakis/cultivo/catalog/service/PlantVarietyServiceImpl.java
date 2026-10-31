@@ -29,9 +29,19 @@ public class PlantVarietyServiceImpl implements PlantVarietyService {
 
     @Override
     public Page<PlantVarietyResponse> getAllPlantVarieties(PageFilterRequest filterRequest, PageSortRequest sortRequest,
-                                                           String name) {
+                                                           String name, Long plantSpeciesId) {
         Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("name"));
-        return plantVarietyRepository.findByNameContainingIgnoreCase(name, pageable).map(plantVarietyMapper::toResponse);
+
+        if(plantSpeciesId != null) {
+            findPlantSpeciesById(plantSpeciesId);
+        }
+
+        Page<PlantVariety> varieties = plantSpeciesId != null
+                ? plantVarietyRepository.findByPlantSpecies_IdAndNameContainingIgnoreCase(
+                        plantSpeciesId, name, pageable)
+                : plantVarietyRepository.findByNameContainingIgnoreCase(name, pageable);
+
+        return varieties.map(plantVarietyMapper::toResponse);
     }
 
     @Override

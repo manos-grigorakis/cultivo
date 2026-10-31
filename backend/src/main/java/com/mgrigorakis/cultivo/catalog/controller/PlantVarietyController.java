@@ -24,14 +24,17 @@ public class PlantVarietyController {
     private final PlantVarietyService plantVarietyService;
 
     @Operation(summary = "Get All Plant Varieties", description = "Lists all plant varieties with pagination")
-    @ApiResponse(responseCode = "200", description = "List of all plant varieties with pagination")
+    @ApiResponse(responseCode = "200", description =
+            "List of all plant varieties with pagination, sorting and optional name and species filtering")
     @GetMapping
     public ApiResponseWrapper<Page<PlantVarietyResponse>> getAllPlantVarieties(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
             @ModelAttribute PageSortRequest sortRequest,
-            @RequestParam(defaultValue = "") String name
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(required = false) Long plantSpeciesId
             ) {
-        return new ApiResponseWrapper<>(plantVarietyService.getAllPlantVarieties(filterRequest, sortRequest, name));
+        return new ApiResponseWrapper<>(
+                plantVarietyService.getAllPlantVarieties(filterRequest, sortRequest, name, plantSpeciesId));
     }
 
     @Operation(summary = "Get Plant Variety by ID", description = "Finds a plant variety by its ID")

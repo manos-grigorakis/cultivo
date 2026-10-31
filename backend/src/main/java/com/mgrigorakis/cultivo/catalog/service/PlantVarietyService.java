@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 
 public interface PlantVarietyService {
     Page<PlantVarietyResponse> getAllPlantVarieties(PageFilterRequest filterRequest, PageSortRequest sortRequest,
-                                                    String name);
+                                                    String name, Long plantSpeciesId);
 
     PlantVarietyResponse getPlantVarietyById(Long id);
 

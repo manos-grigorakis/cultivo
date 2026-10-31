@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface PlantVarietyRepository extends JpaRepository<PlantVariety, Long> {
     Page<PlantVariety> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
+    Page<PlantVariety> findByPlantSpecies_IdAndNameContainingIgnoreCase(Long plantSpeciesId, String name, Pageable pageable);
+
     boolean existsByNameIgnoreCaseAndPlantSpecies_Id(String name, Long plantSpeciesId);
 
     boolean existsByNameIgnoreCaseAndIdNotAndPlantSpecies_Id(String name, Long id, Long plantSpeciesId);
