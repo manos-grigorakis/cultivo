@@ -85,6 +85,11 @@ const router = createRouter({
       name: 'plant-variety-list',
       component: () => import('@/features/plant-varieties/views/PlantVarietyListView.vue'),
     },
+    {
+      path: '/plant-varieties/:id',
+      name: 'plant-variety-details',
+      component: () => import('@/features/plant-varieties/views/PlantVarietyDetailsView.vue'),
+    },
   ],
 })
 

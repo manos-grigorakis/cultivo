@@ -50,8 +50,10 @@ const emit = defineEmits<{
           class="hover:bg-primary-200 transition-colors"
         >
           <td class="text-content-muted px-6 py-4">{{ variety.id }}</td>
-          <th scope="row" class="text-content px-6 py-4 font-semibold capitalize">
-            {{ variety.name }}
+          <th scope="row" class="text-content px-6 py-4 font-semibold capitalize hover:underline">
+            <RouterLink :to="{ name: 'plant-variety-details', params: { id: variety.id } }">{{
+              variety.name
+            }}</RouterLink>
           </th>
           <td class="text-content-secondary px-6 py-4">{{ formatDate(variety.createdAt) }}</td>
           <td class="text-content-secondary px-6 py-4">
