@@ -8,7 +8,6 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
-import com.mgrigorakis.cultivo.plants.dto.PlantReferenceResponse;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
 import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
@@ -35,6 +34,7 @@ public class PlantServiceImpl implements PlantService {
     private final PlantVarietyRepository plantVarietyRepository;
     private final PlantMapper plantMapper;
 
+    @Transactional(readOnly = true)
     @Override
     public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived) {
         Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("id"));
@@ -47,7 +47,7 @@ public class PlantServiceImpl implements PlantService {
     @Transactional(readOnly = true)
     @Override
     public PlantResponse getPlantById(Long id) {
-        Plant plant = plantRepository.findById(id).orElseThrow(() -> {
+        Plant plant = plantRepository.findByIdWithSpeciesAndVariety(id).orElseThrow(() -> {
             log.warn("No plant found with id {}", id);
             return new ResourceNotFoundException("Plant with id " + id + " not found");
         });
