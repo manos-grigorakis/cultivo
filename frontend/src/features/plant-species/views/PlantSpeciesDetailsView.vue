@@ -52,6 +52,11 @@ const onPlantSpeciesUpdate = async () => {
 }
 
 const onPlantSpeciesDelete = async () => {
+  if (!species.value) {
+    errorMessage.value = 'Plant species not found'
+    return
+  }
+
   isDeleting.value = true
   errorMessage.value = null
 
@@ -59,12 +64,19 @@ const onPlantSpeciesDelete = async () => {
     await axios.delete(`${PLANT_SPECIES_API_URL}/${speciesId}`)
     await router.push({ name: 'plant-species' })
   } catch (error) {
-    if (error instanceof AxiosError && error.status === 404) {
-      errorMessage.value = 'Plant species not found'
-      return
-    }
+    if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError<ApiResponse<never>>
+      const status = axiosError?.response?.status
+      const errorCode = axiosError?.response?.data?.error?.errorCode
 
-    errorMessage.value = handleDefaultApiError(error)
+      if (status === 404) {
+        errorMessage.value = 'Plant species not found'
+      } else if (status === 409 && errorCode === 'PLANT_SPECIES_HAS_VARIETIES') {
+        errorMessage.value = `Cannot delete ${species.value.name} because it has varieties assigned. Please delete varieties and try again`
+      }
+    } else {
+      errorMessage.value = handleDefaultApiError(error)
+    }
   } finally {
     isDeleting.value = false
     isPlantSpeciesDeleteModalOpen.value = false
@@ -121,7 +133,7 @@ onMounted(() => {
     <PlantSpeciesDetailsSkeleton v-if="isLoading" />
 
     <template v-else>
-      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-2" />
 
       <div v-if="species" class="mx-auto w-full max-w-5xl">
         <!-- Header -->
