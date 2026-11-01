@@ -10,6 +10,8 @@ public record PlantResponse(
         PlantStatus status,
         LocalDateTime archivedAt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        PlantReferenceResponse species,
+        PlantReferenceResponse variety
 ) {
 }
