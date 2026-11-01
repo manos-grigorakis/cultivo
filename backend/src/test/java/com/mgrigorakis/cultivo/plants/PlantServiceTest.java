@@ -1,5 +1,9 @@
 package com.mgrigorakis.cultivo.plants;
 
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
+import com.mgrigorakis.cultivo.catalog.model.PlantVariety;
+import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
+import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
 import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
@@ -10,6 +14,7 @@ import com.mgrigorakis.cultivo.plants.model.Plant;
 import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
 import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
 import com.mgrigorakis.cultivo.plants.service.PlantServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +29,15 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PlantServiceTest {
+    private PlantSpecies mockSpecies;
+    private PlantVariety mockVariety;
+    private Plant mockPlant;
+    private Plant mockUpdatedPlant;
+    private PlantRequest mockPlantCreateRequest;
+    private PlantRequest mockPlantUpdateRequest;
+    private PlantResponse mockPlantCreateResponse;
+    private PlantResponse mockPlantUpdateResponse;
+
     @InjectMocks
     private PlantServiceImpl plantService;
 
@@ -31,51 +45,81 @@ public class PlantServiceTest {
     private PlantRepository plantRepository;
 
     @Mock
+    private PlantSpeciesRepository plantSpeciesRepository;
+
+    @Mock
+    private PlantVarietyRepository plantVarietyRepository;
+
+    @Mock
     private PlantMapper plantMapper;
+
+    @BeforeEach
+    void setUp() {
+        mockSpecies = PlantSpecies.builder().name("Basil").build();
+        mockVariety = PlantVariety.builder().name("Genovese").plantSpecies(mockSpecies).build();
+
+        mockSpecies.setId(1L);
+        mockVariety.setId(1L);
+
+        mockPlant = Plant.builder().label("Basil #1").species(mockSpecies).variety(mockVariety).build();
+        mockUpdatedPlant = Plant.builder().label("Basil #2").species(mockSpecies).variety(mockVariety).build();
+
+        mockPlantCreateRequest = new PlantRequest("Basil #1", 1L, 1L);
+        mockPlantCreateResponse = new PlantResponse(1L, "Basil #1", PlantStatus.ACTIVE, null, null, null, null, null);
+
+        mockPlantUpdateRequest = new PlantRequest("Basil #2", 1L, 1L);
+        mockPlantUpdateResponse = new PlantResponse(1L, "Basil #2", PlantStatus.ACTIVE, null, null, null, null, null);
+    }
 
     @Test
     void getPlantById_shouldReturnPlant_ifExists() {
         // Arrange
-        Plant mockPlant = Plant.builder().label("Basil").build();
-        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+        when(plantRepository.findByIdWithSpeciesAndVariety(1L)).thenReturn(Optional.of(mockPlant));
+        when(plantMapper.toResponse(mockPlant)).thenReturn(mockPlantCreateResponse);
 
         // Act
-        plantService.getPlantById(1L);
+        PlantResponse result = plantService.getPlantById(1L);
 
         // Assert
-        verify(plantRepository).findById(1L);
+        assertEquals(mockPlantCreateResponse, result);
+
+        verify(plantRepository).findByIdWithSpeciesAndVariety(1L);
         verify(plantMapper).toResponse(mockPlant);
     }
 
     @Test
     void getPlantById_shouldThrowResourceNotFoundException_whenPlantDoesNotExist() {
         // Arrange
-        when(plantRepository.findById(1L)).thenReturn(Optional.empty());
+        when(plantRepository.findByIdWithSpeciesAndVariety(1L)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> plantService.getPlantById(1L));
 
-        verify(plantRepository).findById(1L);
+        verify(plantRepository).findByIdWithSpeciesAndVariety(1L);
         verify(plantMapper, never()).toResponse(any(Plant.class));
     }
 
     @Test
     void createPlant_shouldCreatePlant() {
         // Arrange
-        PlantRequest mockRequest = new PlantRequest("Basil");
-        Plant mockPlant = Plant.builder().label("Basil").build();
-        PlantResponse mockResponse = new PlantResponse(1L, "Basil", PlantStatus.ACTIVE, null, null, null);
-
-        when(plantMapper.toEntity(mockRequest)).thenReturn(mockPlant);
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockSpecies));
+        when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(mockVariety));
+        when(plantMapper.toEntity(mockPlantCreateRequest, mockSpecies, mockVariety)).thenReturn(mockPlant);
         when(plantRepository.save(mockPlant)).thenReturn(mockPlant);
-        when(plantMapper.toResponse(mockPlant)).thenReturn(mockResponse);
+        when(plantMapper.toResponse(mockPlant)).thenReturn(mockPlantCreateResponse);
 
         // Act
-        PlantResponse result = plantService.createPlant(mockRequest);
+        PlantResponse result = plantService.createPlant(mockPlantCreateRequest);
 
         // Assert
+        assertNotNull(result);
+        assertEquals(mockPlantCreateResponse, result);
+        assertEquals(mockPlantCreateResponse.label(), result.label());
         assertEquals(PlantStatus.ACTIVE, result.status());
-        verify(plantMapper).toEntity(mockRequest);
+
+        verify(plantSpeciesRepository).findById(1L);
+        verify(plantVarietyRepository).findById(1L);
+        verify(plantMapper).toEntity(mockPlantCreateRequest, mockSpecies, mockVariety);
         verify(plantRepository).save(mockPlant);
         verify(plantMapper).toResponse(mockPlant);
     }
@@ -83,25 +127,26 @@ public class PlantServiceTest {
     @Test
     void updatePlantById_shouldUpdatePlant_ifExists() {
         // Arrange
-        PlantRequest mockRequest = new PlantRequest("Rose");
-        Plant mockPlant = Plant.builder().label("Basil").build();
-        Plant mockUpdatedPlant = Plant.builder().label("Rose").build();
-        PlantResponse mockResponse = new PlantResponse(1L, "Rose", PlantStatus.ACTIVE, null, null, null);
-
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
-        when(plantMapper.toUpdate(mockPlant, mockRequest)).thenReturn(mockUpdatedPlant);
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockSpecies));
+        when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(mockVariety));
+        when(plantMapper.toUpdate(mockPlant, mockPlantUpdateRequest, mockSpecies, mockVariety)).thenReturn(
+                mockUpdatedPlant);
         when(plantRepository.save(mockUpdatedPlant)).thenReturn(mockUpdatedPlant);
-        when(plantMapper.toResponse(mockUpdatedPlant)).thenReturn(mockResponse);
+        when(plantMapper.toResponse(mockUpdatedPlant)).thenReturn(mockPlantUpdateResponse);
 
         // Act
-        PlantResponse result = plantService.updatePlantById(1L, mockRequest);
+        PlantResponse result = plantService.updatePlantById(1L, mockPlantUpdateRequest);
 
         // Assert
-        assertEquals("Rose", result.label());
+        assertNotNull(result);
+        assertEquals(mockPlantUpdateResponse.label(), result.label());
         assertEquals(PlantStatus.ACTIVE, result.status());
 
         verify(plantRepository).findById(1L);
-        verify(plantMapper).toUpdate(mockPlant, mockRequest);
+        verify(plantSpeciesRepository).findById(1L);
+        verify(plantVarietyRepository).findById(1L);
+        verify(plantMapper).toUpdate(mockPlant, mockPlantUpdateRequest, mockSpecies, mockVariety);
         verify(plantRepository).save(mockUpdatedPlant);
         verify(plantMapper).toResponse(mockUpdatedPlant);
     }
@@ -109,49 +154,40 @@ public class PlantServiceTest {
     @Test
     void updatePlantById_shouldThrowResourceNotFoundException_whenPlantDoesNotExist() {
         // Arrange
-        PlantRequest mockRequest = new PlantRequest("Basil");
         when(plantRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () ->
-                plantService.updatePlantById(1L, mockRequest));
+        assertThrows(ResourceNotFoundException.class, () -> plantService.updatePlantById(1L, mockPlantUpdateRequest));
 
         verify(plantRepository).findById(1L);
-        verify(plantRepository, never()).save(any(Plant.class));
-        verify(plantMapper, never()).toResponse(any(Plant.class));
+        verifyNoMoreInteractions(plantRepository, plantMapper, plantSpeciesRepository, plantVarietyRepository);
     }
 
     @Test
     void updatePlantById_shouldThrowConflictException_whenPlantIsArchived() {
         // Arrange
-        Plant mockPlant = Plant.builder().label("Basil").build();
-        PlantRequest mockRequest = new PlantRequest("Basil #2");
         mockPlant.setArchivedAt(LocalDateTime.now());
 
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
 
         // Act & Assert
         ConflictException exception = assertThrows(ConflictException.class, () ->
-                plantService.updatePlantById(1L, mockRequest));
+                plantService.updatePlantById(1L, mockPlantUpdateRequest));
 
         assertEquals("PLANT_ARCHIVED", exception.getErrorCode());
 
         verify(plantRepository).findById(1L);
-        verify(plantRepository, never()).save(any(Plant.class));
-        verify(plantMapper, never()).toResponse(mockPlant);
+        verifyNoMoreInteractions(plantRepository, plantMapper, plantSpeciesRepository, plantVarietyRepository);
     }
 
     @Test
     void updatePlantStatusById_shouldUpdatePlantStatus_ifPlantExists() {
         // Arrange
-        Plant mockPlant = Plant.builder().label("Basil").build();
-        PlantStatusRequest mockRequest = new PlantStatusRequest(PlantStatus.DEAD);
-
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
         when(plantRepository.save(mockPlant)).thenReturn(mockPlant);
 
         // Act
-        plantService.updatePlantStatusById(1L, mockRequest);
+        plantService.updatePlantStatusById(1L, new PlantStatusRequest(PlantStatus.DEAD));
 
         // Assert
         assertEquals(PlantStatus.DEAD, mockPlant.getStatus());
@@ -163,11 +199,11 @@ public class PlantServiceTest {
     @Test
     void updatePlantStatusById_shouldThrowResourceNotFoundException_whenPlantDoesNotExist() {
         // Arrange
-        PlantStatusRequest mockRequest = new PlantStatusRequest(PlantStatus.DEAD);
         when(plantRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(ResourceNotFoundException.class, () -> plantService.updatePlantStatusById(1L, mockRequest));
+        assertThrows(ResourceNotFoundException.class, () ->
+                plantService.updatePlantStatusById(1L, new PlantStatusRequest(PlantStatus.DEAD)));
 
         verify(plantRepository).findById(1L);
         verify(plantRepository, never()).save(any(Plant.class));
@@ -176,15 +212,13 @@ public class PlantServiceTest {
     @Test
     void updatePlantStatusById_shouldThrowConflictException_whenDesiredStatusViolatesTransition() {
         // Arrange
-        Plant mockPlant = Plant.builder().label("Basil").build();
         mockPlant.setStatus(PlantStatus.DEAD);
-        PlantStatusRequest mockRequest = new PlantStatusRequest(PlantStatus.ACTIVE);
 
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
 
         // Act & Assert
         ConflictException exception = assertThrows(ConflictException.class, () ->
-                plantService.updatePlantStatusById(1L, mockRequest));
+                plantService.updatePlantStatusById(1L, new PlantStatusRequest(PlantStatus.ACTIVE)));
 
         assertEquals("STATUS_VIOLATION", exception.getErrorCode());
 
@@ -195,7 +229,6 @@ public class PlantServiceTest {
     @Test
     void archivePlantById_shouldArchivePlant_ifPlantIsNotArchived() {
         // Arrange
-        Plant mockPlant = Plant.builder().label("Basil").build();
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
 
         // Act
@@ -222,7 +255,6 @@ public class PlantServiceTest {
     @Test
     void archivePlantById_shouldThrowConflictException_whenPlantIsAlreadyArchived() {
         // Arrange
-        Plant mockPlant = Plant.builder().label("Basil").build();
         mockPlant.setArchivedAt(LocalDateTime.now());
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
 
