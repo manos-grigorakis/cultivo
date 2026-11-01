@@ -159,7 +159,8 @@ public class PlantServiceImpl implements PlantService {
         if(variety != null && !variety.belongsTo(species)) {
             log.warn("Plant variety with id {} does not belong to species with id {}", variety.getId(), species.getId());
             throw new ConflictException("Plant variety with id " + variety.getId() +
-                                                " does not belong to species with id " + species.getId());
+                                                " does not belong to species with id " + species.getId(),
+                                        "VARIETY_NOT_BELONGS_TO_SPECIES");
         }
     }
 }
