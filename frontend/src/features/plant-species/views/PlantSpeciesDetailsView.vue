@@ -2,22 +2,19 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
+import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import PlantSpeciesDetailsSkeleton from '@/features/plant-species/components/PlantSpeciesDetailsSkeleton.vue'
+import PlantSpeciesDetailsTabs from '@/features/plant-species/components/PlantSpeciesDetailsTabs.vue'
 import PlantSpeciesForm from '@/features/plant-species/components/PlantSpeciesForm.vue'
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
+import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import type { ApiResponse } from '@/types/api-response.interface.ts'
+import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { formatDate } from '@/utils/format-date.utils.ts'
-import { CalendarDays, Droplets, LucidePencil, LucideTrash, Sun } from '@lucide/vue'
+import { LucidePencil, LucideTrash } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
-import { type Component, computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
-interface GrowingRequirements {
-  icon: Component
-  title: string
-  value: string | null
-}
 
 const router = useRouter()
 const route = useRoute()
@@ -28,12 +25,7 @@ const isDeleting = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
 const isUpdatePlantSpeciesFormOpen = ref<boolean>(false)
 const isPlantSpeciesDeleteModalOpen = ref<boolean>(false)
-
-const growingRequirements = computed<GrowingRequirements[]>(() => [
-  { icon: CalendarDays, title: 'life cycle', value: species.value?.lifeCycle ?? null },
-  { icon: Sun, title: 'light', value: species.value?.lightRequirement ?? null },
-  { icon: Droplets, title: 'water', value: species.value?.waterRequirement ?? null },
-])
+const varietiesCount = ref<number>(0)
 
 const fetchPlantSpeciesById = async () => {
   isLoading.value = true
@@ -79,8 +71,29 @@ const onPlantSpeciesDelete = async () => {
   }
 }
 
+const fetchPlantVarietiesSize = async () => {
+  isLoading.value = true
+  errorMessage.value = null
+
+  try {
+    const { data } = await axios.get<ApiResponse<Pagination<PlantVarietyResponse>>>(
+      PLANT_VARIETIES_API_URL,
+      {
+        params: { plantSpeciesId: speciesId },
+      },
+    )
+
+    varietiesCount.value = data.data.page.totalElements
+  } catch (error) {
+    errorMessage.value = handleDefaultApiError(error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchPlantSpeciesById()
+  fetchPlantVarietiesSize()
 })
 </script>
 
@@ -126,7 +139,6 @@ onMounted(() => {
             <AppButton
               :icon="LucidePencil"
               variant="outline"
-              :disabled="isLoading"
               @on-click="isUpdatePlantSpeciesFormOpen = true"
             />
             <AppButton
@@ -138,57 +150,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Growing -->
-        <div class="border-content-muted/40 my-8 border-y py-6">
-          <h2 class="font-display text-lg">Growing Requirements</h2>
+        <PlantSpeciesDetailsTabs :species-id="species.id" :varieties-count="varietiesCount" />
 
-          <div class="mt-5 grid grid-cols-3 gap-4">
-            <div
-              v-for="item in growingRequirements"
-              :key="item.title"
-              class="flex flex-col items-center gap-2 text-center"
-            >
-              <div class="bg-primary-700 flex size-12 items-center justify-center rounded-full">
-                <component :is="item.icon" class="text-primary-100 size-5" />
-              </div>
-              <span class="text-content-muted text-sm capitalize">{{ item.title }}</span>
-              <p class="font-medium capitalize">
-                {{ item.value?.toLocaleLowerCase().replaceAll('_', ' ') ?? '-' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- General -->
-        <div>
-          <h2 class="font-display mb-5 text-xl">General Information</h2>
-
-          <div class="space-y-6">
-            <!-- Description -->
-            <div>
-              <span class="text-content-muted mb-1 text-sm">Description</span>
-              <p v-if="species.description" class="leading-relaxed">
-                {{ species.description }}
-              </p>
-              <p v-else class="text-content-secondary text-sm italic">No description provided</p>
-            </div>
-
-            <!-- Timestamps -->
-            <div class="grid max-w-lg grid-cols-2 gap-6">
-              <div>
-                <span class="text-content-muted mb-1 text-sm">Created</span>
-                <p class="font-medium">{{ formatDate(species.createdAt) }}</p>
-              </div>
-
-              <div>
-                <span class="text-content-muted mb-1 text-sm">Last Updated</span>
-                <p class="font-medium">
-                  {{ species.updatedAt !== null ? formatDate(species.updatedAt) : 'Never' }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <RouterView v-slot="{ Component }">
+          <component :is="Component" :species-id="species.id" :species="species" />
+        </RouterView>
       </div>
 
       <div v-else class="text-content-muted mt-2 text-center">

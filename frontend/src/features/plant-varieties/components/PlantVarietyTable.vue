@@ -5,10 +5,14 @@ import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plan
 import { formatDate } from '@/utils/format-date.utils.ts'
 import { LucidePencil, Trash2 } from '@lucide/vue'
 
-defineProps<{
-  plantVarieties: PlantVarietyResponse[]
-  isLoading?: boolean
-}>()
+withDefaults(
+  defineProps<{
+    plantVarieties: PlantVarietyResponse[]
+    isLoading?: boolean
+    showActions?: boolean
+  }>(),
+  { showActions: false },
+)
 
 const emit = defineEmits<{
   edit: [variety: PlantVarietyResponse]
@@ -27,12 +31,16 @@ const emit = defineEmits<{
           <th scope="col" class="px-6 py-3 font-medium">Name</th>
           <th scope="col" class="px-6 py-3 font-medium">Created</th>
           <th scope="col" class="px-6 py-3 font-medium">Last Update</th>
-          <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+          <th scope="col" class="px-6 py-3 font-medium" v-if="showActions">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-border divide-y">
         <template v-if="isLoading">
-          <PlantVarietyTableRowSkeleton v-for="index in 10" :key="`skeleton-${index}`" />
+          <PlantVarietyTableRowSkeleton
+            v-for="index in 10"
+            :key="`skeleton-${index}`"
+            :show-actions="showActions"
+          />
         </template>
 
         <tr
@@ -49,7 +57,7 @@ const emit = defineEmits<{
           <td class="text-content-secondary px-6 py-4">
             {{ variety.updatedAt !== null ? formatDate(variety.updatedAt) : '-' }}
           </td>
-          <td class="flex flex-wrap gap-4 px-6 py-4">
+          <td class="flex flex-wrap gap-4 px-6 py-4" v-if="showActions">
             <AppButton :icon="LucidePencil" variant="outline" @on-click="emit('edit', variety)" />
             <AppButton :icon="Trash2" variant="danger" @on-click="emit('delete', variety)" />
           </td>

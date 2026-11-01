@@ -156,6 +156,7 @@ onMounted(() => {
       v-else-if="isLoading || plantVarieties.length > 0"
       :plant-varieties="plantVarieties"
       :is-loading="isLoading"
+      :show-actions="true"
       @edit="openEditForm($event)"
       @delete="openDeleteDialog($event)"
     />

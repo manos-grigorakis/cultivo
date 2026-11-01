@@ -57,8 +57,26 @@ const router = createRouter({
     },
     {
       path: '/plant-species/:id',
-      name: 'plant-species-details',
       component: () => import('@/features/plant-species/views/PlantSpeciesDetailsView.vue'),
+      children: [
+        {
+          path: '',
+          name: 'plant-species-details',
+          redirect: { name: 'plant-species-details-overview' },
+        },
+        {
+          path: 'overview',
+          name: 'plant-species-details-overview',
+          component: () =>
+            import('@/features/plant-species/views/tabs/PlantSpeciesDetailsOverviewView.vue'),
+        },
+        {
+          path: 'varieties',
+          name: 'plant-species-details-varieties',
+          component: () =>
+            import('@/features/plant-species/views/tabs/PlantSpeciesDetailsVarietiesView.vue'),
+        },
+      ],
     },
 
     // Plant Varieties
