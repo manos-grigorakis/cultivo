@@ -125,6 +125,68 @@ public class PlantServiceTest {
     }
 
     @Test
+    void createPlant_shouldThrowResourceNotFoundException_whenSpeciesDoesNotExist() {
+        // Arrange
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> plantService.createPlant(mockPlantCreateRequest));
+
+        verify(plantSpeciesRepository).findById(1L);
+        verifyNoMoreInteractions(plantRepository,  plantSpeciesRepository,  plantVarietyRepository,  plantMapper);
+    }
+
+    @Test
+    void createPlant_shouldCreatePlant_withNoVariety() {
+        // Arrange
+        Plant plantWithoutVariety = Plant.builder().label("Basil #1").species(mockSpecies).build();
+        PlantRequest request = new PlantRequest("Basil #1", 1L, null);
+
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockSpecies));
+        when(plantMapper.toEntity(request, mockSpecies, null)).thenReturn(plantWithoutVariety);
+        when(plantRepository.save(plantWithoutVariety)).thenReturn(plantWithoutVariety);
+        when(plantMapper.toResponse(plantWithoutVariety)).thenReturn(mockPlantCreateResponse);
+
+        // Act
+        PlantResponse result = plantService.createPlant(request);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(mockPlantCreateResponse, result);
+        assertNull(result.variety());
+
+        verify(plantSpeciesRepository).findById(1L);
+        verifyNoMoreInteractions(plantVarietyRepository);
+        verify(plantMapper).toEntity(request, mockSpecies, null);
+        verify(plantRepository).save(plantWithoutVariety);
+        verify(plantMapper).toResponse(plantWithoutVariety);
+    }
+
+    @Test
+    void createPlant_shouldThrowConflictException_whenVarietyDoesNotBelongToSpecies() {
+        // Arrange
+        PlantSpecies species = PlantSpecies.builder().name("Tomato").build();
+        species.setId(2L);
+
+        PlantVariety variety = PlantVariety.builder().name("Cherry").plantSpecies(species).build();
+        variety.setId(1L);
+
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockSpecies));
+        when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(variety));
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantService.createPlant(mockPlantCreateRequest));
+
+
+        assertEquals("VARIETY_NOT_BELONGS_TO_SPECIES", exception.getErrorCode());
+
+        verify(plantSpeciesRepository).findById(1L);
+        verify(plantVarietyRepository).findById(1L);
+        verifyNoMoreInteractions(plantVarietyRepository, plantSpeciesRepository, plantRepository, plantMapper);
+    }
+
+    @Test
     void updatePlantById_shouldUpdatePlant_ifExists() {
         // Arrange
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
@@ -178,6 +240,22 @@ public class PlantServiceTest {
 
         verify(plantRepository).findById(1L);
         verifyNoMoreInteractions(plantRepository, plantMapper, plantSpeciesRepository, plantVarietyRepository);
+    }
+
+    @Test
+    void updatePlantById_shouldThrowResourceNotFoundException_whenVarietyDoesNotExist() {
+        // Arrange
+        when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
+        when(plantSpeciesRepository.findById(1L)).thenReturn(Optional.of(mockSpecies));
+        when(plantVarietyRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> plantService.updatePlantById(1L, mockPlantUpdateRequest));
+
+        verify(plantRepository).findById(1L);
+        verify(plantSpeciesRepository).findById(1L);
+        verify(plantVarietyRepository).findById(1L);
+        verifyNoMoreInteractions(plantRepository, plantSpeciesRepository, plantVarietyRepository, plantMapper);
     }
 
     @Test
