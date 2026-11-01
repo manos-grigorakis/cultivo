@@ -147,6 +147,8 @@ public class PlantServiceImpl implements PlantService {
     }
 
     private PlantVariety findVarietyById(Long varietyId) {
+        if (varietyId == null) return null;
+
         return plantVarietyRepository.findById(varietyId).orElseThrow(() -> {
             log.warn("Plant variety with id {} not found", varietyId);
             return new ResourceNotFoundException("Plant variety with id " + varietyId + " not found");
