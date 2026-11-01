@@ -15,10 +15,11 @@ const props = withDefaults(
     id: string
     optionLabel: keyof T & string
     fetchOptions: (page: number, term: string) => Promise<PageResult<T>>
+    initialLoading?: boolean
     placeholder?: string
     required?: boolean
   }>(),
-  { placeholder: 'Select an option', required: false },
+  { initialLoading: false, placeholder: 'Select an option', required: false },
 )
 
 const emit = defineEmits<{ error: [error: unknown] }>()
@@ -96,7 +97,7 @@ onBeforeUnmount(() => {
       class="app-vselect"
       :options="options"
       :filterable="false"
-      :loading="isLoading"
+      :loading="isLoading || initialLoading"
       :label="optionLabel"
       :placeholder="placeholder"
       @search="onSearch"

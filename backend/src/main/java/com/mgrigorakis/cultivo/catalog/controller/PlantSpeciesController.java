@@ -26,8 +26,9 @@ public class PlantSpeciesController {
     @GetMapping
     public ApiResponseWrapper<Page<PlantSpeciesResponse>> getAllPlantSpecies(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
-            @ModelAttribute PageSortRequest sortRequest) {
-        return new ApiResponseWrapper<>(plantSpeciesService.getAllPlantSpecies(filterRequest, sortRequest));
+            @ModelAttribute PageSortRequest sortRequest,
+            @RequestParam(defaultValue = "") String name) {
+        return new ApiResponseWrapper<>(plantSpeciesService.getAllPlantSpecies(filterRequest, sortRequest, name));
     }
 
     @Operation(summary = "Get Plant Species by ID", description = "Finds a plant species by its ID")
@@ -69,6 +70,8 @@ public class PlantSpeciesController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Plant species deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Plant species not found"),
+            @ApiResponse(responseCode = "409", description =
+                    "Plant species cannot be deleted because it has plant varieties assigned"),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")

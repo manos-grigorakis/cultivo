@@ -1,7 +1,9 @@
 package com.mgrigorakis.cultivo.catalog.service;
 
+import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.catalog.dto.PlantSpeciesRequest;
@@ -25,13 +27,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class PlantSpeciesServiceImpl implements PlantSpeciesService {
     private final PlantSpeciesRepository plantSpeciesRepository;
     private final PlantCategoryRepository plantCategoryRepository;
+    private final PlantVarietyRepository plantVarietyRepository;
     private final PlantSpeciesMapper plantSpeciesMapper;
 
     @Transactional(readOnly = true)
     @Override
-    public Page<PlantSpeciesResponse> getAllPlantSpecies(PageFilterRequest filterRequest, PageSortRequest sortRequest) {
-        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("name"));
-        return plantSpeciesRepository.findAll(pageable).map(plantSpeciesMapper::toResponse);
+    public Page<PlantSpeciesResponse> getAllPlantSpecies(PageFilterRequest filterRequest, PageSortRequest sortRequest,
+                                                         String name) {
+        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(),
+                                           sortRequest.createSort("name"));
+
+        return plantSpeciesRepository.findByNameContainingIgnoreCase(name, pageable).map(plantSpeciesMapper::toResponse);
     }
 
 
@@ -82,7 +88,13 @@ public class PlantSpeciesServiceImpl implements PlantSpeciesService {
         PlantSpecies plantSpecies = plantSpeciesRepository.findById(id).orElseThrow(() -> {
             log.warn("Plant species with id {} not found", id);
             return new ResourceNotFoundException("Plant species with id " + id + " not found");
-        });;
+        });
+
+        if(plantVarietyRepository.existsByPlantSpeciesId(id)) {
+            log.warn("Attempt to delete plant species with id {} while plant varieties are assigned", id);
+            throw new ConflictException("Plant species with id " + id + " has plant varieties assigned",
+                                         "PLANT_SPECIES_HAS_VARIETIES");
+        }
 
         plantSpeciesRepository.delete(plantSpecies);
         log.info("Plant species with id {} has been deleted", id);
