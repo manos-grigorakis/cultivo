@@ -5,6 +5,7 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantSearchCriteria;
 import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.service.PlantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,13 +26,14 @@ public class PlantController {
     private final PlantService plantService;
 
     @Operation(summary = "Get All Plants", description = "Lists all plants with pagination")
-    @ApiResponse(responseCode = "200", description = "List of all active plants with pagination, and optionally archived ones")
+    @ApiResponse(responseCode = "200", description = "List of all active plants with pagination, and optionally additionally filters")
     @GetMapping
     public ApiResponseWrapper<Page<PlantResponse>> getAllPlants(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
             @ModelAttribute PageSortRequest sortRequest,
-            @RequestParam(defaultValue = "false") boolean archived) {
-        return new ApiResponseWrapper<>(plantService.getAllPlants(filterRequest, sortRequest, archived));
+            @ModelAttribute PlantSearchCriteria criteria
+            ) {
+        return new ApiResponseWrapper<>(plantService.getAllPlants(filterRequest, sortRequest, criteria));
     }
 
     @Operation(summary = "Get Plant by ID", description = "Finds a plant by its ID")

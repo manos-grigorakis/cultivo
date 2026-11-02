@@ -10,15 +10,18 @@ import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantSearchCriteria;
 import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.mapper.PlantMapper;
 import com.mgrigorakis.cultivo.plants.model.Plant;
 import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
+import com.mgrigorakis.cultivo.plants.specs.PlantSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +39,20 @@ public class PlantServiceImpl implements PlantService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived) {
-        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("id"));
-        Page<Plant> plants = archived ? plantRepository.findAllByArchivedAtIsNotNull(pageable) :
-                plantRepository.findAllByArchivedAtIsNull(pageable);
+    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest,
+                                            PlantSearchCriteria criteria) {
+        Pageable pageable = PageRequest.of(
+                filterRequest.page(),
+                filterRequest.size(),
+                sortRequest.createSort("id"));
 
-        return plants.map(plantMapper::toResponse);
+        Specification<Plant> spec = Specification.allOf(
+                PlantSpecification.isArchived(criteria.archived()),
+                PlantSpecification.hasSpecies(criteria.plantSpeciesId()),
+                PlantSpecification.hasVariety(criteria.plantVarietyId())
+        );
+
+        return plantRepository.findAll(spec, pageable).map(plantMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
