@@ -71,6 +71,7 @@ onMounted(() => {
           :icon="LucidePlus"
           label="Add plant species"
           @on-click="isPlantSpeciesFormOpen = true"
+          class="mt-2 sm:mt-0"
         />
       </div>
     </div>
@@ -79,7 +80,7 @@ onMounted(() => {
 
     <ul
       v-else-if="isLoading || plantSpecies.length > 0"
-      class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
+      class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
     >
       <template v-if="isLoading">
         <PlantSpeciesCardSkeleton v-for="i in 10" :key="i" />
