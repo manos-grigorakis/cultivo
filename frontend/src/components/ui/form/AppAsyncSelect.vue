@@ -18,8 +18,14 @@ const props = withDefaults(
     initialLoading?: boolean
     placeholder?: string
     required?: boolean
+    disabled?: boolean
   }>(),
-  { initialLoading: false, placeholder: 'Select an option', required: false },
+  {
+    initialLoading: false,
+    placeholder: 'Select an option',
+    required: false,
+    disabled: false,
+  },
 )
 
 const emit = defineEmits<{ error: [error: unknown] }>()
@@ -93,8 +99,9 @@ onBeforeUnmount(() => {
 
     <VSelect
       v-model="selectedOption"
-      :input-id="id"
       class="app-vselect"
+      :input-id="id"
+      :disabled="disabled"
       :options="options"
       :filterable="false"
       :loading="isLoading || initialLoading"

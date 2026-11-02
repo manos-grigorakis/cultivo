@@ -76,6 +76,12 @@ const router = createRouter({
           component: () =>
             import('@/features/plant-species/views/tabs/PlantSpeciesDetailsVarietiesView.vue'),
         },
+        {
+          path: 'plants',
+          name: 'plant-species-details-plants',
+          component: () =>
+            import('@/features/plant-species/views/tabs/PlantSpeciesDetailsPlantsView.vue'),
+        },
       ],
     },
 

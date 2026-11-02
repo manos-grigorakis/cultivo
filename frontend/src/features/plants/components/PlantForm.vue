@@ -1,19 +1,24 @@
 <script lang="ts" setup>
 import AppButton from '@/components/ui/AppButton.vue'
+import AppAsyncSelect from '@/components/ui/form/AppAsyncSelect.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
-import { PLANT_API_URL } from '@/constant/api.ts'
+import { PLANT_API_URL, PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
+import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import type { PlantReferenceResponse } from '@/features/plants/types/plant-reference-response.interface.ts'
 import type { PlantRequest } from '@/features/plants/types/plant-request.interface.ts'
+import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
+import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import axios, { AxiosError } from 'axios'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import AppErrorContainer from '../../../components/ui/AppErrorContainer.vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
-  plantId?: number
-  initialLabel?: string
+  data?: PlantResponse
 }>()
 
 const emit = defineEmits<{
@@ -21,25 +26,38 @@ const emit = defineEmits<{
   success: []
 }>()
 
-const label = ref<string>(props.initialLabel ?? '')
+const label = ref<string>(props.data?.label ?? '')
+const selectedSpecies = ref<PlantReferenceResponse | null>(props.data?.species ?? null)
+const selectedVariety = ref<PlantReferenceResponse | null>(props.data?.variety ?? null)
+
 const isSubmitting = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
 
 const onSubmit = async () => {
-  const payload: PlantRequest = { label: label.value.trim() }
+  if (!label.value.trim() || !selectedSpecies.value) {
+    errorMessage.value = 'Please fill the required fields'
+    return
+  }
+
+  const payload: PlantRequest = {
+    label: label.value.trim(),
+    plantSpeciesId: selectedSpecies.value.id,
+    plantVarietyId: selectedVariety.value?.id ?? null,
+  }
+
   isSubmitting.value = true
   errorMessage.value = null
 
   if (props.mode == 'create') {
     await createPlant(payload)
   } else if (props.mode == 'update') {
-    if (props.plantId === undefined) {
+    if (!props.data) {
       errorMessage.value = 'Plant ID is required'
       isSubmitting.value = false
       return
     }
 
-    await updatePlant(props.plantId, payload)
+    await updatePlant(props.data.id, payload)
   }
 }
 
@@ -79,6 +97,46 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
     isSubmitting.value = false
   }
 }
+
+const fetchPlantSpecies = async (
+  page: number,
+  term: string,
+): Promise<{ items: PlantReferenceResponse[]; hasNext: boolean }> => {
+  const { data } = await axios.get<ApiResponse<Pagination<PlantSpeciesResponse>>>(
+    PLANT_SPECIES_API_URL,
+    {
+      params: { page, size: 10, name: term },
+    },
+  )
+
+  return {
+    items: data.data.content.map(({ id, name }) => ({ id, name })),
+    hasNext: page + 1 < data.data.page.totalPages,
+  }
+}
+
+const fetchPlantVarieties = async (
+  page: number,
+  term: string,
+): Promise<{ items: PlantReferenceResponse[]; hasNext: boolean }> => {
+  if (!selectedSpecies.value) return { items: [], hasNext: false }
+
+  const { data } = await axios.get<ApiResponse<Pagination<PlantVarietyResponse>>>(
+    PLANT_VARIETIES_API_URL,
+    {
+      params: { page, size: 10, name: term, plantSpeciesId: selectedSpecies.value.id },
+    },
+  )
+
+  return {
+    items: data.data.content.map(({ id, name }) => ({ id, name })),
+    hasNext: page + 1 < data.data.page.totalPages,
+  }
+}
+
+watch(selectedSpecies, (newSpecies, oldSpecies) => {
+  if (newSpecies?.id !== oldSpecies?.id) selectedVariety.value = null
+})
 </script>
 
 <template>
@@ -91,6 +149,29 @@ const updatePlant = async (plantId: number, payload: PlantRequest) => {
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
       <AppInput v-model="label" label="label" placeholder="e.g. Basil" required />
+
+      <AppAsyncSelect
+        v-model="selectedSpecies"
+        :fetch-options="fetchPlantSpecies"
+        id="species"
+        label="species"
+        option-label="name"
+        placeholder="Please select plant species"
+        required
+        @error="(e) => (errorMessage = handleDefaultApiError(e))"
+      />
+
+      <AppAsyncSelect
+        :key="selectedSpecies?.id ?? 'no-species'"
+        v-model="selectedVariety"
+        :fetch-options="fetchPlantVarieties"
+        :disabled="!selectedSpecies"
+        id="variety"
+        label="variety"
+        option-label="name"
+        placeholder="Please select plant variety"
+        @error="(e) => (errorMessage = handleDefaultApiError(e))"
+      />
 
       <div>
         <AppButton

@@ -1,22 +1,29 @@
 package com.mgrigorakis.cultivo.plants.service;
 
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
+import com.mgrigorakis.cultivo.catalog.model.PlantVariety;
+import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
+import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantSearchCriteria;
 import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.mapper.PlantMapper;
 import com.mgrigorakis.cultivo.plants.model.Plant;
-import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
 import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
+import com.mgrigorakis.cultivo.plants.specs.PlantSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -26,20 +33,32 @@ import java.util.Map;
 @Service
 public class PlantServiceImpl implements PlantService {
     private final PlantRepository plantRepository;
+    private final PlantSpeciesRepository plantSpeciesRepository;
+    private final PlantVarietyRepository plantVarietyRepository;
     private final PlantMapper plantMapper;
 
+    @Transactional(readOnly = true)
     @Override
-    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived) {
-        Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("id"));
-        Page<Plant> plants = archived ? plantRepository.findAllByArchivedAtIsNotNull(pageable) :
-                plantRepository.findAllByArchivedAtIsNull(pageable);
+    public Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest,
+                                            PlantSearchCriteria criteria) {
+        Pageable pageable = PageRequest.of(
+                filterRequest.page(),
+                filterRequest.size(),
+                sortRequest.createSort("id"));
 
-        return plants.map(plantMapper::toResponse);
+        Specification<Plant> spec = Specification.allOf(
+                PlantSpecification.isArchived(criteria.archived()),
+                PlantSpecification.hasSpecies(criteria.plantSpeciesId()),
+                PlantSpecification.hasVariety(criteria.plantVarietyId())
+        );
+
+        return plantRepository.findAll(spec, pageable).map(plantMapper::toResponse);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PlantResponse getPlantById(Long id) {
-        Plant plant = plantRepository.findById(id).orElseThrow(() -> {
+        Plant plant = plantRepository.findByIdWithSpeciesAndVariety(id).orElseThrow(() -> {
             log.warn("No plant found with id {}", id);
             return new ResourceNotFoundException("Plant with id " + id + " not found");
         });
@@ -47,15 +66,22 @@ public class PlantServiceImpl implements PlantService {
         return plantMapper.toResponse(plant);
     }
 
+    @Transactional
     @Override
     public PlantResponse createPlant(PlantRequest request) {
-        Plant plant = plantMapper.toEntity(request);
+        PlantSpecies species = findSpeciesById(request.plantSpeciesId());
+        PlantVariety variety = findVarietyById(request.plantVarietyId());
+
+        validateVarietyBelongsToSpecies(variety, species);
+
+        Plant plant = plantMapper.toEntity(request, species, variety);
         Plant savedPlant = plantRepository.save(plant);
         log.info("Created plant with label {}", savedPlant.getLabel());
 
         return plantMapper.toResponse(savedPlant);
     }
 
+    @Transactional
     @Override
     public PlantResponse updatePlantById(Long id, PlantRequest request) {
         Plant plant = plantRepository.findById(id).orElseThrow(() -> {
@@ -64,7 +90,11 @@ public class PlantServiceImpl implements PlantService {
         });
 
         validatePlantIsNotArchived(plant);
-        Plant savedPlant = plantMapper.toUpdate(plant, request);
+        PlantSpecies species = findSpeciesById(request.plantSpeciesId());
+        PlantVariety variety = findVarietyById(request.plantVarietyId());
+        validateVarietyBelongsToSpecies(variety, species);
+
+        Plant savedPlant = plantMapper.toUpdate(plant, request, species, variety);
         plantRepository.save(savedPlant);
         log.info("Updated plant with label {}", savedPlant.getLabel());
 
@@ -117,6 +147,31 @@ public class PlantServiceImpl implements PlantService {
             log.warn("Plant with id {} is archived and cannot modified", plant.getId());
             throw new ConflictException("Plant with id " + plant.getId() +
                                                 " is archived and cannot modified", "PLANT_ARCHIVED");
+        }
+    }
+
+    private PlantSpecies findSpeciesById(Long speciesId) {
+        return plantSpeciesRepository.findById(speciesId).orElseThrow(() -> {
+            log.warn("Plant species with id {} not found", speciesId);
+            return new ResourceNotFoundException("Plant species with id " + speciesId + " not found");
+        });
+    }
+
+    private PlantVariety findVarietyById(Long varietyId) {
+        if (varietyId == null) return null;
+
+        return plantVarietyRepository.findById(varietyId).orElseThrow(() -> {
+            log.warn("Plant variety with id {} not found", varietyId);
+            return new ResourceNotFoundException("Plant variety with id " + varietyId + " not found");
+        });
+    }
+
+    private void validateVarietyBelongsToSpecies(PlantVariety variety, PlantSpecies species) {
+        if(variety != null && !variety.belongsTo(species)) {
+            log.warn("Plant variety with id {} does not belong to species with id {}", variety.getId(), species.getId());
+            throw new ConflictException("Plant variety with id " + variety.getId() +
+                                                " does not belong to species with id " + species.getId(),
+                                        "VARIETY_NOT_BELONGS_TO_SPECIES");
         }
     }
 }

@@ -38,7 +38,13 @@ const onStatusChange = (event: Event) => {
 <template>
   <div class="rounded-card bg-plant-placeholder h-50 w-50 max-w-150" />
 
-  <h2 class="font-display mt-4 truncate text-4xl">{{ plant.label }}</h2>
+  <h2 class="font-display mt-4 truncate text-4xl">
+    {{ plant.label }}
+  </h2>
+
+  <p v-if="plant.species" class="text-content-muted mt-1 text-sm">
+    {{ plant?.category?.name }} - {{ plant.species.name }} {{ plant.variety?.name }}
+  </p>
 
   <div class="mt-2 flex flex-wrap items-center justify-between">
     <select
@@ -61,7 +67,6 @@ const onStatusChange = (event: Event) => {
       />
       <AppButton
         :icon="LucidePencil"
-        label="Edit Plant"
         @on-click="emit('edit-plant')"
         variant="outline"
         :disabled="plant.archivedAt != null"

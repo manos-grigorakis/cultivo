@@ -1,5 +1,7 @@
 package com.mgrigorakis.cultivo.plants.model;
 
+import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
+import com.mgrigorakis.cultivo.catalog.model.PlantVariety;
 import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "plants")
 @Entity
@@ -34,10 +36,22 @@ public class Plant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // Only new / updated records will require this field as not null.
+    // Handled by Flyway migration v7 migration
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plant_species_id")
+    private PlantSpecies species;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plant_variety_id")
+    private PlantVariety variety;
+
     @Builder
-    public Plant(String label, PlantStatus status) {
+    public Plant(String label, PlantStatus status, PlantSpecies species, PlantVariety variety) {
         this.label = label;
         this.status = PlantStatus.ACTIVE;
+        this.species = species;
+        this.variety = variety;
     }
 
     @PrePersist

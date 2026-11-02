@@ -8,8 +8,10 @@ import com.mgrigorakis.cultivo.catalog.model.PlantVariety;
 import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
 import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
 import com.mgrigorakis.cultivo.catalog.service.PlantVarietyServiceImpl;
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
+import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,9 @@ public class PlantVarietyServiceTest {
 
     @Mock
     private PlantSpeciesRepository plantSpeciesRepository;
+
+    @Mock
+    private PlantRepository plantRepository;
 
     @Mock
     private PlantVarietyMapper plantVarietyMapper;
@@ -210,12 +215,14 @@ public class PlantVarietyServiceTest {
     void deletePlantVarietyById_shouldDeletePlantVariety() {
         // Arrange
         when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(mockVariety));
+        when(plantRepository.existsByVariety_Id(1L)).thenReturn(false);
 
         // Act
         plantVarietyService.deletePlantVarietyById(1L);
 
         // Assert
         verify(plantVarietyRepository).findById(1L);
+        verify(plantRepository).existsByVariety_Id(1L);
         verify(plantVarietyRepository).delete(mockVariety);
     }
 
@@ -229,6 +236,24 @@ public class PlantVarietyServiceTest {
 
         // Assert
         verify(plantVarietyRepository).findById(1L);
+        verifyNoMoreInteractions(plantVarietyRepository);
+    }
+
+    @Test
+    void deletePlantVarietyById_shouldThrowConflictException_whenVarietyHasPlants() {
+        // Arrange
+        when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(mockVariety));
+        when(plantRepository.existsByVariety_Id(1L)).thenReturn(true);
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantVarietyService.deletePlantVarietyById(1L));
+
+        // Assert
+        assertEquals("PLANT_VARIETY_HAS_PLANTS", exception.getErrorCode());
+
+        verify(plantVarietyRepository).findById(1L);
+        verify(plantRepository).existsByVariety_Id(1L);
         verifyNoMoreInteractions(plantVarietyRepository);
     }
 }

@@ -5,6 +5,7 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantSearchCriteria;
 import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.service.PlantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,13 +26,14 @@ public class PlantController {
     private final PlantService plantService;
 
     @Operation(summary = "Get All Plants", description = "Lists all plants with pagination")
-    @ApiResponse(responseCode = "200", description = "List of all plants with pagination")
+    @ApiResponse(responseCode = "200", description = "List of all active plants with pagination, and optionally additionally filters")
     @GetMapping
     public ApiResponseWrapper<Page<PlantResponse>> getAllPlants(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
             @ModelAttribute PageSortRequest sortRequest,
-            @RequestParam(defaultValue = "false") boolean archived) {
-        return new ApiResponseWrapper<>(plantService.getAllPlants(filterRequest, sortRequest, archived));
+            @ModelAttribute PlantSearchCriteria criteria
+            ) {
+        return new ApiResponseWrapper<>(plantService.getAllPlants(filterRequest, sortRequest, criteria));
     }
 
     @Operation(summary = "Get Plant by ID", description = "Finds a plant by its ID")
@@ -47,7 +49,9 @@ public class PlantController {
     @Operation(summary = "Create a Plant", description = "Create a new plant")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Plant created successfully"),
-            @ApiResponse(responseCode = "400", description = "Validation failed")
+            @ApiResponse(responseCode = "400", description = "Validation failed"),
+            @ApiResponse(responseCode = "404", description = "Plant species or variety not found"),
+            @ApiResponse(responseCode = "409", description = "Plant variety does not belong to selected species")
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -59,8 +63,8 @@ public class PlantController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Plant updated successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),
-            @ApiResponse(responseCode = "404", description = "Plant doesn't exist"),
-            @ApiResponse(responseCode = "409", description = "Plant is archived")
+            @ApiResponse(responseCode = "404", description = "Plant or plant variety or plant species not found"),
+            @ApiResponse(responseCode = "409", description = "Plant is archived or plant variety does not belong to selected species")
     })
     @PutMapping("/{id}")
     public ApiResponseWrapper<PlantResponse> updatePlantById(@PathVariable Long id,

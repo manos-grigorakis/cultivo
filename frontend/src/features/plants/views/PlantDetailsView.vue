@@ -146,8 +146,7 @@ onMounted(() => {
 <template>
   <PlantForm
     v-if="isPlantUpdateFormOpen && plant"
-    :initial-label="plant.label"
-    :plant-id="plant.id"
+    :data="plant"
     mode="update"
     @close="isPlantUpdateFormOpen = false"
     @success="onPlantUpdated"

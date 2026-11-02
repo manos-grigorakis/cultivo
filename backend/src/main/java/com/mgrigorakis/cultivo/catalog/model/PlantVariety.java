@@ -57,4 +57,14 @@ public class PlantVariety {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    /**
+     * Check whether the variety belongs to the provided species
+     *
+     * @param species The species to check for the relationship
+     * @return {@code true} if the variety belongs to the provided species, otherwise {@code false}
+     */
+    public boolean belongsTo(PlantSpecies species) {
+        return this.plantSpecies.getId().equals(species.getId());
+    }
 }

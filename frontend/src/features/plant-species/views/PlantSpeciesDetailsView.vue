@@ -2,12 +2,13 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { PLANT_API_URL, PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import PlantSpeciesDetailsSkeleton from '@/features/plant-species/components/PlantSpeciesDetailsSkeleton.vue'
 import PlantSpeciesDetailsTabs from '@/features/plant-species/components/PlantSpeciesDetailsTabs.vue'
 import PlantSpeciesForm from '@/features/plant-species/components/PlantSpeciesForm.vue'
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
@@ -26,9 +27,9 @@ const errorMessage = ref<string | null>(null)
 const isUpdatePlantSpeciesFormOpen = ref<boolean>(false)
 const isPlantSpeciesDeleteModalOpen = ref<boolean>(false)
 const varietiesCount = ref<number>(0)
+const plantsCount = ref<number>(0)
 
 const fetchPlantSpeciesById = async () => {
-  isLoading.value = true
   errorMessage.value = null
 
   try {
@@ -41,8 +42,6 @@ const fetchPlantSpeciesById = async () => {
     }
 
     errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -73,6 +72,8 @@ const onPlantSpeciesDelete = async () => {
         errorMessage.value = 'Plant species not found'
       } else if (status === 409 && errorCode === 'PLANT_SPECIES_HAS_VARIETIES') {
         errorMessage.value = `Cannot delete ${species.value.name} because it has varieties assigned. Please delete varieties and try again`
+      } else if (status === 409 && errorCode === 'PLANT_SPECIES_HAS_PLANTS') {
+        errorMessage.value = `Cannot delete ${species.value.name} because it has plants assigned. Please delete plants and try again`
       }
     } else {
       errorMessage.value = handleDefaultApiError(error)
@@ -84,7 +85,6 @@ const onPlantSpeciesDelete = async () => {
 }
 
 const fetchPlantVarietiesSize = async () => {
-  isLoading.value = true
   errorMessage.value = null
 
   try {
@@ -98,14 +98,31 @@ const fetchPlantVarietiesSize = async () => {
     varietiesCount.value = data.data.page.totalElements
   } catch (error) {
     errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
   }
 }
 
-onMounted(() => {
-  fetchPlantSpeciesById()
-  fetchPlantVarietiesSize()
+const fetchPlantsSize = async () => {
+  errorMessage.value = null
+
+  try {
+    const { data } = await axios.get<ApiResponse<Pagination<PlantResponse>>>(PLANT_API_URL, {
+      params: { plantSpeciesId: speciesId },
+    })
+
+    plantsCount.value = data.data.page.totalElements
+  } catch (error) {
+    errorMessage.value = handleDefaultApiError(error)
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true
+
+  try {
+    await Promise.all([fetchPlantSpeciesById(), fetchPlantVarietiesSize(), fetchPlantsSize()])
+  } finally {
+    isLoading.value = false
+  }
 })
 </script>
 
@@ -133,44 +150,50 @@ onMounted(() => {
     <PlantSpeciesDetailsSkeleton v-if="isLoading" />
 
     <template v-else>
-      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-2" />
+      <div class="mx-auto w-full max-w-5xl">
+        <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-2" />
 
-      <div v-if="species" class="mx-auto w-full max-w-5xl">
-        <!-- Header -->
-        <div class="flex items-start gap-6">
-          <div class="rounded-card bg-plant-placeholder aspect-square w-32 shrink-0" />
+        <template v-if="species">
+          <!-- Header -->
+          <div class="flex items-start gap-6">
+            <div class="rounded-card bg-plant-placeholder aspect-square w-32 shrink-0" />
 
-          <div class="min-w-0 flex-1">
-            <h1 class="font-display text-3xl capitalize">{{ species.name }}</h1>
+            <div class="min-w-0 flex-1">
+              <h1 class="font-display text-3xl capitalize">{{ species.name }}</h1>
 
-            <p class="text-content-muted mt-1 text-sm italic">{{ species.scientificName }}</p>
-            <p class="text-content-secondary mt-2 text-sm">{{ species.plantCategory.name }}</p>
+              <p class="text-content-muted mt-1 text-sm italic">{{ species.scientificName }}</p>
+              <p class="text-content-secondary mt-2 text-sm">{{ species.plantCategory.name }}</p>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-2">
+              <AppButton
+                :icon="LucidePencil"
+                variant="outline"
+                @on-click="isUpdatePlantSpeciesFormOpen = true"
+              />
+              <AppButton
+                :icon="LucideTrash"
+                variant="danger"
+                :disabled="isLoading"
+                @on-click="isPlantSpeciesDeleteModalOpen = true"
+              />
+            </div>
           </div>
 
-          <div class="flex shrink-0 items-center gap-2">
-            <AppButton
-              :icon="LucidePencil"
-              variant="outline"
-              @on-click="isUpdatePlantSpeciesFormOpen = true"
-            />
-            <AppButton
-              :icon="LucideTrash"
-              variant="danger"
-              :disabled="isLoading"
-              @on-click="isPlantSpeciesDeleteModalOpen = true"
-            />
-          </div>
+          <PlantSpeciesDetailsTabs
+            :species-id="species.id"
+            :varieties-count="varietiesCount"
+            :plants-count="plantsCount"
+          />
+
+          <RouterView v-slot="{ Component }">
+            <component :is="Component" :species-id="species.id" :species="species" />
+          </RouterView>
+        </template>
+
+        <div v-else class="text-content-muted mt-2 text-center">
+          <p>Plant Species not found</p>
         </div>
-
-        <PlantSpeciesDetailsTabs :species-id="species.id" :varieties-count="varietiesCount" />
-
-        <RouterView v-slot="{ Component }">
-          <component :is="Component" :species-id="species.id" :species="species" />
-        </RouterView>
-      </div>
-
-      <div v-else class="text-content-muted mt-2 text-center">
-        <p>Plant Species not found</p>
       </div>
     </template>
   </section>

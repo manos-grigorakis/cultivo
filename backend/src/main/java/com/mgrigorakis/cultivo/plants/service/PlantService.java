@@ -4,12 +4,13 @@ import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantRequest;
 import com.mgrigorakis.cultivo.plants.dto.PlantResponse;
+import com.mgrigorakis.cultivo.plants.dto.PlantSearchCriteria;
 import com.mgrigorakis.cultivo.plants.dto.PlantStatusRequest;
 import com.mgrigorakis.cultivo.plants.model.enums.PlantStatus;
 import org.springframework.data.domain.Page;
 
 public interface PlantService {
-    Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, boolean archived);
+    Page<PlantResponse> getAllPlants(PageFilterRequest filterRequest, PageSortRequest sortRequest, PlantSearchCriteria criteria);
 
     PlantResponse getPlantById(Long id);
 

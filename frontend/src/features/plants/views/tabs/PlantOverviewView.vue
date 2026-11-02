@@ -9,10 +9,6 @@ defineProps<{
 
 <template>
   <section>
-    <PlantDetailsCard
-      :archived-at="plant.archivedAt"
-      :created-at="plant.createdAt"
-      :status="plant.status"
-    />
+    <PlantDetailsCard :plant="plant" />
   </section>
 </template>
