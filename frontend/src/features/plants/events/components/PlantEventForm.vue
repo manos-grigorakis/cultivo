@@ -111,7 +111,7 @@ const onTypeChange = (type: string) => {
 
       <div>
         <label for="type" class="text-sm font-semibold"
-          ><span class="text-red-500">*</span>Type
+          >Type<span class="ml-1 text-red-500">*</span>
         </label>
         <div class="mt-1 flex gap-2 overflow-y-auto">
           <div v-for="type in types" :key="type">
@@ -139,7 +139,7 @@ const onTypeChange = (type: string) => {
       <AppInput v-model="form.title" label="title" required />
 
       <div>
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row">
           <AppInput
             v-model="form.date"
             label="date"
