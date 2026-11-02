@@ -43,7 +43,7 @@ const onStatusChange = (event: Event) => {
   </h2>
 
   <p v-if="plant.species" class="text-content-muted mt-1 text-sm">
-    {{ plant.species.name }} - {{ plant.variety?.name }}
+    {{ plant?.category?.name }} - {{ plant.species.name }} {{ plant.variety?.name }}
   </p>
 
   <div class="mt-2 flex flex-wrap items-center justify-between">

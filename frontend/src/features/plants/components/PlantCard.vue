@@ -13,8 +13,8 @@ defineProps<{
 
       <div class="px-2 py-3">
         <h2 class="font-display truncate pl-1 text-lg">{{ plant.label }}</h2>
-        <p v-if="plant.species" class="text-content-muted mt-1 pl-1 text-xs">
-          {{ plant.species.name }} - {{ plant.variety?.name }}
+        <p v-if="plant.species" class="text-content-muted mt-1 truncate pl-1 text-xs">
+          {{ plant.category?.name }} - {{ plant.species.name }} {{ plant.variety?.name }}
         </p>
       </div>
     </RouterLink>

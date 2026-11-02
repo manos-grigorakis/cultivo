@@ -12,6 +12,12 @@ defineProps<{
 
     <ul class="flex flex-col space-y-1">
       <li class="flex justify-between gap-2">
+        <p class="text-content-muted">Category</p>
+        <p class="text-primary-900">
+          {{ plant.category != null ? plant.category.name : '-' }}
+        </p>
+      </li>
+      <li class="flex justify-between gap-2">
         <p class="text-content-muted">Species</p>
         <p class="text-primary-900">
           {{ plant.species != null ? plant.species.name : '-' }}

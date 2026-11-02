@@ -9,4 +9,5 @@ export interface PlantResponse {
   updatedAt: string | null
   species: PlantReferenceResponse | null
   variety: PlantReferenceResponse | null
+  category: PlantReferenceResponse | null
 }
