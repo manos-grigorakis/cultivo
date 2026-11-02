@@ -23,4 +23,8 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
     @EntityGraph(attributePaths = {"species", "variety", "species.plantCategory"})
     @Query("SELECT p FROM Plant AS p WHERE p.id = :id")
     Optional<Plant> findByIdWithSpeciesAndVariety(@Param("id") Long id);
+
+    boolean existsBySpecies_Id(Long speciesId);
+
+    boolean existsByVariety_Id(Long varietyId);
 }

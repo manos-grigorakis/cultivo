@@ -13,6 +13,7 @@ import com.mgrigorakis.cultivo.catalog.model.PlantCategory;
 import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
 import com.mgrigorakis.cultivo.catalog.repository.PlantCategoryRepository;
 import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
+import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PlantSpeciesServiceImpl implements PlantSpeciesService {
     private final PlantSpeciesRepository plantSpeciesRepository;
     private final PlantCategoryRepository plantCategoryRepository;
+    private final PlantRepository plantRepository;
     private final PlantVarietyRepository plantVarietyRepository;
     private final PlantSpeciesMapper plantSpeciesMapper;
 
@@ -94,6 +96,12 @@ public class PlantSpeciesServiceImpl implements PlantSpeciesService {
             log.warn("Attempt to delete plant species with id {} while plant varieties are assigned", id);
             throw new ConflictException("Plant species with id " + id + " has plant varieties assigned",
                                          "PLANT_SPECIES_HAS_VARIETIES");
+        }
+
+        if(plantRepository.existsBySpecies_Id(id)) {
+            log.warn("Attempt to delete plant species with id {} while plants are assigned", id);
+            throw new ConflictException("Plant species with id " + id + " has plants assigned",
+                                        "PLANT_SPECIES_HAS_PLANTS");
         }
 
         plantSpeciesRepository.delete(plantSpecies);

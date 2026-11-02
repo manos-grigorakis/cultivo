@@ -9,8 +9,10 @@ import com.mgrigorakis.cultivo.catalog.repository.PlantSpeciesRepository;
 import com.mgrigorakis.cultivo.catalog.repository.PlantVarietyRepository;
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
+import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PlantVarietyServiceImpl implements PlantVarietyService {
     private final PlantVarietyRepository plantVarietyRepository;
     private final PlantSpeciesRepository plantSpeciesRepository;
+    private final PlantRepository plantRepository;
     private final PlantVarietyMapper plantVarietyMapper;
 
     @Override
@@ -98,6 +101,13 @@ public class PlantVarietyServiceImpl implements PlantVarietyService {
     @Override
     public void deletePlantVarietyById(Long id) {
         PlantVariety plantVariety = findPlantVarietyById(id);
+
+        if(plantRepository.existsByVariety_Id(id)) {
+            log.warn("Attempt to delete plant variety with id {} while plants are assigned", id);
+            throw new ConflictException("Plant variety with id " + id + " has plants assigned",
+                                        "PLANT_VARIETY_HAS_PLANTS");
+        }
+
         plantVarietyRepository.delete(plantVariety);
         log.info("Plant variety with id {} deleted", id);
     }
