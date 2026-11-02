@@ -98,11 +98,22 @@ const onVarietyDeleteConfirmationClick = async () => {
     await axios.delete(`${PLANT_VARIETIES_API_URL}/${varietyId}`)
     await router.push({ name: 'plant-variety-list' })
   } catch (error) {
-    if (error instanceof AxiosError && error.response?.status === 404) {
-      errorMessage.value = `Plant variety with id ${varietyId} not found`
-    } else {
-      errorMessage.value = handleDefaultApiError(error)
+    if (axios.isAxiosError<ApiResponse<never>>(error)) {
+      const status = error?.response?.status
+      const errorCode = error?.response?.data?.error?.errorCode
+
+      if (status === 404) {
+        errorMessage.value = `Plant variety with id ${varietyId} not found`
+        return
+      }
+
+      if (status === 409 && errorCode === 'PLANT_VARIETY_HAS_PLANTS') {
+        errorMessage.value = `Cannot delete ${variety.value?.name} because it has plants assigned. Please delete plants and try again`
+        isDeleteDialogOpen.value = false
+        return
+      }
     }
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isDeleting.value = false
   }
@@ -154,7 +165,7 @@ onMounted(async () => {
   />
 
   <section class="mx-auto w-full max-w-5xl">
-    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-4" />
 
     <PlantVarietyDetailsSkeleton v-if="isPageLoading && showSkeleton" />
 

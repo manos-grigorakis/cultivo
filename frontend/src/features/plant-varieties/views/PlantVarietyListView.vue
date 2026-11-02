@@ -12,7 +12,7 @@ import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Page, Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucidePlus, RefreshCcw } from '@lucide/vue'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
 const plantVarieties = ref<PlantVarietyResponse[]>([])
@@ -73,17 +73,27 @@ const onPlantVarietyDelete = async () => {
 
   try {
     await axios.delete(`${PLANT_VARIETIES_API_URL}/${selectedVariety.value.id}`)
+    closeDeleteDialog()
     await fetchPlantVarieties(page.value?.number ?? 0)
   } catch (error) {
-    if (error instanceof AxiosError && error.status === 404) {
-      errorMessage.value = 'Plant variety not found'
-    } else {
-      errorMessage.value = handleDefaultApiError(error)
+    if (axios.isAxiosError<ApiResponse<never>>(error)) {
+      const status = error?.response?.status
+      const errorCode = error?.response?.data?.error?.errorCode
+
+      if (status === 404) {
+        errorMessage.value = 'Plant variety not found'
+        return
+      }
+
+      if (status === 409 && errorCode === 'PLANT_VARIETY_HAS_PLANTS') {
+        errorMessage.value = `Cannot delete ${selectedVariety.value?.name} because it has plants assigned. Please delete plants and try again`
+        return
+      }
     }
+    errorMessage.value = handleDefaultApiError(error)
   } finally {
     isDeleting.value = false
-    isDeleteDialogOpen.value = false
-    selectedVariety.value = null
+    closeDeleteDialog()
   }
 }
 
@@ -153,7 +163,7 @@ onMounted(() => {
     <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-4" />
 
     <PlantVarietyTable
-      v-else-if="isLoading || plantVarieties.length > 0"
+      v-if="isLoading || plantVarieties.length > 0"
       :plant-varieties="plantVarieties"
       :is-loading="isLoading"
       :show-actions="true"

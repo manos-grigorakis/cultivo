@@ -73,6 +73,8 @@ const onPlantSpeciesDelete = async () => {
         errorMessage.value = 'Plant species not found'
       } else if (status === 409 && errorCode === 'PLANT_SPECIES_HAS_VARIETIES') {
         errorMessage.value = `Cannot delete ${species.value.name} because it has varieties assigned. Please delete varieties and try again`
+      } else if (status === 409 && errorCode === 'PLANT_SPECIES_HAS_PLANTS') {
+        errorMessage.value = `Cannot delete ${species.value.name} because it has plants assigned. Please delete plants and try again`
       }
     } else {
       errorMessage.value = handleDefaultApiError(error)
@@ -133,44 +135,46 @@ onMounted(() => {
     <PlantSpeciesDetailsSkeleton v-if="isLoading" />
 
     <template v-else>
-      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-2" />
+      <div class="mx-auto w-full max-w-5xl">
+        <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-2" />
 
-      <div v-if="species" class="mx-auto w-full max-w-5xl">
-        <!-- Header -->
-        <div class="flex items-start gap-6">
-          <div class="rounded-card bg-plant-placeholder aspect-square w-32 shrink-0" />
+        <template v-if="species">
+          <!-- Header -->
+          <div class="flex items-start gap-6">
+            <div class="rounded-card bg-plant-placeholder aspect-square w-32 shrink-0" />
 
-          <div class="min-w-0 flex-1">
-            <h1 class="font-display text-3xl capitalize">{{ species.name }}</h1>
+            <div class="min-w-0 flex-1">
+              <h1 class="font-display text-3xl capitalize">{{ species.name }}</h1>
 
-            <p class="text-content-muted mt-1 text-sm italic">{{ species.scientificName }}</p>
-            <p class="text-content-secondary mt-2 text-sm">{{ species.plantCategory.name }}</p>
+              <p class="text-content-muted mt-1 text-sm italic">{{ species.scientificName }}</p>
+              <p class="text-content-secondary mt-2 text-sm">{{ species.plantCategory.name }}</p>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-2">
+              <AppButton
+                :icon="LucidePencil"
+                variant="outline"
+                @on-click="isUpdatePlantSpeciesFormOpen = true"
+              />
+              <AppButton
+                :icon="LucideTrash"
+                variant="danger"
+                :disabled="isLoading"
+                @on-click="isPlantSpeciesDeleteModalOpen = true"
+              />
+            </div>
           </div>
 
-          <div class="flex shrink-0 items-center gap-2">
-            <AppButton
-              :icon="LucidePencil"
-              variant="outline"
-              @on-click="isUpdatePlantSpeciesFormOpen = true"
-            />
-            <AppButton
-              :icon="LucideTrash"
-              variant="danger"
-              :disabled="isLoading"
-              @on-click="isPlantSpeciesDeleteModalOpen = true"
-            />
-          </div>
+          <PlantSpeciesDetailsTabs :species-id="species.id" :varieties-count="varietiesCount" />
+
+          <RouterView v-slot="{ Component }">
+            <component :is="Component" :species-id="species.id" :species="species" />
+          </RouterView>
+        </template>
+
+        <div v-else class="text-content-muted mt-2 text-center">
+          <p>Plant Species not found</p>
         </div>
-
-        <PlantSpeciesDetailsTabs :species-id="species.id" :varieties-count="varietiesCount" />
-
-        <RouterView v-slot="{ Component }">
-          <component :is="Component" :species-id="species.id" :species="species" />
-        </RouterView>
-      </div>
-
-      <div v-else class="text-content-muted mt-2 text-center">
-        <p>Plant Species not found</p>
       </div>
     </template>
   </section>
