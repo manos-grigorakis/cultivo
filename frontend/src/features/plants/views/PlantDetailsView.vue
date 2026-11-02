@@ -159,7 +159,7 @@ onMounted(() => {
     @success="onPlantEventCreation()"
   />
 
-  <section>
+  <section class="mx-auto w-full max-w-5xl">
     <PlantDetailsSkeleton v-if="isLoading" />
 
     <template v-else>

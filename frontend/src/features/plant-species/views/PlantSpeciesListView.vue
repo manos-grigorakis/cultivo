@@ -11,13 +11,14 @@ import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Page, Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { LucidePlus } from '@lucide/vue'
+import { LucidePlus, RefreshCcw } from '@lucide/vue'
 import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
 const plantSpecies = ref<PlantSpeciesResponse[]>([])
 const isLoading = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
+const isRefreshing = ref<boolean>(false)
 const page = ref<Page>()
 
 const isPlantSpeciesFormOpen = ref<boolean>(false)
@@ -49,6 +50,18 @@ const onCreatePlantSpecies = async () => {
   await fetchPlantSpecies()
 }
 
+const refreshSpecies = async () => {
+  if (isRefreshing.value) return
+
+  isRefreshing.value = true
+
+  try {
+    await fetchPlantSpecies(page.value?.number ?? 0)
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
 onMounted(() => {
   fetchPlantSpecies()
 })
@@ -67,11 +80,22 @@ onMounted(() => {
       <div class="flex items-center justify-between">
         <span class="text-content-muted block">{{ page?.totalElements ?? 0 }} total</span>
 
-        <AppButton
-          :icon="LucidePlus"
-          label="Add plant species"
-          @on-click="isPlantSpeciesFormOpen = true"
-        />
+        <div class="flex items-center gap-2">
+          <AppButton
+            :icon="RefreshCcw"
+            variant="outline"
+            @click="refreshSpecies()"
+            :disabled="isRefreshing"
+            :icon-class="isRefreshing ? 'animate-spin' : ''"
+          />
+
+          <AppButton
+            :icon="LucidePlus"
+            label="Add plant species"
+            @on-click="isPlantSpeciesFormOpen = true"
+            class="mt-2 sm:mt-0"
+          />
+        </div>
       </div>
     </div>
 
@@ -79,7 +103,7 @@ onMounted(() => {
 
     <ul
       v-else-if="isLoading || plantSpecies.length > 0"
-      class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
+      class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
     >
       <template v-if="isLoading">
         <PlantSpeciesCardSkeleton v-for="i in 10" :key="i" />

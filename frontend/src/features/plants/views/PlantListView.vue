@@ -11,7 +11,7 @@ import type { PlantResponse } from '@/features/plants/types/plant-response.inter
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import { type Page, type Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { LucidePlus } from '@lucide/vue'
+import { LucidePlus, RefreshCcw } from '@lucide/vue'
 import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
@@ -22,6 +22,7 @@ const page = ref<Page>()
 
 const isLoading = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
+const isRefreshing = ref<boolean>(false)
 
 const fetchPlants = async (archived: boolean = false, pageNumber: number = 0) => {
   isLoading.value = true
@@ -51,6 +52,18 @@ const toggleArchived = async () => {
   await fetchPlants(showArchived.value)
 }
 
+const refreshPlants = async () => {
+  if (isRefreshing.value) return
+
+  isRefreshing.value = true
+
+  try {
+    await fetchPlants(showArchived.value, page.value?.number ?? 0)
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
 onMounted(() => {
   fetchPlants()
 })
@@ -69,7 +82,21 @@ onMounted(() => {
       <div class="flex items-center justify-between">
         <span class="text-content-muted block">{{ page?.totalElements ?? 0 }} total</span>
 
-        <AppButton :icon="LucidePlus" label="Add plant" @on-click="isCreatePlantFormOpen = true" />
+        <div class="flex items-center gap-2">
+          <AppButton
+            :icon="RefreshCcw"
+            variant="outline"
+            @click="refreshPlants()"
+            :disabled="isRefreshing"
+            :icon-class="isRefreshing ? 'animate-spin' : ''"
+          />
+
+          <AppButton
+            :icon="LucidePlus"
+            label="Add plant"
+            @on-click="isCreatePlantFormOpen = true"
+          />
+        </div>
       </div>
 
       <!-- Filters -->
@@ -85,7 +112,7 @@ onMounted(() => {
 
       <ul
         v-else-if="isLoading || plants.length > 0"
-        class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
+        class="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
       >
         <template v-if="isLoading">
           <PlantCardSkeleton v-for="i in 10" :key="i" />

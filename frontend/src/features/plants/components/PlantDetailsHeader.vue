@@ -36,35 +36,40 @@ const onStatusChange = (event: Event) => {
 </script>
 
 <template>
-  <div class="rounded-card bg-plant-placeholder h-50 w-50 max-w-150" />
+  <div class="flex flex-col items-start gap-4 lg:flex-row lg:gap-6">
+    <!-- Image placeholder -->
+    <div class="rounded-card bg-plant-placeholder aspect-square w-32 shrink-0" />
 
-  <h2 class="font-display mt-4 truncate text-4xl">
-    {{ plant.label }}
-  </h2>
+    <div class="min-w-0 flex-1">
+      <h1 class="font-display truncate text-4xl">{{ plant.label }}</h1>
 
-  <p v-if="plant.species" class="text-content-muted mt-1 text-sm">
-    {{ plant?.category?.name }} - {{ plant.species.name }} {{ plant.variety?.name }}
-  </p>
+      <p v-if="plant.species" class="text-content-muted mt-1 text-sm">
+        {{ plant?.category?.name }} - {{ plant.species.name }} {{ plant.variety?.name }}
+      </p>
 
-  <div class="mt-2 flex flex-wrap items-center justify-between">
-    <select
-      :value="plant.status"
-      @change="onStatusChange"
-      class="rounded-card px-4 py-2 text-xs disabled:cursor-not-allowed"
-      :disabled="plant.archivedAt !== null || isUpdatingStatus"
-      :class="applyPlantStatusBadgeColor(plant.status)"
-    >
-      <option value="ACTIVE">ACTIVE</option>
-      <option value="DEAD">DEAD</option>
-    </select>
+      <div class="mt-2">
+        <select
+          :value="plant.status"
+          @change="onStatusChange"
+          class="rounded-card px-4 py-2 text-xs disabled:cursor-not-allowed"
+          :disabled="plant.archivedAt !== null || isUpdatingStatus"
+          :class="applyPlantStatusBadgeColor(plant.status)"
+        >
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="DEAD">DEAD</option>
+        </select>
+      </div>
+    </div>
 
-    <div class="flex items-center gap-2">
+    <!-- Actions -->
+    <div class="flex w-full shrink-0 items-center justify-end gap-2 lg:w-auto">
       <AppButton
         :icon="LucidePlus"
         label="Add Event"
         @on-click="emit('add-event')"
         :disabled="plant.archivedAt != null"
       />
+
       <AppButton
         :icon="LucidePencil"
         @on-click="emit('edit-plant')"

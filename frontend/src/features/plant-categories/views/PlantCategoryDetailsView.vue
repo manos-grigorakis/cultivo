@@ -103,7 +103,7 @@ onMounted(() => {
     @confirm="deletePlantCategory"
   />
 
-  <section>
+  <section class="mx-auto w-full max-w-5xl">
     <PlantCategorySkeleton v-if="isLoading" />
 
     <template v-else>

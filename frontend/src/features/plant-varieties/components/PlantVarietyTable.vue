@@ -21,7 +21,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
+  <div v-if="!isLoading && plantVarieties.length === 0">
+    <p class="text-content-muted text-center">No varieties found for this species</p>
+  </div>
+
   <div
+    v-else
     class="rounded-card border-content-muted/40 bg-surface relative mt-4 overflow-x-auto border shadow-xs"
   >
     <table class="w-full text-left text-sm">

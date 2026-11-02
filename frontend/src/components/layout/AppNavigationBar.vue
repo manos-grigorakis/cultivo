@@ -34,12 +34,12 @@ const links: { label: string; url: string; icon: Component }[] = [
     <RouterLink to="/" class="font-display text-primary-800 p-4 text-2xl">Cultivo</RouterLink>
 
     <div class="bg-surface-muted fixed bottom-0 z-50 w-full px-2 py-4">
-      <ul class="flex items-center justify-center gap-1">
+      <ul class="flex flex-wrap items-center justify-center gap-1">
         <li v-for="link in links" :key="link.url">
           <RouterLink
             :to="link.url"
             active-class="bg-primary-300 text-primary-900"
-            class="text-primary-900 rounded-card hover:bg-primary-200 flex items-center gap-2 px-8 py-3 font-medium capitalize"
+            class="text-primary-900 rounded-card hover:bg-primary-200 flex items-center gap-2 px-3 py-3 font-medium capitalize md:px-8"
             ><component :is="link.icon" :size="20" />{{ link.label }}</RouterLink
           >
         </li>
