@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   routerName: string
-  id: string | string[] | undefined
+  id: string | string[] | undefined | number
   label: string
   countBadge?: string | number
 }>()
