@@ -65,10 +65,12 @@ public class PlantServiceTest {
         mockUpdatedPlant = Plant.builder().label("Basil #2").species(mockSpecies).variety(mockVariety).build();
 
         mockPlantCreateRequest = new PlantRequest("Basil #1", 1L, 1L);
-        mockPlantCreateResponse = new PlantResponse(1L, "Basil #1", PlantStatus.ACTIVE, null, null, null, null, null);
+        mockPlantCreateResponse = new PlantResponse(1L, "Basil #1", PlantStatus.ACTIVE, null, null, null, null, null,
+                                                    null);
 
         mockPlantUpdateRequest = new PlantRequest("Basil #2", 1L, 1L);
-        mockPlantUpdateResponse = new PlantResponse(1L, "Basil #2", PlantStatus.ACTIVE, null, null, null, null, null);
+        mockPlantUpdateResponse = new PlantResponse(1L, "Basil #2", PlantStatus.ACTIVE, null, null, null, null, null,
+                                                    null);
     }
 
     @Test

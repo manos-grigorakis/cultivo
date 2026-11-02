@@ -1,5 +1,6 @@
 package com.mgrigorakis.cultivo.plants.mapper;
 
+import com.mgrigorakis.cultivo.catalog.model.PlantCategory;
 import com.mgrigorakis.cultivo.catalog.model.PlantSpecies;
 import com.mgrigorakis.cultivo.catalog.model.PlantVariety;
 import com.mgrigorakis.cultivo.plants.dto.PlantReferenceResponse;
@@ -23,7 +24,10 @@ public interface PlantMapper {
     @Mapping(source = "entity.id", target = "id")
     @Mapping(source = "entity.createdAt", target = "createdAt")
     @Mapping(source = "entity.updatedAt", target = "updatedAt")
+    @Mapping(source = "species.plantCategory", target = "category")
     PlantResponse toResponse(Plant entity);
+
+    PlantReferenceResponse toReference(PlantCategory category);
 
     PlantReferenceResponse toReference(PlantSpecies species);
 

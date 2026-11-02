@@ -12,6 +12,7 @@ public record PlantResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         PlantReferenceResponse species,
-        PlantReferenceResponse variety
+        PlantReferenceResponse variety,
+        PlantReferenceResponse category
 ) {
 }

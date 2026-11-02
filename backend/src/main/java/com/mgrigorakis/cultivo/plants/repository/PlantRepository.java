@@ -14,13 +14,13 @@ import java.util.Optional;
 
 @Repository
 public interface PlantRepository extends JpaRepository<Plant, Long> {
-    @EntityGraph(attributePaths = {"species", "variety"})
+    @EntityGraph(attributePaths = {"species", "variety", "species.plantCategory"})
     Page<Plant> findAllByArchivedAtIsNull(Pageable pageable);
 
-    @EntityGraph(attributePaths = {"species", "variety"})
+    @EntityGraph(attributePaths = {"species", "variety", "species.plantCategory"})
     Page<Plant> findAllByArchivedAtIsNotNull(Pageable pageable);
 
-    @EntityGraph(attributePaths = {"species", "variety"})
+    @EntityGraph(attributePaths = {"species", "variety", "species.plantCategory"})
     @Query("SELECT p FROM Plant AS p WHERE p.id = :id")
     Optional<Plant> findByIdWithSpeciesAndVariety(@Param("id") Long id);
 }
