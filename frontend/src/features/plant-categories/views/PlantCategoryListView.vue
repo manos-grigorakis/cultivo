@@ -11,7 +11,7 @@ import type { PlantCategoryResponse } from '@/features/plant-categories/types/pl
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Page, Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { LucidePlus } from '@lucide/vue'
+import { LucidePlus, RefreshCcw } from '@lucide/vue'
 import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
@@ -19,6 +19,7 @@ const plantCategories = ref<PlantCategoryResponse[]>([])
 const page = ref<Page>()
 const isLoading = ref<boolean>(false)
 const errorMessage = ref<string | null>(null)
+const isRefreshing = ref<boolean>(false)
 
 const isCreatePlantCategoryFormOpen = ref<boolean>(false)
 
@@ -46,6 +47,18 @@ const onPlantCategoryCreated = async () => {
   await fetchPlantCategories()
 }
 
+const refreshCategories = async () => {
+  if (isRefreshing.value) return
+
+  isRefreshing.value = true
+
+  try {
+    await fetchPlantCategories(page.value?.number ?? 0)
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
 onMounted(() => {
   fetchPlantCategories()
 })
@@ -64,11 +77,21 @@ onMounted(() => {
       <div class="flex items-center justify-between">
         <span class="text-content-muted block">{{ page?.totalElements ?? 0 }} total</span>
 
-        <AppButton
-          :icon="LucidePlus"
-          label="Add plant category"
-          @on-click="isCreatePlantCategoryFormOpen = true"
-        />
+        <div class="flex items-center gap-2">
+          <AppButton
+            :icon="RefreshCcw"
+            variant="outline"
+            @click="refreshCategories()"
+            :disabled="isRefreshing"
+            :icon-class="isRefreshing ? 'animate-spin' : ''"
+          />
+
+          <AppButton
+            :icon="LucidePlus"
+            label="Add plant category"
+            @on-click="isCreatePlantCategoryFormOpen = true"
+          />
+        </div>
       </div>
     </div>
 
