@@ -2,12 +2,13 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { PLANT_API_URL, PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import PlantSpeciesDetailsSkeleton from '@/features/plant-species/components/PlantSpeciesDetailsSkeleton.vue'
 import PlantSpeciesDetailsTabs from '@/features/plant-species/components/PlantSpeciesDetailsTabs.vue'
 import PlantSpeciesForm from '@/features/plant-species/components/PlantSpeciesForm.vue'
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
@@ -26,9 +27,9 @@ const errorMessage = ref<string | null>(null)
 const isUpdatePlantSpeciesFormOpen = ref<boolean>(false)
 const isPlantSpeciesDeleteModalOpen = ref<boolean>(false)
 const varietiesCount = ref<number>(0)
+const plantsCount = ref<number>(0)
 
 const fetchPlantSpeciesById = async () => {
-  isLoading.value = true
   errorMessage.value = null
 
   try {
@@ -41,8 +42,6 @@ const fetchPlantSpeciesById = async () => {
     }
 
     errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -86,7 +85,6 @@ const onPlantSpeciesDelete = async () => {
 }
 
 const fetchPlantVarietiesSize = async () => {
-  isLoading.value = true
   errorMessage.value = null
 
   try {
@@ -100,14 +98,31 @@ const fetchPlantVarietiesSize = async () => {
     varietiesCount.value = data.data.page.totalElements
   } catch (error) {
     errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
   }
 }
 
-onMounted(() => {
-  fetchPlantSpeciesById()
-  fetchPlantVarietiesSize()
+const fetchPlantsSize = async () => {
+  errorMessage.value = null
+
+  try {
+    const { data } = await axios.get<ApiResponse<Pagination<PlantResponse>>>(PLANT_API_URL, {
+      params: { plantSpeciesId: speciesId },
+    })
+
+    plantsCount.value = data.data.page.totalElements
+  } catch (error) {
+    errorMessage.value = handleDefaultApiError(error)
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true
+
+  try {
+    await Promise.all([fetchPlantSpeciesById(), fetchPlantVarietiesSize(), fetchPlantsSize()])
+  } finally {
+    isLoading.value = false
+  }
 })
 </script>
 
@@ -165,7 +180,11 @@ onMounted(() => {
             </div>
           </div>
 
-          <PlantSpeciesDetailsTabs :species-id="species.id" :varieties-count="varietiesCount" />
+          <PlantSpeciesDetailsTabs
+            :species-id="species.id"
+            :varieties-count="varietiesCount"
+            :plants-count="plantsCount"
+          />
 
           <RouterView v-slot="{ Component }">
             <component :is="Component" :species-id="species.id" :species="species" />

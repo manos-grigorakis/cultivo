@@ -2,6 +2,7 @@
 defineProps<{
   speciesId: number
   varietiesCount: number
+  plantsCount: number
 }>()
 </script>
 
@@ -23,6 +24,14 @@ defineProps<{
           active-class="bg-white shadow-sm"
           >Varieties
           <span class="text-content-muted text-sm">{{ varietiesCount }}</span></RouterLink
+        >
+      </li>
+      <li>
+        <RouterLink
+          :to="{ name: 'plant-species-details-plants', params: { id: speciesId } }"
+          class="rounded-card block px-8 py-4 text-xl font-medium"
+          active-class="bg-white shadow-sm"
+          >Plants <span class="text-content-muted text-sm">{{ plantsCount }}</span></RouterLink
         >
       </li>
     </ul>
