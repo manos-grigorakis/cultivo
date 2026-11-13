@@ -22,4 +22,6 @@ public interface SeedPacketRepository extends JpaRepository<SeedPacket, Long> {
     boolean existsByPlantVariety_IdAndBrandAndCode(Long plantVarietyId, String brand, String code);
 
     boolean existsByPlantVariety_IdAndBrandAndCodeAndIdNot(Long plantVarietyId, String brand, String code, Long id);
+
+    boolean existsByPlantVariety_Id(Long plantVarietyId);
 }

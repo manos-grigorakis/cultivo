@@ -112,6 +112,12 @@ const onVarietyDeleteConfirmationClick = async () => {
         isDeleteDialogOpen.value = false
         return
       }
+
+      if (status === 409 && errorCode === 'PLANT_VARIETY_HAS_SEED_PACKETS') {
+        errorMessage.value = `Cannot delete ${variety.value?.name} because it has seed packets assigned. Please delete seed packets and try again`
+        isDeleteDialogOpen.value = false
+        return
+      }
     }
     errorMessage.value = handleDefaultApiError(error)
   } finally {

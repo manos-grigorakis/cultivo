@@ -13,6 +13,7 @@ import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
+import com.mgrigorakis.cultivo.seeds.repository.SeedPacketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PlantVarietyServiceImpl implements PlantVarietyService {
     private final PlantVarietyRepository plantVarietyRepository;
     private final PlantSpeciesRepository plantSpeciesRepository;
+    private final SeedPacketRepository seedPacketRepository;
     private final PlantRepository plantRepository;
     private final PlantVarietyMapper plantVarietyMapper;
 
@@ -106,6 +108,12 @@ public class PlantVarietyServiceImpl implements PlantVarietyService {
             log.warn("Attempt to delete plant variety with id {} while plants are assigned", id);
             throw new ConflictException("Plant variety with id " + id + " has plants assigned",
                                         "PLANT_VARIETY_HAS_PLANTS");
+        }
+
+        if(seedPacketRepository.existsByPlantVariety_Id(id)) {
+            log.warn("Attempt to delete plant variety with id {} while seed packets are assigned", id);
+            throw new ConflictException("Plant variety with id " + id + " has seed packets assigned",
+                                        "PLANT_VARIETY_HAS_SEED_PACKETS");
         }
 
         plantVarietyRepository.delete(plantVariety);
