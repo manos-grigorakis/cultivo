@@ -6,6 +6,7 @@ import SeedPacketDetailsCard from '@/features/seeds/seed-packets/components/Seed
 import SeedPacketDetailsGrowingSpecsCard from '@/features/seeds/seed-packets/components/SeedPacketDetailsGrowingSpecsCard.vue'
 import SeedPacketDetailsSkeleton from '@/features/seeds/seed-packets/components/SeedPacketDetailsSkeleton.vue'
 import SeedPacketDetailsSowingCard from '@/features/seeds/seed-packets/components/SeedPacketDetailsSowingCard.vue'
+import SeedPacketForm from '@/features/seeds/seed-packets/components/SeedPacketForm.vue'
 import { useSeedPackets } from '@/features/seeds/seed-packets/composables/useSeedPackets.ts'
 import { applySeedPacketStatusBadgeColor } from '@/features/seeds/seed-packets/utils/apply-seed-packet-status-badge-color.utils.ts'
 import { LucidePencil, Trash2 } from '@lucide/vue'
@@ -22,7 +23,13 @@ const {
   fetchSeedPacketById,
   deleteSeedPacketById,
 } = useSeedPackets()
+const isEditFormOpen = ref<boolean>(false)
 const isDeleteDialogOpen = ref<boolean>(false)
+
+const onSeedPacketUpdateSuccess = async () => {
+  isEditFormOpen.value = false
+  await fetchSeedPacketById(packetId)
+}
 
 const onSeedPacketDelete = async () => {
   if (isDeleting.value || !seedPacket.value) {
@@ -49,6 +56,16 @@ onMounted(() => fetchSeedPacketById(packetId))
     is-danger-operation
     @close="isDeleteDialogOpen = false"
     @confirm="onSeedPacketDelete"
+  />
+
+  <SeedPacketForm
+    v-if="isEditFormOpen && packetId && seedPacket"
+    mode="update"
+    :seed-packet-id="packetId"
+    :data="seedPacket"
+    :plant-variety="seedPacket.plantVariety"
+    @success="onSeedPacketUpdateSuccess"
+    @close="isEditFormOpen = false"
   />
 
   <section class="mx-auto w-full max-w-5xl">
@@ -79,7 +96,7 @@ onMounted(() => fetchSeedPacketById(packetId))
 
         <!-- Actions -->
         <div class="flex items-center gap-2">
-          <AppButton :icon="LucidePencil" variant="outline" />
+          <AppButton :icon="LucidePencil" variant="outline" @on-click="isEditFormOpen = true" />
           <AppButton :icon="Trash2" variant="danger" @on-click="isDeleteDialogOpen = true" />
         </div>
       </div>

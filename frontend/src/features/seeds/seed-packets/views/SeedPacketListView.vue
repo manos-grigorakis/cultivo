@@ -4,6 +4,7 @@ import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
+import SeedPacketForm from '@/features/seeds/seed-packets/components/SeedPacketForm.vue'
 import SeedPacketTable from '@/features/seeds/seed-packets/components/SeedPacketTable.vue'
 import { useSeedPackets } from '@/features/seeds/seed-packets/composables/useSeedPackets.ts'
 import type { SeedPacketResponse } from '@/features/seeds/seed-packets/types/seed-packet-response.interface.ts'
@@ -22,6 +23,7 @@ const {
 const isRefreshing = ref<boolean>(false)
 const isDeleteDialogOpen = ref<boolean>(false)
 const selectedSeedPacket = ref<SeedPacketResponse | null>(null)
+const isCreateFormOpen = ref<boolean>(false)
 
 const refreshSeedPackets = async () => {
   if (isRefreshing.value) return
@@ -32,6 +34,11 @@ const refreshSeedPackets = async () => {
   } finally {
     isRefreshing.value = false
   }
+}
+
+const onSeedPacketCreateSuccess = async () => {
+  isCreateFormOpen.value = false
+  await fetchSeedPackets(page.value?.number ?? 0)
 }
 
 const onOpenDeleteDialog = (packet: SeedPacketResponse) => {
@@ -74,6 +81,13 @@ onMounted(() => fetchSeedPackets())
     @confirm="onSeedPacketDelete"
   />
 
+  <SeedPacketForm
+    v-if="isCreateFormOpen"
+    mode="create"
+    @success="onSeedPacketCreateSuccess"
+    @close="isCreateFormOpen = false"
+  />
+
   <AppSectionWrapper title="Seed Packets">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
@@ -87,7 +101,11 @@ onMounted(() => fetchSeedPackets())
             :disabled="isRefreshing"
             :icon-class="isRefreshing ? 'animate-spin' : ''"
           />
-          <AppButton :icon="LucidePlus" label="Add seed packet" />
+          <AppButton
+            :icon="LucidePlus"
+            label="Add seed packet"
+            @on-click="isCreateFormOpen = true"
+          />
         </div>
       </div>
     </div>
