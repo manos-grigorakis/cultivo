@@ -12,7 +12,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.heightCm }}
+            {{ seedPacket.heightCm ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">cm</span>
         </div>
@@ -23,7 +23,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.weightG }}
+            {{ seedPacket.weightG ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">g</span>
         </div>
@@ -34,7 +34,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.plantSpacingCm }}
+            {{ seedPacket.plantSpacingCm ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">cm</span>
         </div>
@@ -45,7 +45,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.rowSpacingCm }}
+            {{ seedPacket.rowSpacingCm ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">cm</span>
         </div>
@@ -56,7 +56,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.sowingDepthCm }}
+            {{ seedPacket.sowingDepthCm ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">cm</span>
         </div>
@@ -67,7 +67,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.germinationDays }}
+            {{ seedPacket.germinationDays ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">days</span>
         </div>
@@ -78,7 +78,7 @@ defineProps<{ seedPacket: SeedPacketResponse }>()
       <div class="bg-accent-100 rounded-card col-span-2 px-6 py-4">
         <div class="flex items-baseline gap-1">
           <h4 class="text-primary-900 text-xl font-bold">
-            {{ seedPacket.startHarvestDays }}
+            {{ seedPacket.startHarvestDays ?? '-' }}
           </h4>
           <span class="text-content-muted text-xs">days</span>
         </div>
