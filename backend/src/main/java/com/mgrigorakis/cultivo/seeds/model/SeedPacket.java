@@ -1,7 +1,7 @@
 package com.mgrigorakis.cultivo.seeds.model;
 
 import com.mgrigorakis.cultivo.catalog.model.PlantVariety;
-import com.mgrigorakis.cultivo.seeds.enums.SeedPacketStatus;
+import com.mgrigorakis.cultivo.seeds.model.enums.SeedPacketStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

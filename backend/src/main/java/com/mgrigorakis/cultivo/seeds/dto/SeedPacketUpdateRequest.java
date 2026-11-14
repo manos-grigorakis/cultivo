@@ -1,6 +1,6 @@
 package com.mgrigorakis.cultivo.seeds.dto;
 
-import com.mgrigorakis.cultivo.seeds.enums.SeedPacketStatus;
+import com.mgrigorakis.cultivo.seeds.model.enums.SeedPacketStatus;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
