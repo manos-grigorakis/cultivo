@@ -34,7 +34,7 @@ export function usePlants() {
     pageNumber?: number
     archived?: boolean
     plantSpeciesId?: number
-  }) {
+  } = {}) {
     isLoading.value = true
     errorMessage.value = null
 
@@ -49,8 +49,7 @@ export function usePlants() {
     } catch (error) {
       plants.value = []
       page.value = undefined
-      totalPlantEventsCounts.value = 0
-
+      totalPlantCounts.value = 0
       errorMessage.value = handleDefaultApiError(error)
     } finally {
       isLoading.value = false
@@ -65,10 +64,11 @@ export function usePlants() {
       const { data } = await axios.get<ApiResponse<PlantResponse>>(`${PLANT_API_URL}/${id}`)
       plant.value = data.data
     } catch (error) {
+      plant.value = null
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError && error?.response?.status === 404) {
         errorMessage.value = `Plant with id: ${id} not found`
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
     } finally {
       isLoading.value = false
@@ -98,6 +98,8 @@ export function usePlants() {
       await axios.put(`${PLANT_API_URL}/${id}`, payload)
       return true
     } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<ApiResponse<never>>
         const status = axiosError?.response?.status
@@ -108,8 +110,6 @@ export function usePlants() {
         } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
           errorMessage.value = 'Plant is archived and cannot be modified'
         }
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
 
       return false
@@ -133,6 +133,8 @@ export function usePlants() {
       plant.value.status = newStatus
       return true
     } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<ApiResponse<never>>
         const status = axiosError?.response?.status
@@ -145,8 +147,6 @@ export function usePlants() {
         } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
           errorMessage.value = 'Plant is archived and cannot be modified'
         }
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
       return false
     } finally {
@@ -162,6 +162,8 @@ export function usePlants() {
       await axios.patch(`${PLANT_API_URL}/${id}/archive`)
       return true
     } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<ApiResponse<never>>
         const status = axiosError?.response?.status
@@ -172,8 +174,6 @@ export function usePlants() {
         } else if (status === 409 && errorCode === 'ALREADY_ARCHIVED') {
           errorMessage.value = 'Plant is already archived'
         }
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
       return false
     } finally {
@@ -195,10 +195,13 @@ export function usePlants() {
       page.value = data.data.page
       totalPlantEventsCounts.value = data.data.page.totalElements
     } catch (error) {
+      plantEvents.value = []
+      page.value = undefined
+      totalPlantEventsCounts.value = 0
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError && error?.response?.status === 404) {
         errorMessage.value = 'Plant not found'
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
     } finally {
       isLoading.value = false
@@ -213,6 +216,8 @@ export function usePlants() {
       await axios.post(`${PLANT_API_URL}/${plantId}/events`, payload)
       return true
     } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError) {
         const status = error.response?.status
         const errorCode = error.response?.data?.error?.errorCode
@@ -222,8 +227,6 @@ export function usePlants() {
         } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
           errorMessage.value = 'Plant is archived and cannot be modified'
         }
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
       return false
     } finally {
@@ -243,6 +246,8 @@ export function usePlants() {
       await axios.put(`${PLANT_API_URL}/${plantId}/events/${eventId}`, payload)
       return true
     } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
       if (error instanceof AxiosError) {
         const status = error.response?.status
         const errorCode = error.response?.data?.error?.errorCode
@@ -252,8 +257,6 @@ export function usePlants() {
         } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
           errorMessage.value = 'Plant is archived and cannot be modified'
         }
-      } else {
-        errorMessage.value = handleDefaultApiError(error)
       }
       return false
     } finally {
@@ -267,6 +270,7 @@ export function usePlants() {
     plant,
     plantEvents,
     totalPlantEventsCounts,
+
     page,
     isLoading,
     isSubmitting,

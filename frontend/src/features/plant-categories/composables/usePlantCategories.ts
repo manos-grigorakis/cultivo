@@ -13,11 +13,11 @@ export function usePlantCategories() {
   const plantCategory = ref<PlantCategoryResponse | null>(null)
 
   // Misc
+  const page = ref<Page>()
   const isLoading = ref<boolean>(false)
   const isSubmitting = ref<boolean>(false)
   const isDeleting = ref<boolean>(false)
   const errorMessage = ref<string | null>(null)
-  const page = ref<Page>()
 
   async function fetchPlantCategories({ pageNumber = 0 }: { pageNumber?: number } = {}) {
     isLoading.value = true
@@ -144,11 +144,11 @@ export function usePlantCategories() {
     plantCategories,
     plantCategory,
 
+    page,
     isLoading,
     isSubmitting,
     isDeleting,
     errorMessage,
-    page,
 
     fetchPlantCategories,
     fetchPlantCategoryById,

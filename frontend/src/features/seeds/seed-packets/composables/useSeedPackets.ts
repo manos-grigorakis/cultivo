@@ -11,6 +11,8 @@ import { ref } from 'vue'
 export function useSeedPackets() {
   const seedPackets = ref<SeedPacketResponse[]>([])
   const seedPacket = ref<SeedPacketResponse | null>(null)
+
+  // Misc
   const page = ref<Page>()
   const isLoading = ref<boolean>(false)
   const isSubmitting = ref<boolean>(false)
@@ -30,6 +32,8 @@ export function useSeedPackets() {
       seedPackets.value = data.data.content
       page.value = data.data.page
     } catch (err) {
+      seedPackets.value = []
+      page.value = undefined
       errorMessage.value = handleDefaultApiError(err)
     } finally {
       isLoading.value = false
@@ -47,10 +51,11 @@ export function useSeedPackets() {
 
       seedPacket.value = data.data
     } catch (err) {
+      seedPacket.value = null
+      errorMessage.value = handleDefaultApiError(err)
+
       if (err instanceof AxiosError && err.response?.status === 404) {
         errorMessage.value = 'Seed packet or plant variety not found'
-      } else {
-        errorMessage.value = handleDefaultApiError(err)
       }
     } finally {
       isLoading.value = false
@@ -65,10 +70,10 @@ export function useSeedPackets() {
       await axios.post(SEED_PACKETS_API_URL, payload)
       return true
     } catch (err) {
+      errorMessage.value = handleDefaultApiError(err)
+
       if (err instanceof AxiosError && err.response?.status === 409) {
         errorMessage.value = 'Seed packet already exists with the same variety, brand and code'
-      } else {
-        errorMessage.value = handleDefaultApiError(err)
       }
       return false
     } finally {
@@ -87,6 +92,8 @@ export function useSeedPackets() {
       await axios.put(`${SEED_PACKETS_API_URL}/${id}`, payload)
       return true
     } catch (err) {
+      errorMessage.value = handleDefaultApiError(err)
+
       if (err instanceof AxiosError) {
         const status = err.response?.status
         if (status === 404) {
@@ -94,8 +101,6 @@ export function useSeedPackets() {
         } else if (status === 409) {
           errorMessage.value = 'Seed packet already exists with the same variety, brand and code'
         }
-      } else {
-        errorMessage.value = handleDefaultApiError(err)
       }
       return false
     } finally {
@@ -111,10 +116,10 @@ export function useSeedPackets() {
       await axios.delete(`${SEED_PACKETS_API_URL}/${id}`)
       return true
     } catch (err) {
+      errorMessage.value = handleDefaultApiError(err)
+
       if (err instanceof AxiosError && err.response?.status === 404) {
         errorMessage.value = 'Seed packet not found'
-      } else {
-        errorMessage.value = handleDefaultApiError(err)
       }
       return false
     } finally {
@@ -125,11 +130,13 @@ export function useSeedPackets() {
   return {
     seedPackets,
     seedPacket,
+
     page,
     isLoading,
     isSubmitting,
     isDeleting,
     errorMessage,
+
     fetchSeedPackets,
     fetchSeedPacketById,
     createSeedPacket,
