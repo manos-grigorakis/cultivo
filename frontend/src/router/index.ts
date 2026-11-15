@@ -96,6 +96,18 @@ const router = createRouter({
       name: 'plant-variety-details',
       component: () => import('@/features/plant-varieties/views/PlantVarietyDetailsView.vue'),
     },
+
+    // Seed Packets
+    {
+      path: '/seed-packets',
+      name: 'seed-packet-list',
+      component: () => import('@/features/seeds/seed-packets/views/SeedPacketListView.vue'),
+    },
+    {
+      path: '/seed-packets/:id',
+      name: 'seed-packet-details',
+      component: () => import('@/features/seeds/seed-packets/views/SeedPacketDetailsView.vue'),
+    },
   ],
 })
 

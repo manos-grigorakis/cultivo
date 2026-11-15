@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GitBranch, LayoutGrid, Leaf, SproutIcon } from '@lucide/vue'
+import { GitBranch, LayoutGrid, Leaf, Package, SproutIcon } from '@lucide/vue'
 import type { Component } from 'vue'
 
 const links: { label: string; url: string; icon: Component }[] = [
@@ -7,6 +7,7 @@ const links: { label: string; url: string; icon: Component }[] = [
   { label: 'categories', url: '/plant-categories', icon: LayoutGrid },
   { label: 'species', url: '/plant-species', icon: SproutIcon },
   { label: 'varieties', url: '/plant-varieties', icon: GitBranch },
+  { label: 'seed packets', url: '/seed-packets', icon: Package },
 ]
 </script>
 

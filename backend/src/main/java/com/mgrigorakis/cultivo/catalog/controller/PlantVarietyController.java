@@ -77,6 +77,7 @@ public class PlantVarietyController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Plant variety deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Plant variety doesn't exist"),
+            @ApiResponse(responseCode = "409", description = "Plant variety has assigned plants or seed packets"),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")

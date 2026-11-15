@@ -12,6 +12,7 @@ import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.plants.repository.PlantRepository;
+import com.mgrigorakis.cultivo.seeds.repository.SeedPacketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,9 @@ public class PlantVarietyServiceTest {
 
     @Mock
     private PlantSpeciesRepository plantSpeciesRepository;
+
+    @Mock
+    private SeedPacketRepository seedPacketRepository;
 
     @Mock
     private PlantRepository plantRepository;
@@ -216,6 +220,7 @@ public class PlantVarietyServiceTest {
         // Arrange
         when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(mockVariety));
         when(plantRepository.existsByVariety_Id(1L)).thenReturn(false);
+        when(seedPacketRepository.existsByPlantVariety_Id(1L)).thenReturn(false);
 
         // Act
         plantVarietyService.deletePlantVarietyById(1L);
@@ -224,6 +229,7 @@ public class PlantVarietyServiceTest {
         verify(plantVarietyRepository).findById(1L);
         verify(plantRepository).existsByVariety_Id(1L);
         verify(plantVarietyRepository).delete(mockVariety);
+        verify(seedPacketRepository).existsByPlantVariety_Id(1L);
     }
 
     @Test
@@ -254,6 +260,26 @@ public class PlantVarietyServiceTest {
 
         verify(plantVarietyRepository).findById(1L);
         verify(plantRepository).existsByVariety_Id(1L);
+        verifyNoMoreInteractions(plantVarietyRepository);
+    }
+
+    @Test
+    void deletePlantVarietyById_shouldThrowConflictException_whenVarietyHasSeedPackets() {
+        // Arrange
+        when(plantVarietyRepository.findById(1L)).thenReturn(Optional.of(mockVariety));
+        when(plantRepository.existsByVariety_Id(1L)).thenReturn(false);
+        when(seedPacketRepository.existsByPlantVariety_Id(1L)).thenReturn(true);
+
+        // Act & Assert
+        ConflictException exception = assertThrows(ConflictException.class, () ->
+                plantVarietyService.deletePlantVarietyById(1L));
+
+        // Assert
+        assertEquals("PLANT_VARIETY_HAS_SEED_PACKETS", exception.getErrorCode());
+
+        verify(plantVarietyRepository).findById(1L);
+        verify(plantRepository).existsByVariety_Id(1L);
+        verify(seedPacketRepository).existsByPlantVariety_Id(1L);
         verifyNoMoreInteractions(plantVarietyRepository);
     }
 }
