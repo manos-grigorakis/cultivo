@@ -6,6 +6,7 @@ import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
 import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
+import { usePlantSpecies } from '@/features/plant-species/composables/usePlantSpecies.ts'
 
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
@@ -14,8 +15,8 @@ import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plan
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import axios from 'axios'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -27,8 +28,12 @@ const emit = defineEmits<{ close: []; success: [] }>()
 
 const { isSubmitting, errorMessage, createPlantVariety, updatePlantVarietyById } =
   usePlantVarieties()
-
-const isSpeciesLoading = ref<boolean>(false)
+const {
+  plantSpecies,
+  isLoading: isSpeciesLoading,
+  errorMessage: speciesError,
+  fetchPlantSpeciesById,
+} = usePlantSpecies()
 
 // Form fields
 const name = ref<string>(props?.data?.name || '')
@@ -71,27 +76,13 @@ const fetchPlantSpecies = async (
   return { items: data.data.content, hasNext: page + 1 < data.data.page.totalPages }
 }
 
-const fetchPlantSpeciesById = async (id: number) => {
-  isSpeciesLoading.value = true
-
-  try {
-    const { data } = await axios.get<ApiResponse<PlantSpeciesResponse>>(
-      `${PLANT_SPECIES_API_URL}/${id}`,
-    )
-    selectedPlantSpecies.value = data.data
-  } catch (error) {
-    if (error instanceof AxiosError && error.response?.status === 404) {
-      errorMessage.value = 'Plant species not found'
-    } else {
-      errorMessage.value = handleDefaultApiError(error)
-    }
-  } finally {
-    isSpeciesLoading.value = false
-  }
-}
+const displayError = computed(() => errorMessage.value || speciesError.value)
 
 onMounted(async () => {
-  if (props.mode === 'update' && props.data) await fetchPlantSpeciesById(props.data.plantSpeciesId)
+  if (props.mode === 'update' && props.data) {
+    await fetchPlantSpeciesById(props.data.plantSpeciesId)
+    selectedPlantSpecies.value = plantSpecies.value
+  }
 })
 </script>
 
@@ -102,7 +93,7 @@ onMounted(async () => {
     @close="emit('close')"
   >
     <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
-      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+      <AppErrorContainer v-if="displayError" :error-message="displayError" />
 
       <AppInput v-model="name" label="name" placeholder="e.g. Curly" required />
 

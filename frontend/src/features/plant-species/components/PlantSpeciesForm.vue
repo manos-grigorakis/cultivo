@@ -6,8 +6,9 @@ import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppSelect from '@/components/ui/form/AppSelect.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
-import { PLANT_CATEGORY_API_URL, PLANT_SPECIES_API_URL } from '@/constant/api.ts'
+import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
 import type { PlantCategoryResponse } from '@/features/plant-categories/types/plant-category-response.interface.ts'
+import { usePlantSpecies } from '@/features/plant-species/composables/usePlantSpecies.ts'
 import { LifeCycle } from '@/features/plant-species/enums/life-cycle.enum.ts'
 import { LightRequirement } from '@/features/plant-species/enums/light-requirement.enum.ts'
 import { WaterRequirement } from '@/features/plant-species/enums/water-requirement.enum.ts'
@@ -19,7 +20,7 @@ import type {
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -30,8 +31,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: []; success: [] }>()
 
-const isSubmitting = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
+const { isSubmitting, errorMessage, createPlantSpecies, updatePlantSpeciesById } = usePlantSpecies()
 
 const name = ref<string>(props?.data?.name ?? '')
 const scientificName = ref<string | null>(props?.data?.scientificName ?? null)
@@ -51,9 +51,6 @@ const onSubmit = async () => {
     return
   }
 
-  isSubmitting.value = true
-  errorMessage.value = null
-
   const payload: PlantSpeciesRequest = {
     name: name.value,
     scientificName: scientificName.value,
@@ -64,39 +61,18 @@ const onSubmit = async () => {
     plantCategoryId: selectedCategory.value.id,
   }
 
-  try {
-    if (props.mode === 'create') await createPlantSpecies(payload)
-    else if (props.mode === 'update') {
-      if (!props.speciesId) return
+  if (props.mode === 'create') {
+    const created = await createPlantSpecies(payload)
+    if (created) emit('success')
+  } else if (props.mode === 'update') {
+    if (!props.speciesId) {
+      errorMessage.value = 'Plant species ID is required'
+      return
+    }
 
-      await updatePlantSpeciesById(props.speciesId, payload)
-    }
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      switch (error?.response?.status) {
-        case 404:
-          errorMessage.value = 'Plant species or category not found'
-          break
-        case 409:
-          errorMessage.value = 'Name or Scientific name already exists'
-          break
-        default:
-          errorMessage.value = handleDefaultApiError(error)
-      }
-    }
-  } finally {
-    isSubmitting.value = false
+    const updated = await updatePlantSpeciesById(props.speciesId, payload)
+    if (updated) emit('success')
   }
-}
-
-const createPlantSpecies = async (payload: PlantSpeciesRequest) => {
-  const response = await axios.post<PlantSpeciesRequest>(PLANT_SPECIES_API_URL, payload)
-  if (response.status === 201) emit('success')
-}
-
-const updatePlantSpeciesById = async (speciesId: number, payload: PlantSpeciesRequest) => {
-  const response = await axios.put(`${PLANT_SPECIES_API_URL}/${speciesId}`, payload)
-  if (response.status === 200) emit('success')
 }
 
 const fetchPlantCategories = async (
