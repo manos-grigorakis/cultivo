@@ -1,58 +1,21 @@
 <script lang="ts" setup>
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
-import { PLANT_API_URL } from '@/constant/api.ts'
+import { usePlants } from '@/features/plants/composables/usePlants.ts'
 import PlantEventCard from '@/features/plants/events/components/PlantEventCard.vue'
 import PlantEventCardSkeleton from '@/features/plants/events/components/PlantEventCardSkeleton.vue'
 import PlantEventForm from '@/features/plants/events/components/PlantEventForm.vue'
 import type { PlantEventResponse } from '@/features/plants/events/types/plant-event-response.interface.ts'
 import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Page, Pagination } from '@/types/pagination.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps<{ refreshKey: number; plant: PlantResponse }>()
 
-const route = useRoute()
-const plantId = ref<string | string[] | undefined>(undefined)
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
-const plantEvents = ref<PlantEventResponse[]>([])
-const page = ref<Page>()
-
+const plantId = Number(useRoute().params.id)
+const { isLoading, errorMessage, plantEvents, page, fetchEventsByPlantId } = usePlants()
 const selectedPlantEvent = ref<PlantEventResponse | null>(null)
 const isEditPlantEventOpen = ref<boolean>(false)
-
-plantId.value = route.params.id
-
-const fetchJournalsByPlant = async (pageNumber: number = 0) => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const response = await axios.get<ApiResponse<Pagination<PlantEventResponse>>>(
-      `${PLANT_API_URL}/${plantId.value}/events`,
-      { params: { page: pageNumber } },
-    )
-
-    if (response.status === 200) {
-      plantEvents.value = response.data.data.content
-      page.value = response.data.data.page
-    }
-  } catch (error) {
-    if (error instanceof AxiosError && error?.response?.status === 404) {
-      errorMessage.value = 'Plant not found'
-      return
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const openEditPlantEventForm = (event: PlantEventResponse) => {
   selectedPlantEvent.value = event
@@ -62,14 +25,14 @@ const openEditPlantEventForm = (event: PlantEventResponse) => {
 const handleEditSuccess = async () => {
   isEditPlantEventOpen.value = false
   selectedPlantEvent.value = null
-  await fetchJournalsByPlant()
+  await fetchEventsByPlantId(plantId)
 }
 
-onMounted(() => fetchJournalsByPlant())
+onMounted(() => fetchEventsByPlantId(plantId))
 
 watch(
   () => props.refreshKey,
-  () => fetchJournalsByPlant(0),
+  () => fetchEventsByPlantId(plantId, 0),
 )
 </script>
 
@@ -100,7 +63,7 @@ watch(
         @on-edit-plant-event-click="openEditPlantEventForm(event)"
       />
 
-      <AppPagination :data="page" @page-changed="fetchJournalsByPlant($event)" />
+      <AppPagination :data="page" @page-changed="fetchEventsByPlantId(plantId, $event)" />
     </template>
   </section>
 </template>

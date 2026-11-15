@@ -3,53 +3,27 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
-import { PLANT_API_URL } from '@/constant/api.ts'
 import PlantCard from '@/features/plants/components/PlantCard.vue'
 import PlantCardSkeleton from '@/features/plants/components/PlantCardSkeleton.vue'
 import PlantForm from '@/features/plants/components/PlantForm.vue'
-import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import { type Page, type Pagination } from '@/types/pagination.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import { usePlants } from '@/features/plants/composables/usePlants.ts'
 import { LucidePlus, RefreshCcw } from '@lucide/vue'
-import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
-const plants = ref<PlantResponse[]>([])
+const { plants, isLoading, errorMessage, page, fetchPlants } = usePlants()
+
 const isCreatePlantFormOpen = ref<boolean>(false)
 const showArchived = ref<boolean>(false)
-const page = ref<Page>()
-
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
 const isRefreshing = ref<boolean>(false)
-
-const fetchPlants = async (archived: boolean = false, pageNumber: number = 0) => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const response = await axios.get<ApiResponse<Pagination<PlantResponse>>>(PLANT_API_URL, {
-      params: { archived, page: pageNumber },
-    })
-
-    plants.value = response.data.data.content
-    page.value = response.data.data.page
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const onPlantCreated = async () => {
   isCreatePlantFormOpen.value = false
-  await fetchPlants(showArchived.value)
+  await fetchPlants({ archived: showArchived.value })
 }
 
 const toggleArchived = async () => {
   showArchived.value = !showArchived.value
-  await fetchPlants(showArchived.value)
+  await fetchPlants({ archived: showArchived.value })
 }
 
 const refreshPlants = async () => {
@@ -58,14 +32,14 @@ const refreshPlants = async () => {
   isRefreshing.value = true
 
   try {
-    await fetchPlants(showArchived.value, page.value?.number ?? 0)
+    await fetchPlants({ pageNumber: page.value?.number ?? 0, archived: showArchived.value })
   } finally {
     isRefreshing.value = false
   }
 }
 
 onMounted(() => {
-  fetchPlants()
+  fetchPlants({})
 })
 </script>
 
@@ -125,7 +99,10 @@ onMounted(() => {
 
       <p v-else class="text-center">There are no plants recorded yet</p>
 
-      <AppPagination :data="page" @page-changed="fetchPlants(showArchived, $event)" />
+      <AppPagination
+        :data="page"
+        @page-changed="(pageNumber) => fetchPlants({ pageNumber, archived: showArchived })"
+      />
     </div>
   </AppSectionWrapper>
 </template>

@@ -1,145 +1,63 @@
 <script lang="ts" setup>
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_API_URL } from '@/constant/api.ts'
 import PlantDetailsHeader from '@/features/plants/components/PlantDetailsHeader.vue'
 import PlantDetailsSkeleton from '@/features/plants/components/PlantDetailsSkeleton.vue'
 import PlantDetailsTabs from '@/features/plants/components/PlantDetailsTabs.vue'
 import PlantForm from '@/features/plants/components/PlantForm.vue'
+import { usePlants } from '@/features/plants/composables/usePlants.ts'
 import PlantEventForm from '@/features/plants/events/components/PlantEventForm.vue'
-import type { PlantEventResponse } from '@/features/plants/events/types/plant-event-response.interface.ts'
 import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Pagination } from '@/types/pagination.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
-const route = useRoute()
+const plantId = useRoute().params.id
 
-const plantId = route.params.id
-const plant = ref<PlantResponse | null>(null)
-const errorMessage = ref<string | null>(null)
+const {
+  plant,
+  isLoading,
+  isUpdatingStatus,
+  errorMessage,
+  fetchPlantById,
+  updatePlantStatusById,
+  archivePlantById,
+  fetchEventsByPlantId,
+  totalPlantEventsCounts,
+} = usePlants()
+
 const isPlantUpdateFormOpen = ref<boolean>(false)
 const isPlantEventFormOpen = ref<boolean>(false)
-const eventsCount = ref<number>(0)
 const journalRefreshKey = ref<number>(0)
-const isLoading = ref<boolean>(false)
-const isUpdatingStatus = ref<boolean>(false)
-
-const fetchPlantDetailsById = async () => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const response = await axios.get<ApiResponse<PlantResponse>>(`${PLANT_API_URL}/${plantId}`)
-    plant.value = response.data.data
-  } catch (error) {
-    if (error instanceof AxiosError && error?.response?.status === 404) {
-      errorMessage.value = `Plant with id: ${plantId} not found`
-      return
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const onPlantUpdated = async () => {
   isPlantUpdateFormOpen.value = false
-  await fetchPlantDetailsById()
+  await fetchPlantById(Number(plantId))
 }
 
 const onPlantStatusUpdate = async (newStatus: PlantResponse['status']) => {
-  if (!plant.value || isUpdatingStatus.value) return
-
-  const previousStatus = plant.value.status
-
-  if (newStatus === previousStatus) return
-
-  isUpdatingStatus.value = true
-  errorMessage.value = null
-
-  try {
-    const response = await axios.patch(`${PLANT_API_URL}/${plantId}/status`, { status: newStatus })
-
-    if (response.status === 204) plant.value.status = newStatus
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError<ApiResponse<never>>
-      const status = axiosError?.response?.status
-      const errorCode = axiosError?.response?.data?.error?.errorCode
-
-      if (status === 404) {
-        errorMessage.value = `Plant with id ${plantId} not found`
-        return
-      } else if (status === 409 && errorCode === 'STATUS_VIOLATION') {
-        errorMessage.value = 'Invalid plant status transition'
-        return
-      } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
-        errorMessage.value = 'Plant is archived and cannot be modified'
-        return
-      }
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isUpdatingStatus.value = false
-  }
+  await updatePlantStatusById(Number(plantId), newStatus)
 }
 
 const onClickArchivePlant = async () => {
+  const archived = await archivePlantById(Number(plantId))
+
+  if (archived) {
+    alert('Plant archived successfully')
+    await fetchPlantById(Number(plantId))
+  }
+
   errorMessage.value = null
-
-  try {
-    const response = await axios.patch(`${PLANT_API_URL}/${plantId}/archive`)
-    if (response.status === 204) {
-      alert('Plant archived successfully')
-      await fetchPlantDetailsById()
-    }
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError<ApiResponse<never>>
-      const status = axiosError?.response?.status
-      const errorCode = axiosError?.response?.data?.error?.errorCode
-
-      if (status === 404) {
-        errorMessage.value = `Plant with id ${plantId} not found`
-        return
-      } else if (status === 409 && errorCode === 'ALREADY_ARCHIVED') {
-        errorMessage.value = 'Plant is already archived'
-        return
-      }
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  }
-}
-
-const fetchEventsCount = async () => {
-  try {
-    const response = await axios.get<ApiResponse<Pagination<PlantEventResponse>>>(
-      `${PLANT_API_URL}/${plantId}/events`,
-      { params: { page: 0, size: 1 } },
-    )
-
-    eventsCount.value = response.data.data.page.totalElements
-  } catch (error) {
-    console.error(error)
-  }
 }
 
 const onPlantEventCreation = async () => {
   isPlantEventFormOpen.value = false
 
   journalRefreshKey.value++
-  await fetchEventsCount()
+  await fetchEventsByPlantId(Number(plantId))
 }
 
 onMounted(() => {
-  fetchPlantDetailsById()
-  fetchEventsCount()
+  fetchPlantById(Number(plantId))
+  fetchEventsByPlantId(Number(plantId))
 })
 </script>
 
@@ -175,14 +93,14 @@ onMounted(() => {
           @archive-plant="onClickArchivePlant"
         />
 
-        <PlantDetailsTabs :events-count="eventsCount" :plant-id="plantId" />
+        <PlantDetailsTabs :events-count="totalPlantEventsCounts" :plant-id="plantId" />
 
         <RouterView v-slot="{ Component }">
           <component
             :is="Component"
             :plant="plant"
             :refresh-key="journalRefreshKey"
-            @event-count-changed="eventsCount = $event"
+            @event-count-changed="totalPlantEventsCounts = $event"
           />
         </RouterView>
       </template>

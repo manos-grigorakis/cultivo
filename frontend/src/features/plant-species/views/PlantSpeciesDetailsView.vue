@@ -2,19 +2,19 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_API_URL, PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import PlantSpeciesDetailsSkeleton from '@/features/plant-species/components/PlantSpeciesDetailsSkeleton.vue'
 import PlantSpeciesDetailsTabs from '@/features/plant-species/components/PlantSpeciesDetailsTabs.vue'
 import PlantSpeciesForm from '@/features/plant-species/components/PlantSpeciesForm.vue'
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
-import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
+import { usePlants } from '@/features/plants/composables/usePlants.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucidePencil, LucideTrash } from '@lucide/vue'
 import axios, { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -27,7 +27,7 @@ const errorMessage = ref<string | null>(null)
 const isUpdatePlantSpeciesFormOpen = ref<boolean>(false)
 const isPlantSpeciesDeleteModalOpen = ref<boolean>(false)
 const varietiesCount = ref<number>(0)
-const plantsCount = ref<number>(0)
+const { errorMessage: plantsError, totalPlantCounts, fetchPlants } = usePlants()
 
 const fetchPlantSpeciesById = async () => {
   errorMessage.value = null
@@ -101,25 +101,17 @@ const fetchPlantVarietiesSize = async () => {
   }
 }
 
-const fetchPlantsSize = async () => {
-  errorMessage.value = null
-
-  try {
-    const { data } = await axios.get<ApiResponse<Pagination<PlantResponse>>>(PLANT_API_URL, {
-      params: { plantSpeciesId: speciesId },
-    })
-
-    plantsCount.value = data.data.page.totalElements
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  }
-}
+const displayedError = computed(() => errorMessage.value || plantsError.value)
 
 onMounted(async () => {
   isLoading.value = true
 
   try {
-    await Promise.all([fetchPlantSpeciesById(), fetchPlantVarietiesSize(), fetchPlantsSize()])
+    await Promise.all([
+      fetchPlantSpeciesById(),
+      fetchPlantVarietiesSize(),
+      fetchPlants({ plantSpeciesId: speciesId }),
+    ])
   } finally {
     isLoading.value = false
   }
@@ -151,7 +143,7 @@ onMounted(async () => {
 
     <template v-else>
       <div class="mx-auto w-full max-w-5xl">
-        <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="mb-2" />
+        <AppErrorContainer v-if="displayedError" :error-message="displayedError" class="mb-2" />
 
         <template v-if="species">
           <!-- Header -->
@@ -183,7 +175,7 @@ onMounted(async () => {
           <PlantSpeciesDetailsTabs
             :species-id="species.id"
             :varieties-count="varietiesCount"
-            :plants-count="plantsCount"
+            :plants-count="totalPlantCounts"
           />
 
           <RouterView v-slot="{ Component }">

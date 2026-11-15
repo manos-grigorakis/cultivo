@@ -3,16 +3,17 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppAsyncSelect from '@/components/ui/form/AppAsyncSelect.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
-import { PLANT_API_URL, PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import { usePlants } from '@/features/plants/composables/usePlants.ts'
 import type { PlantReferenceResponse } from '@/features/plants/types/plant-reference-response.interface.ts'
 import type { PlantRequest } from '@/features/plants/types/plant-request.interface.ts'
 import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { ref, watch } from 'vue'
 import AppErrorContainer from '../../../components/ui/AppErrorContainer.vue'
 
@@ -26,12 +27,10 @@ const emit = defineEmits<{
   success: []
 }>()
 
+const { isSubmitting, errorMessage, createPlant, updatePlantById } = usePlants()
 const label = ref<string>(props.data?.label ?? '')
 const selectedSpecies = ref<PlantReferenceResponse | null>(props.data?.species ?? null)
 const selectedVariety = ref<PlantReferenceResponse | null>(props.data?.variety ?? null)
-
-const isSubmitting = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
 
 const onSubmit = async () => {
   if (!label.value.trim() || !selectedSpecies.value) {
@@ -49,7 +48,8 @@ const onSubmit = async () => {
   errorMessage.value = null
 
   if (props.mode == 'create') {
-    await createPlant(payload)
+    const created = await createPlant(payload)
+    if (created) emit('success')
   } else if (props.mode == 'update') {
     if (!props.data) {
       errorMessage.value = 'Plant ID is required'
@@ -57,44 +57,8 @@ const onSubmit = async () => {
       return
     }
 
-    await updatePlant(props.data.id, payload)
-  }
-}
-
-const createPlant = async (payload: PlantRequest) => {
-  try {
-    const response = await axios.post(PLANT_API_URL, payload)
-
-    if (response.status === 201) emit('success')
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-const updatePlant = async (plantId: number, payload: PlantRequest) => {
-  try {
-    const response = await axios.put(`${PLANT_API_URL}/${plantId}`, payload)
-    if (response.status === 200) emit('success')
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError<ApiResponse<never>>
-      const status = axiosError?.response?.status
-      const errorCode = axiosError?.response?.data?.error?.errorCode
-
-      if (status === 404) {
-        errorMessage.value = `Plant not found`
-        return
-      } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
-        errorMessage.value = 'Plant is archived and cannot be modified'
-        return
-      }
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isSubmitting.value = false
+    const updated = await updatePlantById(props.data.id, payload)
+    if (updated) emit('success')
   }
 }
 
