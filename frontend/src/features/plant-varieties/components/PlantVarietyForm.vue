@@ -5,9 +5,10 @@ import AppAsyncSelect from '@/components/ui/form/AppAsyncSelect.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
-import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
 
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
+import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
 import type { PlantVarietyRequest } from '@/features/plant-varieties/types/plant-variety-request.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
@@ -24,9 +25,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: []; success: [] }>()
 
-const isSubmitting = ref<boolean>(false)
+const { isSubmitting, errorMessage, createPlantVariety, updatePlantVarietyById } =
+  usePlantVarieties()
+
 const isSpeciesLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
 
 // Form fields
 const name = ref<string>(props?.data?.name || '')
@@ -39,36 +41,20 @@ const onSubmit = async () => {
     return
   }
 
-  isSubmitting.value = true
-  errorMessage.value = null
-
   const payload: PlantVarietyRequest = {
     name: name.value,
     description: description.value !== null ? description.value.trim() : null,
     plantSpeciesId: selectedPlantSpecies.value.id,
   }
 
-  try {
-    if (props.mode === 'create') await createPlantVarieties(payload)
-    else if (props.mode === 'update') {
-      if (!props.varietiesId) return
-      await updatePlantVarietiesById(props.varietiesId, payload)
-    }
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isSubmitting.value = false
+  if (props.mode === 'create') {
+    const created = await createPlantVariety(payload)
+    if (created) emit('success')
+  } else if (props.mode === 'update') {
+    if (!props.varietiesId) return
+    const updated = await updatePlantVarietyById(props.varietiesId, payload)
+    if (updated) emit('success')
   }
-}
-
-const createPlantVarieties = async (payload: PlantVarietyRequest) => {
-  await axios.post(PLANT_VARIETIES_API_URL, payload)
-  emit('success')
-}
-
-const updatePlantVarietiesById = async (id: number, payload: PlantVarietyRequest) => {
-  await axios.put(`${PLANT_VARIETIES_API_URL}/${id}`, payload)
-  emit('success')
 }
 
 const fetchPlantSpecies = async (
