@@ -87,7 +87,7 @@ public class SeedPacketServiceImpl implements SeedPacketService {
         PlantVariety variety = findPlantVarietyById(request.plantVarietyId());
 
         SeedPacket updatedSeedPacket = seedPacketMapper.toUpdate(seedPacket, request);
-        seedPacket.setPlantVariety(variety);
+        updatedSeedPacket.setPlantVariety(variety);
         SeedPacket saved = seedPacketRepository.save(updatedSeedPacket);
         log.info("Seed packet with id {} updated", saved.getId());
 
