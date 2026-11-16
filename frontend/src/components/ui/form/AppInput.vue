@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppFormError from '@/components/ui/form/AppFormError.vue'
 import AppFormLabel from '@/components/ui/form/AppFormLabel.vue'
 import { computed, useId } from 'vue'
 
@@ -37,8 +38,6 @@ const id = computed(() => props.inputId ?? generatedId)
       ]"
     />
 
-    <div v-if="errorMessage">
-      <span class="ml-2 block text-sm text-red-500">{{ errorMessage }}</span>
-    </div>
+    <AppFormError :message="errorMessage" />
   </div>
 </template>

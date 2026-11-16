@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends object">
+import AppFormError from '@/components/ui/form/AppFormError.vue'
 import AppFormLabel from '@/components/ui/form/AppFormLabel.vue'
 import { nextTick, onBeforeUnmount, ref, shallowRef } from 'vue'
 import VSelect from 'vue-select'
@@ -19,6 +20,7 @@ const props = withDefaults(
     placeholder?: string
     required?: boolean
     disabled?: boolean
+    errorMessage?: string
   }>(),
   {
     initialLoading: false,
@@ -99,7 +101,7 @@ onBeforeUnmount(() => {
 
     <VSelect
       v-model="selectedOption"
-      class="app-vselect"
+      :class="['app-vselect', { 'app-vselect--error': !!errorMessage }]"
       :input-id="id"
       :disabled="disabled"
       :options="options"
@@ -118,6 +120,8 @@ onBeforeUnmount(() => {
         </li>
       </template>
     </VSelect>
+
+    <AppFormError :id="`${id}-error`" :message="errorMessage" />
   </div>
 </template>
 
@@ -142,7 +146,7 @@ onBeforeUnmount(() => {
 }
 
 /* Same as focus:ring-2 focus:ring-primary-600 */
-.app-vselect:focus-within :deep(.vs__dropdown-toggle) {
+.app-vselect:not(.app-vselect--error):focus-within :deep(.vs__dropdown-toggle) {
   box-shadow: 0 0 0 2px var(--color-primary-600);
 }
 
@@ -153,5 +157,14 @@ onBeforeUnmount(() => {
 .app-vselect :deep(.vs__dropdown-menu) {
   margin-top: 4px;
   border-top-style: solid;
+}
+
+/* Error state */
+.app-vselect--error {
+  --vs-border-color: var(--color-red-500);
+}
+
+.app-vselect--error:focus-within :deep(.vs__dropdown-toggle) {
+  box-shadow: 0 0 0 2px var(--color-red-500);
 }
 </style>
