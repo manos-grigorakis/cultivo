@@ -18,7 +18,11 @@ export function usePlantSpecies() {
   const isDeleting = ref<boolean>(false)
   const errorMessage = ref<string | null>(null)
 
-  async function fetchPlantSpecies(pageNumber: number = 0) {
+  async function fetchPlantSpecies({
+    pageNumber = 0,
+    size,
+    name,
+  }: { pageNumber?: number; size?: number; name?: string } = {}) {
     isLoading.value = true
     errorMessage.value = null
 
@@ -26,7 +30,7 @@ export function usePlantSpecies() {
       const { data } = await axios.get<ApiResponse<Pagination<PlantSpeciesResponse>>>(
         PLANT_SPECIES_API_URL,
         {
-          params: { page: pageNumber },
+          params: { page: pageNumber, size: size, name: name },
         },
       )
 

@@ -6,18 +6,14 @@ import AppChipMultiSelect from '@/components/ui/form/AppChipMultiSelect.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppSelect from '@/components/ui/form/AppSelect.vue'
-import { PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
-import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
 import type { PlantReferenceResponse } from '@/features/plants/types/plant-reference-response.interface.ts'
 import { useSeedPackets } from '@/features/seeds/seed-packets/composables/useSeedPackets.ts'
 import { SeedPacketStatus } from '@/features/seeds/seed-packets/enums/seed-packet-status.enum.ts'
 import type { SeedPacketCreateRequest } from '@/features/seeds/seed-packets/types/seed-packet-create-request.interface.ts'
 import type { SeedPacketResponse } from '@/features/seeds/seed-packets/types/seed-packet-response.interface.ts'
 import type { SeedPacketUpdateRequest } from '@/features/seeds/seed-packets/types/seed-packet-update-request.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios from 'axios'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -30,6 +26,13 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; success: [] }>()
 
 const { isSubmitting, errorMessage, createSeedPacket, updateSeedPacketById } = useSeedPackets()
+const {
+  plantVarieties,
+  page: varietiesPage,
+  errorMessage: varietiesError,
+  fetchPlantVarieties,
+} = usePlantVarieties()
+
 const monthOptions = [
   'Jan',
   'Feb',
@@ -123,20 +126,16 @@ const onSubmit = async () => {
   }
 }
 
-const fetchPlantVarieties = async (
-  page: number,
+const loadPlantVarieties = async (
+  pageNumber: number,
   term: string,
 ): Promise<{ items: PlantReferenceResponse[]; hasNext: boolean }> => {
-  const { data } = await axios.get<ApiResponse<Pagination<PlantVarietyResponse>>>(
-    PLANT_VARIETIES_API_URL,
-    {
-      params: { page, size: 10, name: term },
-    },
-  )
+  await fetchPlantVarieties({ pageNumber, size: 10, name: term })
+  if (varietiesError.value) throw new Error(varietiesError.value)
 
   return {
-    items: data.data.content.map(({ id, name }) => ({ id, name })),
-    hasNext: page + 1 < data.data.page.totalPages,
+    items: plantVarieties.value.map(({ id, name }) => ({ id, name })),
+    hasNext: pageNumber + 1 < (varietiesPage.value?.totalPages ?? 0),
   }
 }
 </script>
@@ -155,13 +154,13 @@ const fetchPlantVarieties = async (
         <h3 class="text-content-muted mb-2 text-xs font-semibold uppercase">General</h3>
         <AppAsyncSelect
           v-model="selectedPlantVariety"
-          :fetch-options="fetchPlantVarieties"
+          :fetch-options="loadPlantVarieties"
           id="plant-variety"
           label="plant variety"
           option-label="name"
           placeholder="Please select plant variety"
           required
-          @error="(e) => (errorMessage = handleDefaultApiError(e))"
+          @error="(e) => (errorMessage = e instanceof Error ? e.message : handleDefaultApiError(e))"
         />
       </div>
 

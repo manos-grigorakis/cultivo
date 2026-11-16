@@ -22,14 +22,16 @@ export function usePlantVarieties() {
   async function fetchPlantVarieties({
     pageNumber = 0,
     plantSpeciesId,
-  }: { pageNumber?: number; plantSpeciesId?: number } = {}) {
+    size,
+    name,
+  }: { pageNumber?: number; size?: number; name?: string; plantSpeciesId?: number } = {}) {
     isLoading.value = true
     errorMessage.value = null
 
     try {
       const { data } = await axios.get<ApiResponse<Pagination<PlantVarietyResponse>>>(
         PLANT_VARIETIES_API_URL,
-        { params: { page: pageNumber, plantSpeciesId } },
+        { params: { page: pageNumber, size, name, plantSpeciesId } },
       )
 
       plantVarieties.value = data.data.content

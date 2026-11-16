@@ -5,17 +5,13 @@ import AppAsyncSelect from '@/components/ui/form/AppAsyncSelect.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
-import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
 import { usePlantSpecies } from '@/features/plant-species/composables/usePlantSpecies.ts'
 
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
 import type { PlantVarietyRequest } from '@/features/plant-varieties/types/plant-variety-request.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
@@ -29,10 +25,13 @@ const emit = defineEmits<{ close: []; success: [] }>()
 const { isSubmitting, errorMessage, createPlantVariety, updatePlantVarietyById } =
   usePlantVarieties()
 const {
+  plantSpeciesList,
   plantSpecies,
+  page: plantSpeciesPage,
   isLoading: isSpeciesLoading,
   errorMessage: speciesError,
   fetchPlantSpeciesById,
+  fetchPlantSpecies,
 } = usePlantSpecies()
 
 // Form fields
@@ -56,24 +55,27 @@ const onSubmit = async () => {
     const created = await createPlantVariety(payload)
     if (created) emit('success')
   } else if (props.mode === 'update') {
-    if (!props.varietiesId) return
+    if (!props.varietiesId) {
+      errorMessage.value = 'Plant variety ID is required'
+      return
+    }
     const updated = await updatePlantVarietyById(props.varietiesId, payload)
     if (updated) emit('success')
   }
 }
 
-const fetchPlantSpecies = async (
-  page: number,
+const loadPlantSpecies = async (
+  pageNumber: number,
   term: string,
 ): Promise<{ items: PlantSpeciesResponse[]; hasNext: boolean }> => {
-  const { data } = await axios.get<ApiResponse<Pagination<PlantSpeciesResponse>>>(
-    PLANT_SPECIES_API_URL,
-    {
-      params: { page, size: 10, name: term },
-    },
-  )
+  await fetchPlantSpecies({ pageNumber, size: 10, name: term })
 
-  return { items: data.data.content, hasNext: page + 1 < data.data.page.totalPages }
+  if (speciesError.value) throw new Error(speciesError.value)
+
+  return {
+    items: plantSpeciesList.value,
+    hasNext: pageNumber + 1 < (plantSpeciesPage.value?.totalPages ?? 0),
+  }
 }
 
 const displayError = computed(() => errorMessage.value || speciesError.value)
@@ -99,14 +101,14 @@ onMounted(async () => {
 
       <AppAsyncSelect
         v-model="selectedPlantSpecies"
-        :fetch-options="fetchPlantSpecies"
+        :fetch-options="loadPlantSpecies"
         :initial-loading="isSpeciesLoading"
         id="plant-species"
         label="plant species"
         option-label="name"
         placeholder="Please select plant species"
         required
-        @error="(e) => (errorMessage = handleDefaultApiError(e))"
+        @error="(e) => (errorMessage = e instanceof Error ? e.message : handleDefaultApiError(e))"
       />
 
       <AppTextArea v-model="description" label="description" id="description" />

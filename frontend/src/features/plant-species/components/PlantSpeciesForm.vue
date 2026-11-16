@@ -6,8 +6,7 @@ import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppSelect from '@/components/ui/form/AppSelect.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
-import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
-import type { PlantCategoryResponse } from '@/features/plant-categories/types/plant-category-response.interface.ts'
+import { usePlantCategories } from '@/features/plant-categories/composables/usePlantCategories.ts'
 import { usePlantSpecies } from '@/features/plant-species/composables/usePlantSpecies.ts'
 import { LifeCycle } from '@/features/plant-species/enums/life-cycle.enum.ts'
 import { LightRequirement } from '@/features/plant-species/enums/light-requirement.enum.ts'
@@ -17,10 +16,7 @@ import type {
   PlantCategorySummary,
   PlantSpeciesResponse,
 } from '@/features/plant-species/types/plant-species-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios from 'axios'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -32,6 +28,12 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; success: [] }>()
 
 const { isSubmitting, errorMessage, createPlantSpecies, updatePlantSpeciesById } = usePlantSpecies()
+const {
+  plantCategories,
+  page: plantCategoriesPage,
+  errorMessage: plantCategoriesError,
+  fetchPlantCategories,
+} = usePlantCategories()
 
 const name = ref<string>(props?.data?.name ?? '')
 const scientificName = ref<string | null>(props?.data?.scientificName ?? null)
@@ -75,18 +77,17 @@ const onSubmit = async () => {
   }
 }
 
-const fetchPlantCategories = async (
-  page: number,
+const loadPlantCategories = async (
+  pageNumber: number,
   term: string,
 ): Promise<{ items: PlantCategorySummary[]; hasNext: boolean }> => {
-  const { data } = await axios.get<ApiResponse<Pagination<PlantCategoryResponse>>>(
-    PLANT_CATEGORY_API_URL,
-    { params: { page, size: 10, name: term } },
-  )
+  await fetchPlantCategories({ pageNumber, size: 10, name: term })
+
+  if (plantCategoriesError.value) throw new Error(plantCategoriesError.value)
 
   return {
-    items: data.data.content,
-    hasNext: page + 1 < data.data.page.totalPages,
+    items: plantCategories.value,
+    hasNext: pageNumber + 1 < (plantCategoriesPage.value?.totalPages ?? 0),
   }
 }
 </script>
@@ -111,13 +112,13 @@ const fetchPlantCategories = async (
 
       <AppAsyncSelect
         v-model="selectedCategory"
-        :fetch-options="fetchPlantCategories"
+        :fetch-options="loadPlantCategories"
         id="plant-category"
         label="plant category"
         option-label="name"
         placeholder="Please select plant category"
         required
-        @error="(e) => (errorMessage = handleDefaultApiError(e))"
+        @error="(e) => (errorMessage = e instanceof Error ? e.message : handleDefaultApiError(e))"
       />
 
       <div class="flex flex-col gap-2 sm:flex-row">
