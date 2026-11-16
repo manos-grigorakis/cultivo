@@ -9,7 +9,7 @@ import java.util.List;
 
 public record SeedPacketUpdateRequest(
         @NotBlank(message = "Brand is required")
-        @Size(max = 150)
+        @Size(min = 3, max = 150)
         String brand,
 
         @Size(max = 150)
