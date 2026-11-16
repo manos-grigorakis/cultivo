@@ -2,85 +2,44 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
 import PlantCategoryForm from '@/features/plant-categories/components/PlantCategoryForm.vue'
 import PlantCategorySkeleton from '@/features/plant-categories/components/PlantCategorySkeleton.vue'
-import type { PlantCategoryResponse } from '@/features/plant-categories/types/plant-category-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import { usePlantCategories } from '@/features/plant-categories/composables/usePlantCategories.ts'
 import { formatDate } from '@/utils/format-date.utils.ts'
 import { LucidePencil, LucideTrash } from '@lucide/vue'
-import axios, { AxiosError } from 'axios'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
-const route = useRoute()
-const plantCategoryId = Number(route.params.id)
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
-const plantCategory = ref<PlantCategoryResponse | null>(null)
+const plantCategoryId = Number(useRoute().params.id)
+
+const {
+  plantCategory,
+  isLoading,
+  isDeleting,
+  errorMessage,
+  fetchPlantCategoryById,
+  deletePlantCategoryById,
+} = usePlantCategories()
+
 const isPlantCategoryFormOpen = ref<boolean>(false)
-const isDeleting = ref<boolean>(false)
 const isDeletePlantCategoryModalOpen = ref<boolean>(false)
-
-const fetchPlantCategory = async () => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const res = await axios.get<ApiResponse<PlantCategoryResponse>>(
-      `${PLANT_CATEGORY_API_URL}/${plantCategoryId}`,
-    )
-    if (res.status === 200) plantCategory.value = res.data.data
-  } catch (error) {
-    if (error instanceof AxiosError && error.status === 404) {
-      errorMessage.value = `Plant category with id ${plantCategoryId} not found`
-      return
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const onUpdatedPlantCategory = async () => {
   isPlantCategoryFormOpen.value = false
-  await fetchPlantCategory()
+  await fetchPlantCategoryById(plantCategoryId)
 }
 
-const deletePlantCategory = async () => {
-  isDeleting.value = true
-  errorMessage.value = null
-
+const onDeletePlantCategory = async () => {
   try {
-    const res = await axios.delete(`${PLANT_CATEGORY_API_URL}/${plantCategoryId}`)
-    if (res.status === 204) await router.push({ name: 'plant-category-list' })
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      if (error.status === 404) {
-        errorMessage.value = `Plant category with id ${plantCategoryId} not found`
-        return
-      } else if (
-        error.status === 409 &&
-        error?.response?.data.error.errorCode === 'PLANT_CATEGORY_HAS_SPECIES'
-      ) {
-        errorMessage.value = `This plant category cannot be deleted because it still has plant species assigned to it`
-        return
-      }
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
+    const deleted = await deletePlantCategoryById(plantCategoryId)
+    if (deleted) await router.push({ name: 'plant-category-list' })
   } finally {
-    isDeleting.value = false
     isDeletePlantCategoryModalOpen.value = false
   }
 }
 
-onMounted(() => {
-  fetchPlantCategory()
-})
+onMounted(() => fetchPlantCategoryById(plantCategoryId))
 </script>
 
 <template>
@@ -100,7 +59,7 @@ onMounted(() => {
     :isSubmitting="isDeleting"
     isDangerOperation
     @close="isDeletePlantCategoryModalOpen = false"
-    @confirm="deletePlantCategory"
+    @confirm="onDeletePlantCategory"
   />
 
   <section class="mx-auto w-full max-w-5xl">

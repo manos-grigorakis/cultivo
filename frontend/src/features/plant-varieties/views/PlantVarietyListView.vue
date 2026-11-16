@@ -4,44 +4,27 @@ import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
-import { PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import PlantVarietyForm from '@/features/plant-varieties/components/PlantVarietyForm.vue'
 import PlantVarietyTable from '@/features/plant-varieties/components/PlantVarietyTable.vue'
+import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Page, Pagination } from '@/types/pagination.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { LucidePlus, RefreshCcw } from '@lucide/vue'
-import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
-const plantVarieties = ref<PlantVarietyResponse[]>([])
+const {
+  plantVarieties,
+  page,
+  isLoading,
+  isDeleting,
+  errorMessage,
+  fetchPlantVarieties,
+  deletePlantVarietyById,
+} = usePlantVarieties()
+
 const isRefreshing = ref<boolean>(false)
-const isLoading = ref<boolean>(false)
-const isDeleting = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
-const page = ref<Page>()
 const selectedVariety = ref<PlantVarietyResponse | null>(null)
 const isDeleteDialogOpen = ref<boolean>(false)
 const formMode = ref<'create' | 'update' | null>(null) // null === closed form
-
-const fetchPlantVarieties = async (pageNumber: number = 0) => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const response = await axios.get<ApiResponse<Pagination<PlantVarietyResponse>>>(
-      PLANT_VARIETIES_API_URL,
-      { params: { page: pageNumber } },
-    )
-    plantVarieties.value = response.data.data.content
-    page.value = response.data.data.page
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const refreshPlantVarieties = async () => {
   if (isRefreshing.value) return
@@ -49,7 +32,7 @@ const refreshPlantVarieties = async () => {
   isRefreshing.value = true
 
   try {
-    await fetchPlantVarieties(page.value?.number ?? 0)
+    await fetchPlantVarieties({ pageNumber: page.value?.number ?? 0 })
   } finally {
     isRefreshing.value = false
   }
@@ -66,33 +49,13 @@ const closeDeleteDialog = () => {
 }
 
 const onPlantVarietyDelete = async () => {
-  if (!selectedVariety.value || isDeleting.value) return
-
-  isDeleting.value = true
-  errorMessage.value = null
+  if (!selectedVariety.value) return
 
   try {
-    await axios.delete(`${PLANT_VARIETIES_API_URL}/${selectedVariety.value.id}`)
-    closeDeleteDialog()
-    await fetchPlantVarieties(page.value?.number ?? 0)
-  } catch (error) {
-    if (axios.isAxiosError<ApiResponse<never>>(error)) {
-      const status = error?.response?.status
-      const errorCode = error?.response?.data?.error?.errorCode
+    const deleted = await deletePlantVarietyById(selectedVariety.value.id)
 
-      if (status === 404) {
-        errorMessage.value = 'Plant variety not found'
-        return
-      }
-
-      if (status === 409 && errorCode === 'PLANT_VARIETY_HAS_PLANTS') {
-        errorMessage.value = `Cannot delete ${selectedVariety.value?.name} because it has plants assigned. Please delete plants and try again`
-        return
-      }
-    }
-    errorMessage.value = handleDefaultApiError(error)
+    if (deleted) await fetchPlantVarieties({ pageNumber: page.value?.number ?? 0 })
   } finally {
-    isDeleting.value = false
     closeDeleteDialog()
   }
 }
@@ -114,12 +77,10 @@ const closeForm = () => {
 
 const onFormSuccess = async () => {
   closeForm()
-  await fetchPlantVarieties(page.value?.number ?? 0)
+  await fetchPlantVarieties({ pageNumber: page.value?.number ?? 0 })
 }
 
-onMounted(() => {
-  fetchPlantVarieties()
-})
+onMounted(() => fetchPlantVarieties())
 </script>
 
 <template>
@@ -173,7 +134,10 @@ onMounted(() => {
 
     <p v-else class="mt-4 text-center">There are no plant varieties recorded yet</p>
 
-    <AppPagination :data="page" @page-changed="fetchPlantVarieties" />
+    <AppPagination
+      :data="page"
+      @page-changed="(pageNumber) => fetchPlantVarieties({ pageNumber })"
+    />
   </AppSectionWrapper>
 </template>
 

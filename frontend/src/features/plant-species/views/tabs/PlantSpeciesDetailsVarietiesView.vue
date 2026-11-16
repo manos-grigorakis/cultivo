@@ -1,46 +1,18 @@
 <script setup lang="ts">
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
-import { PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
 import PlantVarietyTable from '@/features/plant-varieties/components/PlantVarietyTable.vue'
-import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Page, Pagination } from '@/types/pagination.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios from 'axios'
-import { onMounted, ref } from 'vue'
+import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
+import { onMounted } from 'vue'
 
 const props = defineProps<{
   speciesId: number
 }>()
 
-const varieties = ref<PlantVarietyResponse[]>([])
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
-const page = ref<Page>()
-
-const fetchSpeciesPlantVarieties = async (pageNumber: number = 0) => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const { data } = await axios.get<ApiResponse<Pagination<PlantVarietyResponse>>>(
-      PLANT_VARIETIES_API_URL,
-      {
-        params: { page: pageNumber, plantSpeciesId: props.speciesId },
-      },
-    )
-    varieties.value = data.data.content
-    page.value = data.data.page
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
+const { plantVarieties, page, isLoading, errorMessage, fetchPlantVarieties } = usePlantVarieties()
 
 onMounted(() => {
-  fetchSpeciesPlantVarieties()
+  fetchPlantVarieties({ plantSpeciesId: props.speciesId })
 })
 </script>
 
@@ -49,8 +21,13 @@ onMounted(() => {
     <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
     <template v-else>
-      <PlantVarietyTable :plant-varieties="varieties" :is-loading="isLoading" />
-      <AppPagination :data="page" @page-changed="fetchSpeciesPlantVarieties" />
+      <PlantVarietyTable :plant-varieties="plantVarieties" :is-loading="isLoading" />
+      <AppPagination
+        :data="page"
+        @page-changed="
+          (pageNumber) => fetchPlantVarieties({ pageNumber, plantSpeciesId: props.speciesId })
+        "
+      />
     </template>
   </section>
 </template>

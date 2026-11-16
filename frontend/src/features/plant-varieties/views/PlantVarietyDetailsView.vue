@@ -2,11 +2,11 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { PLANT_SPECIES_API_URL } from '@/constant/api.ts'
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import PlantVarietyDetailsSkeleton from '@/features/plant-varieties/components/PlantVarietyDetailsSkeleton.vue'
 import PlantVarietyForm from '@/features/plant-varieties/components/PlantVarietyForm.vue'
-import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
+import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
 import { formatDate } from '@/utils/format-date.utils.ts'
@@ -19,47 +19,23 @@ const SKELETON_DELAY_MS = 300
 const SKELETON_MIN_VISIBLE_MS = 400
 
 const router = useRouter()
-const varietyId = useRoute().params.id
-const variety = ref<PlantVarietyResponse | null>(null)
+const varietyId = Number(useRoute().params.id)
+
+const { plantVariety, isDeleting, errorMessage, fetchPlantVarietyById, deletePlantVarietyById } =
+  usePlantVarieties()
+
 const species = ref<PlantSpeciesResponse | null>(null)
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
+
 const isEditFormOpen = ref<boolean>(false)
 const isDeleteDialogOpen = ref<boolean>(false)
-const isDeleting = ref<boolean>(false)
 const isPlantSpeciesLoading = ref<boolean>(false)
 
 // Fix skeleton flickering
 const isPageLoading = ref<boolean>(true)
 const showSkeleton = ref<boolean>(false)
 
-const fetchPlantVariety = async () => {
-  if (!varietyId) {
-    errorMessage.value = `Plant variety with id ${varietyId} not found`
-    return
-  }
-
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const { data } = await axios.get<ApiResponse<PlantVarietyResponse>>(
-      `${PLANT_VARIETIES_API_URL}/${varietyId}`,
-    )
-    variety.value = data.data
-  } catch (error) {
-    if (error instanceof AxiosError && error.response?.status === 404) {
-      errorMessage.value = `Plant variety with id ${varietyId} not found`
-    } else {
-      errorMessage.value = handleDefaultApiError(error)
-    }
-  } finally {
-    isLoading.value = false
-  }
-}
-
 const fetchPlantSpeciesById = async () => {
-  if (!varietyId || !variety.value) {
+  if (!varietyId || !plantVariety.value) {
     errorMessage.value = `Plant variety with id ${varietyId} not found`
     return
   }
@@ -69,12 +45,12 @@ const fetchPlantSpeciesById = async () => {
 
   try {
     const { data } = await axios.get<ApiResponse<PlantSpeciesResponse>>(
-      `${PLANT_SPECIES_API_URL}/${variety.value.plantSpeciesId}`,
+      `${PLANT_SPECIES_API_URL}/${plantVariety.value.plantSpeciesId}`,
     )
     species.value = data.data
   } catch (error) {
     if (error instanceof AxiosError && error.response?.status === 404) {
-      errorMessage.value = `Plant Species with id ${variety.value.plantSpeciesId} not found`
+      errorMessage.value = `Plant Species with id ${plantVariety.value.plantSpeciesId} not found`
     } else {
       errorMessage.value = handleDefaultApiError(error)
     }
@@ -85,43 +61,17 @@ const fetchPlantSpeciesById = async () => {
 
 const handleSuccessVarietyUpdate = async () => {
   isEditFormOpen.value = false
-  await fetchPlantVariety()
+  await fetchPlantVarietyById(varietyId)
 
-  if (variety.value) await fetchPlantSpeciesById()
+  if (plantVariety.value) await fetchPlantSpeciesById()
 }
 
 const onVarietyDeleteConfirmationClick = async () => {
-  isDeleting.value = true
-  errorMessage.value = null
-
   try {
-    await axios.delete(`${PLANT_VARIETIES_API_URL}/${varietyId}`)
-    await router.push({ name: 'plant-variety-list' })
-  } catch (error) {
-    if (axios.isAxiosError<ApiResponse<never>>(error)) {
-      const status = error?.response?.status
-      const errorCode = error?.response?.data?.error?.errorCode
-
-      if (status === 404) {
-        errorMessage.value = `Plant variety with id ${varietyId} not found`
-        return
-      }
-
-      if (status === 409 && errorCode === 'PLANT_VARIETY_HAS_PLANTS') {
-        errorMessage.value = `Cannot delete ${variety.value?.name} because it has plants assigned. Please delete plants and try again`
-        isDeleteDialogOpen.value = false
-        return
-      }
-
-      if (status === 409 && errorCode === 'PLANT_VARIETY_HAS_SEED_PACKETS') {
-        errorMessage.value = `Cannot delete ${variety.value?.name} because it has seed packets assigned. Please delete seed packets and try again`
-        isDeleteDialogOpen.value = false
-        return
-      }
-    }
-    errorMessage.value = handleDefaultApiError(error)
+    const deleted = await deletePlantVarietyById(varietyId)
+    if (deleted) await router.push({ name: 'plant-variety-list' })
   } finally {
-    isDeleting.value = false
+    isDeleteDialogOpen.value = false
   }
 }
 
@@ -134,9 +84,9 @@ onMounted(async () => {
   }, SKELETON_DELAY_MS)
 
   try {
-    await fetchPlantVariety()
+    await fetchPlantVarietyById(varietyId)
 
-    if (variety.value) await fetchPlantSpeciesById()
+    if (plantVariety.value) await fetchPlantSpeciesById()
   } finally {
     clearTimeout(skeletonTimer)
 
@@ -153,17 +103,17 @@ onMounted(async () => {
 
 <template>
   <PlantVarietyForm
-    v-if="isEditFormOpen && variety"
+    v-if="isEditFormOpen && plantVariety"
     mode="update"
-    :varieties-id="variety.id"
-    :data="variety"
+    :varieties-id="plantVariety.id"
+    :data="plantVariety"
     @close="isEditFormOpen = false"
     @success="handleSuccessVarietyUpdate"
   />
 
   <AppConfirmDialog
-    v-if="isDeleteDialogOpen && variety"
-    :text="`Are you sure you want to delete ${variety.name}`"
+    v-if="isDeleteDialogOpen && plantVariety"
+    :text="`Are you sure you want to delete ${plantVariety.name}`"
     :is-submitting="isDeleting"
     is-danger-operation
     @close="isDeleteDialogOpen = false"
@@ -175,10 +125,10 @@ onMounted(async () => {
 
     <PlantVarietyDetailsSkeleton v-if="isPageLoading && showSkeleton" />
 
-    <div v-else-if="!isPageLoading && variety && species">
+    <div v-else-if="!isPageLoading && plantVariety && species">
       <div class="flex flex-wrap justify-between gap-2">
         <div>
-          <h1 class="font-display text-2xl">{{ species.name }} - {{ variety.name }}</h1>
+          <h1 class="font-display text-2xl">{{ species.name }} - {{ plantVariety.name }}</h1>
         </div>
 
         <div class="flex flex-wrap gap-2">
@@ -195,16 +145,18 @@ onMounted(async () => {
       <div>
         <div>
           <p class="text-content-muted mt-2 text-xs">
-            <span>Created {{ formatDate(variety.createdAt) }}</span> -
+            <span>Created {{ formatDate(plantVariety.createdAt) }}</span> -
             <span
               >Last Update
-              {{ variety.updatedAt != null ? formatDate(variety.updatedAt) : '-' }}</span
+              {{ plantVariety.updatedAt != null ? formatDate(plantVariety.updatedAt) : '-' }}</span
             >
           </p>
         </div>
 
         <div class="mt-1">
-          <p v-if="variety.description" class="text-content-muted">{{ variety.description }}</p>
+          <p v-if="plantVariety.description" class="text-content-muted">
+            {{ plantVariety.description }}
+          </p>
           <p v-else class="text-content-secondary">No description provided</p>
         </div>
       </div>

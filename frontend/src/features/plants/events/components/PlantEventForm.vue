@@ -2,20 +2,18 @@
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
-import { PLANT_API_URL } from '@/constant/api.ts'
+import { usePlants } from '@/features/plants/composables/usePlants.ts'
 import type { PlantEventRequest } from '@/features/plants/events/types/plant-event-request.interface.ts'
 import type { PlantEventResponse } from '@/features/plants/events/types/plant-event-response.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import AppButton from '../../../../components/ui/AppButton.vue'
 
 const props = defineProps<{ mode: 'create' | 'update'; plantEvent?: PlantEventResponse }>()
 const emit = defineEmits<{ close: []; success: [] }>()
 
-const route = useRoute()
-const plantId = route.params.id
+const { isSubmitting, errorMessage, createPlantEvent, updatePlantEventById } = usePlants()
+const plantId = Number(useRoute().params.id)
 
 const form = reactive<{
   title: string
@@ -33,13 +31,7 @@ const form = reactive<{
 
 const types = ['WATERING', 'HARVEST', 'REPOTTING', 'OBSERVATION', 'NOTE']
 
-const isSubmitting = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
-
 const onSubmit = async () => {
-  isSubmitting.value = true
-  errorMessage.value = null
-
   const payload: PlantEventRequest = {
     title: form.title,
     type: form.type,
@@ -47,52 +39,16 @@ const onSubmit = async () => {
     description: form.description?.trim() || null,
   }
 
-  try {
-    if (props.mode === 'create') await createPlantEvent(plantId, payload)
-    else if (props.mode === 'update') {
-      if (props.plantEvent == null) errorMessage.value = 'Plant event not found'
-      else await updatePlantEvent(plantId, props.plantEvent.id, payload)
+  if (props.mode === 'create') {
+    const created = await createPlantEvent(plantId, payload)
+    if (created) emit('success')
+  } else if (props.mode === 'update') {
+    if (props.plantEvent == null) errorMessage.value = 'Plant event not found'
+    else {
+      const updated = await updatePlantEventById(plantId, props.plantEvent.id, payload)
+      if (updated) emit('success')
     }
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      const status = error.response?.status
-      const errorCode = error.response?.data?.error?.errorCode
-
-      if (status === 404) {
-        handle404Error()
-        return
-      } else if (status === 409 && errorCode === 'PLANT_ARCHIVED') {
-        errorMessage.value = 'Plant is archived and cannot be modified'
-        return
-      }
-    }
-
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isSubmitting.value = false
   }
-}
-
-const createPlantEvent = async (
-  plantId: string | string[] | undefined,
-  payload: PlantEventRequest,
-) => {
-  const response = await axios.post(`${PLANT_API_URL}/${plantId}/events`, payload)
-  if (response.status === 201) emit('success')
-}
-
-const updatePlantEvent = async (
-  plantId: string | string[] | undefined,
-  eventId: number,
-  payload: PlantEventRequest,
-) => {
-  const response = await axios.put(`${PLANT_API_URL}/${plantId}/events/${eventId}`, payload)
-  if (response.status === 200) emit('success')
-}
-
-const handle404Error = () => {
-  if (props.mode === 'create') errorMessage.value = 'Plant not found'
-  else if (props.mode === 'update') errorMessage.value = 'Plant or Plant Event not found'
 }
 
 const onTypeChange = (type: string) => {

@@ -5,16 +5,14 @@ import AppAsyncSelect from '@/components/ui/form/AppAsyncSelect.vue'
 import AppFormModal from '@/components/ui/form/AppFormModal.vue'
 import AppInput from '@/components/ui/form/AppInput.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
-import { PLANT_SPECIES_API_URL, PLANT_VARIETIES_API_URL } from '@/constant/api.ts'
+import { usePlantSpecies } from '@/features/plant-species/composables/usePlantSpecies.ts'
 
 import type { PlantSpeciesResponse } from '@/features/plant-species/types/plant-species-response.interface.ts'
+import { usePlantVarieties } from '@/features/plant-varieties/composables/usePlantVarieties.ts'
 import type { PlantVarietyRequest } from '@/features/plant-varieties/types/plant-variety-request.interface.ts'
 import type { PlantVarietyResponse } from '@/features/plant-varieties/types/plant-variety-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Pagination } from '@/types/pagination.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import axios, { AxiosError } from 'axios'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -24,9 +22,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: []; success: [] }>()
 
-const isSubmitting = ref<boolean>(false)
-const isSpeciesLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
+const { isSubmitting, errorMessage, createPlantVariety, updatePlantVarietyById } =
+  usePlantVarieties()
+const {
+  plantSpeciesList,
+  plantSpecies,
+  page: plantSpeciesPage,
+  isLoading: isSpeciesLoading,
+  errorMessage: speciesError,
+  fetchPlantSpeciesById,
+  fetchPlantSpecies,
+} = usePlantSpecies()
 
 // Form fields
 const name = ref<string>(props?.data?.name || '')
@@ -39,73 +45,46 @@ const onSubmit = async () => {
     return
   }
 
-  isSubmitting.value = true
-  errorMessage.value = null
-
   const payload: PlantVarietyRequest = {
     name: name.value,
     description: description.value !== null ? description.value.trim() : null,
     plantSpeciesId: selectedPlantSpecies.value.id,
   }
 
-  try {
-    if (props.mode === 'create') await createPlantVarieties(payload)
-    else if (props.mode === 'update') {
-      if (!props.varietiesId) return
-      await updatePlantVarietiesById(props.varietiesId, payload)
+  if (props.mode === 'create') {
+    const created = await createPlantVariety(payload)
+    if (created) emit('success')
+  } else if (props.mode === 'update') {
+    if (!props.varietiesId) {
+      errorMessage.value = 'Plant variety ID is required'
+      return
     }
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isSubmitting.value = false
+    const updated = await updatePlantVarietyById(props.varietiesId, payload)
+    if (updated) emit('success')
   }
 }
 
-const createPlantVarieties = async (payload: PlantVarietyRequest) => {
-  await axios.post(PLANT_VARIETIES_API_URL, payload)
-  emit('success')
-}
-
-const updatePlantVarietiesById = async (id: number, payload: PlantVarietyRequest) => {
-  await axios.put(`${PLANT_VARIETIES_API_URL}/${id}`, payload)
-  emit('success')
-}
-
-const fetchPlantSpecies = async (
-  page: number,
+const loadPlantSpecies = async (
+  pageNumber: number,
   term: string,
 ): Promise<{ items: PlantSpeciesResponse[]; hasNext: boolean }> => {
-  const { data } = await axios.get<ApiResponse<Pagination<PlantSpeciesResponse>>>(
-    PLANT_SPECIES_API_URL,
-    {
-      params: { page, size: 10, name: term },
-    },
-  )
+  await fetchPlantSpecies({ pageNumber, size: 10, name: term })
 
-  return { items: data.data.content, hasNext: page + 1 < data.data.page.totalPages }
-}
+  if (speciesError.value) throw new Error(speciesError.value)
 
-const fetchPlantSpeciesById = async (id: number) => {
-  isSpeciesLoading.value = true
-
-  try {
-    const { data } = await axios.get<ApiResponse<PlantSpeciesResponse>>(
-      `${PLANT_SPECIES_API_URL}/${id}`,
-    )
-    selectedPlantSpecies.value = data.data
-  } catch (error) {
-    if (error instanceof AxiosError && error.response?.status === 404) {
-      errorMessage.value = 'Plant species not found'
-    } else {
-      errorMessage.value = handleDefaultApiError(error)
-    }
-  } finally {
-    isSpeciesLoading.value = false
+  return {
+    items: plantSpeciesList.value,
+    hasNext: pageNumber + 1 < (plantSpeciesPage.value?.totalPages ?? 0),
   }
 }
 
+const displayError = computed(() => errorMessage.value || speciesError.value)
+
 onMounted(async () => {
-  if (props.mode === 'update' && props.data) await fetchPlantSpeciesById(props.data.plantSpeciesId)
+  if (props.mode === 'update' && props.data) {
+    await fetchPlantSpeciesById(props.data.plantSpeciesId)
+    selectedPlantSpecies.value = plantSpecies.value
+  }
 })
 </script>
 
@@ -116,20 +95,20 @@ onMounted(async () => {
     @close="emit('close')"
   >
     <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
-      <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+      <AppErrorContainer v-if="displayError" :error-message="displayError" />
 
       <AppInput v-model="name" label="name" placeholder="e.g. Curly" required />
 
       <AppAsyncSelect
         v-model="selectedPlantSpecies"
-        :fetch-options="fetchPlantSpecies"
+        :fetch-options="loadPlantSpecies"
         :initial-loading="isSpeciesLoading"
         id="plant-species"
         label="plant species"
         option-label="name"
         placeholder="Please select plant species"
         required
-        @error="(e) => (errorMessage = handleDefaultApiError(e))"
+        @error="(e) => (errorMessage = e instanceof Error ? e.message : handleDefaultApiError(e))"
       />
 
       <AppTextArea v-model="description" label="description" id="description" />

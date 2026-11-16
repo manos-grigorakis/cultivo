@@ -3,44 +3,18 @@ import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
-import { PLANT_CATEGORY_API_URL } from '@/constant/api.ts'
 import PlantCategoryCard from '@/features/plant-categories/components/PlantCategoryCard.vue'
 import PlantCategoryCardSkeleton from '@/features/plant-categories/components/PlantCategoryCardSkeleton.vue'
 import PlantCategoryForm from '@/features/plant-categories/components/PlantCategoryForm.vue'
-import type { PlantCategoryResponse } from '@/features/plant-categories/types/plant-category-response.interface.ts'
-import type { ApiResponse } from '@/types/api-response.interface.ts'
-import type { Page, Pagination } from '@/types/pagination.interface.ts'
-import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
+import { usePlantCategories } from '@/features/plant-categories/composables/usePlantCategories.ts'
 import { LucidePlus, RefreshCcw } from '@lucide/vue'
-import axios from 'axios'
 import { onMounted, ref } from 'vue'
 
-const plantCategories = ref<PlantCategoryResponse[]>([])
-const page = ref<Page>()
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string | null>(null)
+const { plantCategories, page, isLoading, errorMessage, fetchPlantCategories } =
+  usePlantCategories()
 const isRefreshing = ref<boolean>(false)
 
 const isCreatePlantCategoryFormOpen = ref<boolean>(false)
-
-const fetchPlantCategories = async (pageNumber: number = 0) => {
-  isLoading.value = true
-  errorMessage.value = null
-
-  try {
-    const res = await axios.get<ApiResponse<Pagination<PlantCategoryResponse>>>(
-      PLANT_CATEGORY_API_URL,
-      { params: { page: pageNumber } },
-    )
-
-    plantCategories.value = res.data.data.content
-    page.value = res.data.data.page
-  } catch (error) {
-    errorMessage.value = handleDefaultApiError(error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 const onPlantCategoryCreated = async () => {
   isCreatePlantCategoryFormOpen.value = false
@@ -53,7 +27,7 @@ const refreshCategories = async () => {
   isRefreshing.value = true
 
   try {
-    await fetchPlantCategories(page.value?.number ?? 0)
+    await fetchPlantCategories({ pageNumber: page.value?.number ?? 0 })
   } finally {
     isRefreshing.value = false
   }
@@ -115,7 +89,10 @@ onMounted(() => {
 
     <p v-else class="text-center">There are no plant categories recorded yet</p>
 
-    <AppPagination :data="page" @page-changed="fetchPlantCategories" />
+    <AppPagination
+      :data="page"
+      @page-changed="(pageNumber) => fetchPlantCategories({ pageNumber })"
+    />
   </AppSectionWrapper>
 </template>
 
