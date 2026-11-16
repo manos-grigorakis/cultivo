@@ -10,7 +10,9 @@ import type { PlantReferenceResponse } from '@/features/plants/types/plant-refer
 import type { PlantRequest } from '@/features/plants/types/plant-request.interface.ts'
 import type { PlantResponse } from '@/features/plants/types/plant-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { ref, watch } from 'vue'
+import { useForm } from 'vee-validate'
+import { watch } from 'vue'
+import * as z from 'zod'
 import AppErrorContainer from '../../../components/ui/AppErrorContainer.vue'
 
 const props = defineProps<{
@@ -34,20 +36,39 @@ const {
   fetchPlantVarieties,
 } = usePlantVarieties()
 
-const label = ref<string>(props.data?.label ?? '')
-const selectedSpecies = ref<PlantReferenceResponse | null>(props.data?.species ?? null)
-const selectedVariety = ref<PlantReferenceResponse | null>(props.data?.variety ?? null)
+const formSchema = z.object({
+  label: z
+    .string()
+    .trim()
+    .min(3, 'Name must be at least 3 characters')
+    .max(150, 'Name must not exceed 150 characters'),
+  selectedSpecies: z
+    .object({ id: z.number(), name: z.string() })
+    .nullable()
+    .refine((v) => v !== null, { message: 'Please select a plant species' }),
+  selectedVariety: z.object({ id: z.number(), name: z.string() }).nullable(),
+})
 
-const onSubmit = async () => {
-  if (!label.value.trim() || !selectedSpecies.value) {
-    errorMessage.value = 'Please fill the required fields'
-    return
-  }
+const { defineField, errors, handleSubmit } = useForm({
+  validationSchema: formSchema,
+  initialValues: {
+    label: props.data?.label ?? '',
+    selectedSpecies: props.data?.species ?? null,
+    selectedVariety: props.data?.variety ?? null,
+  },
+})
+
+const [label] = defineField('label')
+const [selectedSpecies] = defineField('selectedSpecies')
+const [selectedVariety] = defineField('selectedVariety')
+
+const onSubmit = handleSubmit(async (values) => {
+  if (!values.selectedSpecies) return
 
   const payload: PlantRequest = {
-    label: label.value.trim(),
-    plantSpeciesId: selectedSpecies.value.id,
-    plantVarietyId: selectedVariety.value?.id ?? null,
+    label: values.label,
+    plantSpeciesId: values.selectedSpecies.id,
+    plantVarietyId: values.selectedVariety?.id ?? null,
   }
 
   if (props.mode == 'create') {
@@ -62,7 +83,7 @@ const onSubmit = async () => {
     const updated = await updatePlantById(props.data.id, payload)
     if (updated) emit('success')
   }
-}
+})
 
 const loadPlantSpecies = async (
   pageNumber: number,
@@ -108,14 +129,21 @@ watch(selectedSpecies, (newSpecies, oldSpecies) => {
     container-size="md"
     @close="emit('close')"
   >
-    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
+    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit" novalidate>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
-      <AppInput v-model="label" label="label" placeholder="e.g. Basil" required />
+      <AppInput
+        v-model="label"
+        label="label"
+        placeholder="e.g. Basil"
+        required
+        :error-message="errors.label"
+      />
 
       <AppAsyncSelect
         v-model="selectedSpecies"
         :fetch-options="loadPlantSpecies"
+        :error-message="errors.selectedSpecies"
         id="species"
         label="species"
         option-label="name"
@@ -128,6 +156,7 @@ watch(selectedSpecies, (newSpecies, oldSpecies) => {
         v-model="selectedVariety"
         :key="selectedSpecies?.id ?? 'no-species'"
         :fetch-options="loadPlantVarieties"
+        :error-message="errors.selectedVariety"
         :disabled="!selectedSpecies"
         id="variety"
         label="variety"

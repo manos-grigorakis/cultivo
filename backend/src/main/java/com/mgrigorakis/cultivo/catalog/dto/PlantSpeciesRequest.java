@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 public record PlantSpeciesRequest(
         @NotBlank(message = "Name is required")
-        @Size(max = 100)
+        @Size(min = 3, max = 100)
         String name,
 
         String scientificName,

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public record PlantEventRequest(
         @NotBlank(message = "Title is required")
-        @Size(max = 200, message = "Title must not exceed 200 characters")
+        @Size(min = 3, max = 200, message = "Title must not exceed 200 characters")
         String title,
 
         String description,
