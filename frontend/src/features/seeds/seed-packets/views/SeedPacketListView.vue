@@ -24,6 +24,7 @@ const isRefreshing = ref<boolean>(false)
 const isDeleteDialogOpen = ref<boolean>(false)
 const selectedSeedPacket = ref<SeedPacketResponse | null>(null)
 const isCreateFormOpen = ref<boolean>(false)
+const isUpdateFormOpen = ref<boolean>(false)
 
 const refreshSeedPackets = async () => {
   if (isRefreshing.value) return
@@ -38,6 +39,21 @@ const refreshSeedPackets = async () => {
 
 const onSeedPacketCreateSuccess = async () => {
   isCreateFormOpen.value = false
+  await fetchSeedPackets(page.value?.number ?? 0)
+}
+
+const onOpenUpdateForm = (packet: SeedPacketResponse) => {
+  selectedSeedPacket.value = packet
+  isUpdateFormOpen.value = true
+}
+
+const onCloseUpdateForm = () => {
+  isUpdateFormOpen.value = false
+  selectedSeedPacket.value = null
+}
+
+const onSeedPacketUpdateSuccess = async () => {
+  onCloseUpdateForm()
   await fetchSeedPackets(page.value?.number ?? 0)
 }
 
@@ -88,6 +104,16 @@ onMounted(() => fetchSeedPackets())
     @close="isCreateFormOpen = false"
   />
 
+  <SeedPacketForm
+    v-if="isUpdateFormOpen && selectedSeedPacket"
+    mode="update"
+    :seed-packet-id="selectedSeedPacket.id"
+    :data="selectedSeedPacket"
+    :plant-variety="selectedSeedPacket.plantVariety"
+    @success="onSeedPacketUpdateSuccess"
+    @close="onCloseUpdateForm"
+  />
+
   <AppSectionWrapper title="Seed Packets">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
@@ -117,6 +143,7 @@ onMounted(() => fetchSeedPackets())
       :packets="seedPackets"
       :is-loading="isLoading"
       :show-actions="true"
+      @edit="onOpenUpdateForm"
       @delete="onOpenDeleteDialog($event)"
     />
 
