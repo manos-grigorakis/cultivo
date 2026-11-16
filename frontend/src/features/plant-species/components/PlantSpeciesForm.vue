@@ -17,7 +17,8 @@ import type {
   PlantSpeciesResponse,
 } from '@/features/plant-species/types/plant-species-response.interface.ts'
 import { handleDefaultApiError } from '@/utils/api-error.utils.ts'
-import { ref } from 'vue'
+import { useForm } from 'vee-validate'
+import * as z from 'zod'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -35,32 +36,64 @@ const {
   fetchPlantCategories,
 } = usePlantCategories()
 
-const name = ref<string>(props?.data?.name ?? '')
-const scientificName = ref<string | null>(props?.data?.scientificName ?? null)
-const selectedCategory = ref<PlantCategorySummary | null>(props.data?.plantCategory ?? null)
-const description = ref<string | null>(props?.data?.description ?? null)
-const lifeCycle = ref<LifeCycle | null>((props?.data?.lifeCycle as LifeCycle) ?? null)
-const lightRequirement = ref<LightRequirement | null>(
-  (props?.data?.lightRequirement as LightRequirement) ?? null,
-)
-const waterRequirement = ref<WaterRequirement | null>(
-  (props?.data?.waterRequirement as WaterRequirement) ?? null,
-)
+const formSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, 'Name must be at least 3 characters')
+    .max(100, 'Name must not exceed 100 characters'),
+  scientificName: z
+    .string()
+    .trim()
+    .max(255, 'Name must not exceed 255 characters')
+    .nullable()
+    .transform((value) => value || null),
+  selectedCategory: z
+    .object({ id: z.number(), name: z.string() })
+    .nullable()
+    .refine((v) => v !== null, { message: 'Please select a plant category' }),
+  description: z
+    .string()
+    .trim()
+    .nullable()
+    .transform((value) => value || null),
+  lifeCycle: z.enum(LifeCycle).nullable(),
+  lightRequirement: z.enum(LightRequirement).nullable(),
+  waterRequirement: z.enum(WaterRequirement).nullable(),
+})
 
-const onSubmit = async () => {
-  if (selectedCategory.value === null) {
-    errorMessage.value = 'Please select a plant category'
-    return
-  }
+const { defineField, errors, handleSubmit } = useForm({
+  validationSchema: formSchema,
+  initialValues: {
+    name: props?.data?.name ?? '',
+    scientificName: props?.data?.scientificName ?? null,
+    selectedCategory: props.data?.plantCategory ?? null,
+    description: props.data?.description ?? null,
+    lifeCycle: (props.data?.lifeCycle as LifeCycle) ?? null,
+    lightRequirement: (props.data?.lightRequirement as LightRequirement) ?? null,
+    waterRequirement: (props.data?.waterRequirement as WaterRequirement) ?? null,
+  },
+})
+
+const [name] = defineField('name')
+const [scientificName] = defineField('scientificName')
+const [selectedCategory] = defineField('selectedCategory')
+const [description] = defineField('description')
+const [lifeCycle] = defineField('lifeCycle')
+const [lightRequirement] = defineField('lightRequirement')
+const [waterRequirement] = defineField('waterRequirement')
+
+const onSubmit = handleSubmit(async (values) => {
+  if (!values.selectedCategory) return
 
   const payload: PlantSpeciesRequest = {
-    name: name.value,
-    scientificName: scientificName.value,
-    description: description.value !== null ? description.value.trim() : null,
-    lifeCycle: lifeCycle.value !== null ? lifeCycle.value : null,
-    lightRequirement: lightRequirement.value !== null ? lightRequirement.value : null,
-    waterRequirement: waterRequirement.value !== null ? waterRequirement.value : null,
-    plantCategoryId: selectedCategory.value.id,
+    name: values.name,
+    scientificName: values.scientificName,
+    description: values.description,
+    plantCategoryId: values.selectedCategory.id,
+    lifeCycle: values.lifeCycle,
+    lightRequirement: values.lightRequirement,
+    waterRequirement: values.waterRequirement,
   }
 
   if (props.mode === 'create') {
@@ -75,7 +108,7 @@ const onSubmit = async () => {
     const updated = await updatePlantSpeciesById(props.speciesId, payload)
     if (updated) emit('success')
   }
-}
+})
 
 const loadPlantCategories = async (
   pageNumber: number,
@@ -98,21 +131,29 @@ const loadPlantCategories = async (
     :container-size="'lg'"
     @close="emit('close')"
   >
-    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
+    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit" novalidate>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
       <div class="flex flex-col gap-2 sm:flex-row">
-        <AppInput v-model="name" label="name" placeholder="e.g. Basil" required />
+        <AppInput
+          v-model="name"
+          label="name"
+          placeholder="e.g. Basil"
+          required
+          :error-message="errors.name"
+        />
         <AppInput
           v-model="scientificName"
           label="Scientific Name"
           placeholder="e.g. Ocimum basilicum"
+          :error-message="errors.scientificName"
         />
       </div>
 
       <AppAsyncSelect
         v-model="selectedCategory"
         :fetch-options="loadPlantCategories"
+        :error-message="errors.selectedCategory"
         id="plant-category"
         label="plant category"
         option-label="name"
@@ -127,6 +168,7 @@ const loadPlantCategories = async (
           :options="
             Object.values(LightRequirement).map((value) => ({ label: value, value: value }))
           "
+          :error-message="errors.lightRequirement"
           id="light-requirement"
           label="light requirement"
           class="flex-1"
@@ -137,6 +179,7 @@ const loadPlantCategories = async (
           :options="
             Object.values(WaterRequirement).map((value) => ({ label: value, value: value }))
           "
+          :error-message="errors.waterRequirement"
           id="water-requirement"
           label="water requirement"
           class="flex-1"
@@ -146,11 +189,17 @@ const loadPlantCategories = async (
       <AppSelect
         v-model="lifeCycle"
         :options="Object.values(LifeCycle).map((value) => ({ label: value, value: value }))"
+        :error-message="errors.lifeCycle"
         id="life-cycle"
         label="life cycle"
       />
 
-      <AppTextArea v-model="description" label="description" id="description" />
+      <AppTextArea
+        v-model="description"
+        label="description"
+        id="description"
+        :error-message="errors.description"
+      />
 
       <div>
         <AppButton

@@ -33,7 +33,7 @@ const size = computed(() => sizeClasses[props.containerSize])
     <div
       aria-modal="true"
       :class="size"
-      class="rounded-card bg-surface-muted w-full p-6 shadow-xl"
+      class="rounded-card bg-surface-muted flex max-h-[90dvh] w-full flex-col p-4 shadow-xl"
       role="dialog"
     >
       <div class="flex items-start justify-between gap-4">
@@ -52,7 +52,9 @@ const size = computed(() => sizeClasses[props.containerSize])
         </button>
       </div>
 
-      <slot />
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+        <slot />
+      </div>
     </div>
   </section>
 </template>

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record PlantRequest(
     @NotBlank(message = "Label is required")
-    @Size(max = 150)
+    @Size(min = 3, max = 150)
     String label,
 
     @NotNull(message = "Plant species id is required")

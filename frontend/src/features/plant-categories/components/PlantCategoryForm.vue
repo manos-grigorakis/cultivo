@@ -6,7 +6,8 @@ import AppInput from '@/components/ui/form/AppInput.vue'
 import AppTextArea from '@/components/ui/form/AppTextArea.vue'
 import { usePlantCategories } from '@/features/plant-categories/composables/usePlantCategories.ts'
 import type { PlantCategoryRequest } from '@/features/plant-categories/types/plant-category-request.interface.ts'
-import { ref } from 'vue'
+import { useForm } from 'vee-validate'
+import * as z from 'zod'
 
 const props = defineProps<{
   mode: 'create' | 'update'
@@ -19,14 +20,32 @@ const emit = defineEmits<{ close: []; success: [] }>()
 const { isSubmitting, errorMessage, createPlantCategory, updatePlantCategoryById } =
   usePlantCategories()
 
-const name = ref<string>(props.data?.name ?? '')
-const description = ref<string | null>(props.data?.description ?? null)
+const formSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, 'Name must be at least 3 characters')
+    .max(100, 'Name must not exceed 100 characters'),
+  description: z
+    .string()
+    .trim()
+    .nullable()
+    .transform((value) => value || null),
+})
 
-const onSubmit = async () => {
-  const payload: PlantCategoryRequest = {
-    name: name.value.trim(),
-    description: description.value?.trim() || null,
-  }
+const { defineField, errors, handleSubmit } = useForm({
+  validationSchema: formSchema,
+  initialValues: {
+    name: props.data?.name ?? '',
+    description: props.data?.description ?? null,
+  },
+})
+
+const [name] = defineField('name')
+const [description] = defineField('description')
+
+const onSubmit = handleSubmit(async (values) => {
+  const payload: PlantCategoryRequest = values
 
   if (props.mode === 'create') {
     const created = await createPlantCategory(payload)
@@ -40,7 +59,7 @@ const onSubmit = async () => {
     const updated = await updatePlantCategoryById(props.plantCategoryId, payload)
     if (updated) emit('success')
   }
-}
+})
 </script>
 
 <template>
@@ -49,11 +68,23 @@ const onSubmit = async () => {
     container-size="md"
     @close="emit('close')"
   >
-    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit">
+    <form class="mt-6 flex flex-col gap-6" @submit.prevent="onSubmit" novalidate>
       <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
 
-      <AppInput v-model="name" label="name" placeholder="e.g. Flowers" required />
-      <AppTextArea v-model="description" label="description" id="description" />
+      <AppInput
+        v-model="name"
+        label="name"
+        placeholder="e.g. Flowers"
+        required
+        :error-message="errors.name"
+      />
+
+      <AppTextArea
+        v-model="description"
+        label="description"
+        id="description"
+        :error-message="errors.description"
+      />
 
       <div>
         <AppButton

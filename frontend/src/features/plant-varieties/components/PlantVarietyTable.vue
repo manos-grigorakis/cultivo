@@ -64,9 +64,11 @@ const emit = defineEmits<{
           <td class="text-content-secondary px-6 py-4">
             {{ variety.updatedAt !== null ? formatDate(variety.updatedAt) : '-' }}
           </td>
-          <td class="flex flex-wrap gap-4 px-6 py-4" v-if="showActions">
-            <AppButton :icon="LucidePencil" variant="outline" @on-click="emit('edit', variety)" />
-            <AppButton :icon="Trash2" variant="danger" @on-click="emit('delete', variety)" />
+          <td class="px-6 py-4" v-if="showActions">
+            <div class="flex gap-2">
+              <AppButton :icon="LucidePencil" variant="outline" @on-click="emit('edit', variety)" />
+              <AppButton :icon="Trash2" variant="danger" @on-click="emit('delete', variety)" />
+            </div>
           </td>
         </tr>
       </tbody>

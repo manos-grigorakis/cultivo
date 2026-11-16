@@ -79,9 +79,11 @@ const emit = defineEmits<{
           <td class="text-content-secondary px-6 py-4">
             {{ packet.updatedAt !== null ? formatDate(packet.updatedAt) : '-' }}
           </td>
-          <td class="flex flex-wrap gap-4 px-6 py-4" v-if="showActions">
-            <AppButton :icon="LucidePencil" variant="outline" @on-click="emit('edit', packet)" />
-            <AppButton :icon="Trash2" variant="danger" @on-click="emit('delete', packet)" />
+          <td class="px-6 py-4" v-if="showActions">
+            <div class="flex gap-2">
+              <AppButton :icon="LucidePencil" variant="outline" @on-click="emit('edit', packet)" />
+              <AppButton :icon="Trash2" variant="danger" @on-click="emit('delete', packet)" />
+            </div>
           </td>
         </tr>
       </tbody>
