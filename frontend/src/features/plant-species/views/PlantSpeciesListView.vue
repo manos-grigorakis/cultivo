@@ -26,7 +26,7 @@ const refreshSpecies = async () => {
   isRefreshing.value = true
 
   try {
-    await fetchPlantSpecies(page.value?.number ?? 0)
+    await fetchPlantSpecies({ pageNumber: page.value?.number ?? 0 })
   } finally {
     isRefreshing.value = false
   }
@@ -87,7 +87,7 @@ onMounted(() => fetchPlantSpecies())
 
     <p v-else class="mt-4 text-center">There are no plant species recorded yet</p>
 
-    <AppPagination :data="page" @page-changed="fetchPlantSpecies" />
+    <AppPagination :data="page" @page-changed="(pageNumber) => fetchPlantSpecies({ pageNumber })" />
   </AppSectionWrapper>
 </template>
 
