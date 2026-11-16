@@ -12,6 +12,7 @@ const props = withDefaults(
     inputId?: string
     placeholder?: string
     required?: boolean
+    errorMessage?: string
   }>(),
   { required: false, type: 'text' },
 )
@@ -24,12 +25,20 @@ const id = computed(() => props.inputId ?? generatedId)
     <AppFormLabel :id="id" :label="label" :required="required" />
 
     <input
-      :type="type"
-      :id="id"
       v-model="model"
-      :required="required"
-      class="border-border rounded-card focus:ring-primary-600 w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none"
+      :id="id"
+      :type="type"
       :placeholder="placeholder"
+      :required
+      :aria-invalid="!!errorMessage"
+      :class="[
+        'rounded-card w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none',
+        errorMessage ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary-600',
+      ]"
     />
+
+    <div v-if="errorMessage">
+      <span class="ml-2 block text-sm text-red-500">{{ errorMessage }}</span>
+    </div>
   </div>
 </template>

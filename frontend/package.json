@@ -20,9 +20,11 @@
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.20.0",
     "tailwindcss": "^4.3.3",
+    "vee-validate": "^5.0.0-beta.0",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1",
-    "vue-select": "^4.0.0-beta.6"
+    "vue-select": "^4.0.0-beta.6",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.5",
