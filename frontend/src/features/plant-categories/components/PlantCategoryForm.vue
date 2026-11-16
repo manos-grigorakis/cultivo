@@ -26,7 +26,11 @@ const formSchema = z.object({
     .trim()
     .min(3, 'Name must be at least 3 characters')
     .max(100, 'Name must not exceed 100 characters'),
-  description: z.string().trim().nullable(),
+  description: z
+    .string()
+    .trim()
+    .nullable()
+    .transform((value) => value || null),
 })
 
 const { defineField, errors, handleSubmit } = useForm({
