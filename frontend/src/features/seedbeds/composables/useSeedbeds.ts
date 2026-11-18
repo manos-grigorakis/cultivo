@@ -1,5 +1,6 @@
 import { SEEDBED_API_URL } from '@/constant/api.ts'
 import type { SeedbedCreateRequest } from '@/features/seedbeds/types/seedbed-create-request.interface.ts'
+import type { SeedbedDetailResponse } from '@/features/seedbeds/types/seedbed-detail-response.interface.ts'
 import type { SeedbedResponse } from '@/features/seedbeds/types/seedbed-response.interface.ts'
 import type { SeedbedSlotSummaryResponse } from '@/features/seedbeds/types/seedbed-slot-summary-response.interface.ts'
 import type { SeedbedUpdateRequest } from '@/features/seedbeds/types/seedbed-update-request.interface.ts'
@@ -51,9 +52,12 @@ export function useSeedbeds() {
     errorMessage.value = null
 
     try {
-      const { data } = await axios.get<ApiResponse<SeedbedResponse>>(`${SEEDBED_API_URL}/${id}`)
+      const { data } = await axios.get<ApiResponse<SeedbedDetailResponse>>(
+        `${SEEDBED_API_URL}/${id}`,
+      )
 
       seedbed.value = data.data
+      seedbedSlotsList.value = data.data.seedbedSlotsSummary
     } catch (error) {
       seedbed.value = null
       errorMessage.value = handleDefaultApiError(error)
@@ -166,6 +170,8 @@ export function useSeedbeds() {
   return {
     seedbedsList,
     seedbed,
+    seedbedSlotsList,
+    seedbedSlot,
 
     page,
     isLoading,
