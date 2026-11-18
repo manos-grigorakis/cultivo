@@ -61,7 +61,7 @@ public class SeedbedController {
             @ApiResponse(responseCode = "200", description = "Seedbed updated successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),
             @ApiResponse(responseCode = "404", description = "Seedbed not found"),
-            @ApiResponse(responseCode = "404", description = "Seedbed already exists by name"),
+            @ApiResponse(responseCode = "409", description = "Seedbed already exists by name"),
     })
     @PutMapping("/{id}")
     public ApiResponseWrapper<SeedbedResponse> updateSeedbedById(@PathVariable Long id,
@@ -83,10 +83,7 @@ public class SeedbedController {
 
     @Operation(summary = "Get All Seedbed Slots by Seedbed ID", description =
             "Finds all seedbed slots by the seedbed id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Founded seedbed slot"),
-            @ApiResponse(responseCode = "404", description = "Seedbed not found"),
-    })
+    @ApiResponse(responseCode = "200", description = "Founded seedbed slot")
     @GetMapping("/{id}/slots")
     public ApiResponseWrapper<List<SeedbedSlotSummaryResponse>> getAllSeedbedSlotsSeedbedId(@PathVariable Long id) {
         return new ApiResponseWrapper<>(seedbedSlotService.getAllSeedbedSlotsBySeedbedId(id));
@@ -96,7 +93,7 @@ public class SeedbedController {
             "Finds a seedbed slot by the seedbed id and the provided seedbed slot id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Founded seedbed slot"),
-            @ApiResponse(responseCode = "404", description = "Seedbed or seedbed slot not found"),
+            @ApiResponse(responseCode = "404", description = "Seedbed slot not found"),
     })
     @GetMapping("/{id}/slots/{slotId}")
     public ApiResponseWrapper<SeedbedSlotSummaryResponse> getSeedbedSlotByIdAndSeedbedId(
