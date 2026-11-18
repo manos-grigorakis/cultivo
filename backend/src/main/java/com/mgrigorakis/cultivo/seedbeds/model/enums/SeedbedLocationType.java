@@ -1,6 +1,6 @@
 package com.mgrigorakis.cultivo.seedbeds.model.enums;
 
-public enum SeedBedLocationType {
+public enum SeedbedLocationType {
     INDOOR,
     OUTDOOR,
 }

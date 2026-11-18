@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@ToString(exclude = {"seedBed"})
+@ToString(exclude = {"seedbed"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "seedbed_slots", uniqueConstraints = {
         @UniqueConstraint(name = "uk_seedbed_slots_position", columnNames = {"seedbed_id", "row_index", "column_index"})
 })
 @Entity
-public class SeedBedSlot {
+public class SeedbedSlot {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seedbed_slots_seq")
     @SequenceGenerator(name = "seedbed_slots_seq", sequenceName = "seedbed_slots_sequence", allocationSize = 10)
@@ -33,12 +33,13 @@ public class SeedBedSlot {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seedbed_id", nullable = false)
-    private SeedBed seedBed;
+    private Seedbed seedbed;
 
-    public SeedBedSlot(Integer rowIndex, Integer columnIndex, SeedBed seedBed) {
+    @Builder
+    public SeedbedSlot(Integer rowIndex, Integer columnIndex, Seedbed seedbed) {
         this.rowIndex = rowIndex;
         this.columnIndex = columnIndex;
-        this.seedBed = seedBed;
+        this.seedbed = seedbed;
     }
 
     @PrePersist

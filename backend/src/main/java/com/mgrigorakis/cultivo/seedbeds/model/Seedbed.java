@@ -1,6 +1,6 @@
 package com.mgrigorakis.cultivo.seedbeds.model;
 
-import com.mgrigorakis.cultivo.seedbeds.model.enums.SeedBedLocationType;
+import com.mgrigorakis.cultivo.seedbeds.model.enums.SeedbedLocationType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "seedbeds")
 @Entity
-public class SeedBed {
+public class Seedbed {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seedbeds_seq")
     @SequenceGenerator(name = "seedbeds_seq", sequenceName = "seedbeds_sequence", allocationSize = 10)
@@ -24,7 +24,7 @@ public class SeedBed {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "location_type", nullable = false)
-    private SeedBedLocationType locationType;
+    private SeedbedLocationType locationType;
 
     @Column(name = "rows_count", nullable = false)
     private Integer rowsCount;
@@ -59,7 +59,8 @@ public class SeedBed {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public SeedBed(String name, SeedBedLocationType locationType, Integer rowsCount, Integer columnsCount, BigDecimal lengthCm,
+    @Builder
+    public Seedbed(String name, SeedbedLocationType locationType, Integer rowsCount, Integer columnsCount, BigDecimal lengthCm,
                    BigDecimal widthCm, BigDecimal soilDepthCm, Boolean hasEnclosure, Boolean hasHumidityControl,
                    Boolean hasAutomaticWatering, String notes) {
         this.name = name;
