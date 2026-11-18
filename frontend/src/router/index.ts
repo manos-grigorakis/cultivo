@@ -108,6 +108,18 @@ const router = createRouter({
       name: 'seed-packet-details',
       component: () => import('@/features/seeds/seed-packets/views/SeedPacketDetailsView.vue'),
     },
+
+    // Seedbeds
+    {
+      path: '/seedbeds',
+      name: 'seedbed-list',
+      component: () => import('@/features/seedbeds/views/SeedbedListView.vue'),
+    },
+    {
+      path: '/seedbeds/:id',
+      name: 'seedbed-details',
+      component: () => import('@/features/seedbeds/views/SeedbedDetailsView.vue'),
+    },
   ],
 })
 
