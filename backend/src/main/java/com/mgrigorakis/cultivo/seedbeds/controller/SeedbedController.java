@@ -15,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/seedbeds")
 @RestController
@@ -78,6 +80,17 @@ public class SeedbedController {
         seedBedService.deleteSeedbedById(id);
     }
 
+
+    @Operation(summary = "Get All Seedbed Slots by Seedbed ID", description =
+            "Finds all seedbed slots by the seedbed id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Founded seedbed slot"),
+            @ApiResponse(responseCode = "404", description = "Seedbed not found"),
+    })
+    @GetMapping("/{id}/slots")
+    public ApiResponseWrapper<List<SeedbedSlotSummaryResponse>> getAllSeedbedSlotsSeedbedId(@PathVariable Long id) {
+        return new ApiResponseWrapper<>(seedbedSlotService.getAllSeedbedSlotsBySeedbedId(id));
+    }
 
     @Operation(summary = "Get Seedbed Slot by Seedbed ID and Slot Id", description =
             "Finds a seedbed slot by the seedbed id and the provided seedbed slot id")
