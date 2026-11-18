@@ -4,6 +4,7 @@ import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
 import SeedbedCard from '@/features/seedbeds/components/SeedbedCard.vue'
+import SeedbedCardSkeleton from '@/features/seedbeds/components/SeedbedCardSkeleton.vue'
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import { LucidePlus, RefreshCcw } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
@@ -53,8 +54,7 @@ onMounted(() => fetchSeedbeds())
         class="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 [&>li]:min-w-0"
       >
         <template v-if="isLoading">
-          <!-- TODO: Add skeleton here! -->
-          <p>Loading...</p>
+          <SeedbedCardSkeleton v-for="i in 10" :key="i" />
         </template>
 
         <template v-else>
