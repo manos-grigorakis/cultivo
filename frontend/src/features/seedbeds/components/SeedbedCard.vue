@@ -22,7 +22,9 @@ const locationIcon = computed(() =>
       <!-- Header -->
       <div class="flex items-center justify-between">
         <component :is="locationIcon" :size="18" />
-        <span class="text-content-muted text-xs">{{ seedbed.locationType }}</span>
+        <span class="text-content-muted text-xs capitalize">{{
+          seedbed.locationType.toLowerCase()
+        }}</span>
       </div>
 
       <div class="space-y-1">
