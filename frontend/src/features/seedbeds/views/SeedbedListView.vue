@@ -5,6 +5,7 @@ import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
 import SeedbedCard from '@/features/seedbeds/components/SeedbedCard.vue'
 import SeedbedCardSkeleton from '@/features/seedbeds/components/SeedbedCardSkeleton.vue'
+import SeedbedForm from '@/features/seedbeds/components/SeedbedForm.vue'
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import { LucidePlus, RefreshCcw } from '@lucide/vue'
 import { onMounted, ref } from 'vue'
@@ -12,6 +13,7 @@ import { onMounted, ref } from 'vue'
 const { seedbedsList, page, isLoading, errorMessage, fetchSeedbeds } = useSeedbeds()
 
 const isRefreshing = ref<boolean>(false)
+const isCreateFormOpen = ref<boolean>(false)
 
 const onRefreshClick = async () => {
   if (isRefreshing.value) return
@@ -25,10 +27,22 @@ const onRefreshClick = async () => {
   }
 }
 
+const onSeedbedCreateSuccess = async () => {
+  await fetchSeedbeds({ pageNumber: page.value?.number ?? 0 })
+  isCreateFormOpen.value = false
+}
+
 onMounted(() => fetchSeedbeds())
 </script>
 
 <template>
+  <SeedbedForm
+    v-if="isCreateFormOpen"
+    mode="create"
+    @success="onSeedbedCreateSuccess"
+    @close="isCreateFormOpen = false"
+  />
+
   <AppSectionWrapper title="Seedbeds">
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
@@ -43,7 +57,7 @@ onMounted(() => fetchSeedbeds())
             :icon-class="isRefreshing ? 'animate-spin' : ''"
           />
 
-          <AppButton :icon="LucidePlus" label="Add seedbed" />
+          <AppButton :icon="LucidePlus" label="Add seedbed" @on-click="isCreateFormOpen = true" />
         </div>
       </div>
 

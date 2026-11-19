@@ -7,6 +7,7 @@ import SeedbedDetailsRecordCard from '@/features/seedbeds/components/SeedbedDeta
 import SeedbedDetailsSizeCard from '@/features/seedbeds/components/SeedbedDetailsSizeCard.vue'
 import SeedbedDetailsSkeleton from '@/features/seedbeds/components/SeedbedDetailsSkeleton.vue'
 import SeedbedDetailsSlotsTable from '@/features/seedbeds/components/SeedbedDetailsSlotsTable.vue'
+import SeedbedForm from '@/features/seedbeds/components/SeedbedForm.vue'
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -23,9 +24,13 @@ const {
   deleteSeedbedById,
 } = useSeedbeds()
 
+const isEditFormOpen = ref<boolean>(false)
 const isDeleteDialogOpen = ref<boolean>(false)
 
-const onSeedbedEditClick = async () => {}
+const onSeedbedUpdateSuccess = async () => {
+  await fetchSeedbedById(seedbedId)
+  isEditFormOpen.value = false
+}
 
 const onSeedbedDeleteClick = async () => {
   try {
@@ -40,6 +45,14 @@ onMounted(() => fetchSeedbedById(seedbedId))
 </script>
 
 <template>
+  <SeedbedForm
+    v-if="isEditFormOpen && seedbed"
+    mode="update"
+    :data="seedbed"
+    @success="onSeedbedUpdateSuccess"
+    @close="isEditFormOpen = false"
+  />
+
   <AppConfirmDialog
     v-if="isDeleteDialogOpen"
     text="Are you sure you want to delete this seedbed? This action cannot be undone."
@@ -62,7 +75,7 @@ onMounted(() => fetchSeedbedById(seedbedId))
         <!-- Header -->
         <SeedbedDetailsHeader
           :seedbed="seedbed"
-          @edit="onSeedbedEditClick"
+          @edit="isEditFormOpen = true"
           @delete="isDeleteDialogOpen = true"
         />
 
