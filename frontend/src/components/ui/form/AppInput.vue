@@ -13,9 +13,10 @@ const props = withDefaults(
     inputId?: string
     placeholder?: string
     required?: boolean
+    disabled?: boolean
     errorMessage?: string
   }>(),
-  { required: false, type: 'text' },
+  { required: false, disabled: false, type: 'text' },
 )
 
 const id = computed(() => props.inputId ?? generatedId)
@@ -31,10 +32,15 @@ const id = computed(() => props.inputId ?? generatedId)
       :type="type"
       :placeholder="placeholder"
       :required
+      :disabled
       :aria-invalid="!!errorMessage"
       :class="[
-        'rounded-card w-full border bg-white px-4 py-2 focus:ring-2 focus:outline-none',
-        errorMessage ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary-600',
+        'rounded-card w-full border px-4 py-2 transition-colors',
+        'enabled:focus:ring-2 enabled:focus:outline-none',
+        errorMessage
+          ? 'border-red-500 enabled:focus:ring-red-500'
+          : 'border-border enabled:focus:ring-primary-600',
+        disabled ? 'text-content-muted cursor-not-allowed bg-gray-100 opacity-60' : 'bg-white',
       ]"
     />
 
