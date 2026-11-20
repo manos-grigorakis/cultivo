@@ -4,8 +4,10 @@ import com.mgrigorakis.cultivo.common.dto.ApiResponseWrapper;
 import com.mgrigorakis.cultivo.common.dto.PageFilterRequest;
 import com.mgrigorakis.cultivo.common.dto.PageSortRequest;
 import com.mgrigorakis.cultivo.seedbeds.dto.*;
+import com.mgrigorakis.cultivo.seedbeds.model.enums.SeedbedSowingStatus;
 import com.mgrigorakis.cultivo.seedbeds.service.SeedbedService;
 import com.mgrigorakis.cultivo.seedbeds.service.SeedbedSlotService;
+import com.mgrigorakis.cultivo.seedbeds.service.SeedbedSowingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -23,6 +25,7 @@ import java.util.List;
 public class SeedbedController {
     private final SeedbedService seedBedService;
     private final SeedbedSlotService seedbedSlotService;
+    private final SeedbedSowingService seedbedSowingService;
 
     @Operation(summary = "Get All Seedbeds", description = "Lists all seedbeds with pagination")
     @ApiResponse(responseCode = "200", description = "List of all seedbeds with pagination")
@@ -99,5 +102,44 @@ public class SeedbedController {
     public ApiResponseWrapper<SeedbedSlotSummaryResponse> getSeedbedSlotByIdAndSeedbedId(
             @PathVariable Long id, @PathVariable Long slotId) {
         return new ApiResponseWrapper<>(seedbedSlotService.getSeedbedSlotByIdAndSeedbedId(slotId, id));
+    }
+
+    @GetMapping("/{id}/sowings")
+    public ApiResponseWrapper<Page<SeedbedSowingResponse>> getAllSeedbedSowingsBySeedbedIdAndSlotId(
+            @PathVariable Long id, @ModelAttribute @Valid PageFilterRequest filterRequest,
+            @ModelAttribute PageSortRequest sortRequest,
+            @RequestParam(required = false) Long slotId,
+            @RequestParam(required = false) SeedbedSowingStatus status) {
+        SeedbedSowingSearchCriteria criteria = new SeedbedSowingSearchCriteria(null, slotId, id, status);
+
+        return new ApiResponseWrapper<>(seedbedSowingService.getAllSeedbedSowings(filterRequest, sortRequest, criteria));
+    }
+
+    @GetMapping("/{id}/slots/{slotId}/sowings/{sowingId}")
+    public ApiResponseWrapper<SeedbedSowingResponse> getSeedbedSowingByIdAndSeedbedIdAndSlotId(
+            @PathVariable Long id, @PathVariable Long slotId, @PathVariable Long sowingId) {
+        return new ApiResponseWrapper<>(seedbedSowingService.getSeedbedSowingByIdAndSeedbedIdAndSlotId(sowingId, id, slotId));
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{id}/slots/{slotId}/sowings")
+    public ApiResponseWrapper<SeedbedSowingResponse> createSeedbedSowingBySeedbedIdAndSlotId(
+            @PathVariable Long id, @PathVariable Long slotId, @RequestBody @Valid SeedbedSowingRequest request) {
+        return new ApiResponseWrapper<>(seedbedSowingService.createSeedbedSowing(id, slotId, request));
+    }
+
+    @PutMapping("/{id}/slots/{slotId}/sowings/{sowingId}")
+    public ApiResponseWrapper<SeedbedSowingResponse> updateSeedbedSowingByIdAndSeedbedIdAndSlotId(
+            @PathVariable Long id, @PathVariable Long slotId, @PathVariable Long sowingId,
+            @RequestBody @Valid SeedbedSowingRequest request) {
+        return new ApiResponseWrapper<>(seedbedSowingService.updateSeedbedSowingById(sowingId, id, slotId, request));
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PatchMapping("/{id}/slots/{slotId}/sowings/{sowingId}/status")
+    public void updateSeedbedSowingStatusByIdAndSeedbedIdAndSlotId(
+            @PathVariable Long id, @PathVariable Long slotId, @PathVariable Long sowingId,
+            @RequestBody @Valid SeedbedSowingStatusRequest request) {
+        seedbedSowingService.updateSeedbedSowingStatusById(sowingId, id, slotId, request);
     }
 }
