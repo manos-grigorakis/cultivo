@@ -14,11 +14,15 @@ import com.mgrigorakis.cultivo.seedbeds.model.SeedbedSowing;
 import com.mgrigorakis.cultivo.seedbeds.model.enums.SeedbedSowingStatus;
 import com.mgrigorakis.cultivo.seedbeds.repository.SeedbedSlotRepository;
 import com.mgrigorakis.cultivo.seedbeds.repository.SeedbedSowingRepository;
+import com.mgrigorakis.cultivo.seedbeds.specs.SeedbedSowingSpecs;
 import com.mgrigorakis.cultivo.seeds.model.SeedPacket;
 import com.mgrigorakis.cultivo.seeds.service.SeedPacketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +44,19 @@ public class SeedbedSowingServiceImpl implements SeedbedSowingService {
     public Page<SeedbedSowingResponse> getAllSeedbedSowings(PageFilterRequest filterRequest,
                                                             PageSortRequest sortRequest,
                                                             SeedbedSowingSearchCriteria criteria) {
-        return null;
+        Pageable pageable = PageRequest.of(
+                filterRequest.page(),
+                filterRequest.size(),
+                sortRequest.createSort("id"));
+
+        Specification<SeedbedSowing> spec = Specification.allOf(
+                SeedbedSowingSpecs.hasSeedbedId(criteria.seedbedId()),
+                SeedbedSowingSpecs.hasSlotId(criteria.slotId()),
+                SeedbedSowingSpecs.hasPacketId(criteria.packetId()),
+                SeedbedSowingSpecs.hasStatus(criteria.status())
+        );
+
+        return seedbedSowingRepository.findAll(spec, pageable).map(seedbedSowingMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
