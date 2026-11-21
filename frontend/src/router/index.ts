@@ -134,6 +134,11 @@ const router = createRouter({
     },
     // Seedbed Sowings
     {
+      path: '/seedbed-sowings',
+      name: 'seedbed-sowing-list',
+      component: () => import('@/features/seedbeds/views/SeedbedSowingListView.vue'),
+    },
+    {
       path: '/seedbed-sowings/:id',
       name: 'seedbed-sowing-details',
       component: () => import('@/features/seedbeds/views/SeedbedSowingDetailsView.vue'),
