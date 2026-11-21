@@ -9,7 +9,7 @@ withDefaults(
   defineProps<{
     sowingList: SeedbedSowingResponse[]
     isLoading: boolean
-    isDeleting: boolean
+    isDeleting?: boolean
     showActions?: boolean
   }>(),
   { showActions: false },
