@@ -78,6 +78,7 @@ public class SeedbedController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Seedbed deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Seedbed not found"),
+            @ApiResponse(responseCode = "409", description = "Seedbed cannot be deleted because it contains sowings"),
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")

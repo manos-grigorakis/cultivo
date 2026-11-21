@@ -26,4 +26,6 @@ public interface SeedbedSowingRepository extends JpaRepository<SeedbedSowing, Lo
     Optional<SeedbedSowing> findByIdAndSlot_IdAndSlot_Seedbed_Id(Long sowingId, Long slotId, Long seedbedId);
 
     boolean existsBySlot_IdAndStatusIn(Long slotId, List<SeedbedSowingStatus> statuses);
+
+    boolean existsBySlot_Seedbed_id(Long seedbedId);
 }
