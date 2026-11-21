@@ -1,5 +1,6 @@
 package com.mgrigorakis.cultivo.seedbeds;
 
+import com.mgrigorakis.cultivo.common.exceptions.ConflictException;
 import com.mgrigorakis.cultivo.common.exceptions.DuplicateEntryException;
 import com.mgrigorakis.cultivo.common.exceptions.ResourceNotFoundException;
 import com.mgrigorakis.cultivo.seedbeds.dto.*;
@@ -7,6 +8,7 @@ import com.mgrigorakis.cultivo.seedbeds.mapper.SeedbedMapper;
 import com.mgrigorakis.cultivo.seedbeds.model.Seedbed;
 import com.mgrigorakis.cultivo.seedbeds.model.enums.SeedbedLocationType;
 import com.mgrigorakis.cultivo.seedbeds.repository.SeedbedRepository;
+import com.mgrigorakis.cultivo.seedbeds.repository.SeedbedSowingRepository;
 import com.mgrigorakis.cultivo.seedbeds.service.SeedbedServiceImpl;
 import com.mgrigorakis.cultivo.seedbeds.service.SeedbedSlotService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,9 @@ public class SeedbedServiceTest {
 
     @Mock
     private SeedbedRepository seedbedRepository;
+
+    @Mock
+    private SeedbedSowingRepository seedbedSowingRepository;
 
     @Mock
     private SeedbedMapper seedbedMapper;
@@ -198,12 +203,14 @@ public class SeedbedServiceTest {
     void deleteSeedbedById_shouldDeleteSeedbedAndAllRelatedSeedbedSlots() {
         // Assert
         when(seedbedRepository.findById(1L)).thenReturn(Optional.of(seedbed));
+        when(seedbedSowingRepository.existsBySlot_Seedbed_id(1L)).thenReturn(false);
 
         // Act
         seedbedService.deleteSeedbedById(1L);
 
         // Assert
         verify(seedbedRepository).findById(1L);
+        verify(seedbedSowingRepository).existsBySlot_Seedbed_id(1L);
         verify(seedbedSlotService).deleteAllSeedbedSlotsBySeedbedId(1L);
         verify(seedbedRepository).delete(seedbed);
     }
@@ -217,6 +224,23 @@ public class SeedbedServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> seedbedService.deleteSeedbedById(1L));
 
         verify(seedbedRepository).findById(1L);
+        verifyNoMoreInteractions(seedbedRepository, seedbedSlotService);
+    }
+
+    @Test
+    void deleteSeedbedById_shouldThrowConflictException_whenSeedbedSlotsHaveSowings() {
+        // Assert
+        when(seedbedRepository.findById(1L)).thenReturn(Optional.of(seedbed));
+        when(seedbedSowingRepository.existsBySlot_Seedbed_id(1L)).thenReturn(true);
+
+        // Act
+        ConflictException exception = assertThrows(ConflictException.class, () -> seedbedService.deleteSeedbedById(1L));
+
+        // Assert
+        assertEquals("SOWINGS_EXIST", exception.getErrorCode());
+
+        verify(seedbedRepository).findById(1L);
+        verify(seedbedSowingRepository).existsBySlot_Seedbed_id(1L);
         verifyNoMoreInteractions(seedbedRepository, seedbedSlotService);
     }
 }
