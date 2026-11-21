@@ -16,8 +16,10 @@ const isRefreshing = ref<boolean>(false)
 const onRefreshClick = async () => {
   if (isRefreshing.value) return
 
+  isRefreshing.value = true
+
   try {
-    fetchSeedbedSowings({ pageNumber: page.value?.number ?? 0 })
+    await fetchSeedbedSowings({ pageNumber: page.value?.number ?? 0 })
   } finally {
     isRefreshing.value = false
   }
