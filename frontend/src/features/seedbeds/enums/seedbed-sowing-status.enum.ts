@@ -1,0 +1,7 @@
+export enum SeedbedSowingStatus {
+  SOWN = 'SOWN',
+  GERMINATING = 'GERMINATING',
+  GERMINATED = 'GERMINATED',
+  FAILED = 'FAILED',
+  TRANSPLANTED = 'TRANSPLANTED',
+}
