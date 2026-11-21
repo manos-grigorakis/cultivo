@@ -11,6 +11,7 @@ import com.mgrigorakis.cultivo.seedbeds.service.SeedbedSowingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Seedbed")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/seedbeds")
 @RestController
@@ -104,8 +106,11 @@ public class SeedbedController {
         return new ApiResponseWrapper<>(seedbedSlotService.getSeedbedSlotByIdAndSeedbedId(slotId, id));
     }
 
+    @Operation(summary = "Get All Seedbed Sowings by Seedbed ID", description =
+            "Lists all seedbed sowings for a specific seedbed, with pagination and optional filtering by criteria")
+    @ApiResponse(responseCode = "200", description = "Paginated list of all sowings belonging to the specified seedbed")
     @GetMapping("/{id}/sowings")
-    public ApiResponseWrapper<Page<SeedbedSowingResponse>> getAllSeedbedSowingsBySeedbedIdAndSlotId(
+    public ApiResponseWrapper<Page<SeedbedSowingResponse>> getAllSeedbedSowingsBySeedbedId(
             @PathVariable Long id, @ModelAttribute @Valid PageFilterRequest filterRequest,
             @ModelAttribute PageSortRequest sortRequest,
             @RequestParam(required = false) Long slotId,
@@ -115,12 +120,26 @@ public class SeedbedController {
         return new ApiResponseWrapper<>(seedbedSowingService.getAllSeedbedSowings(filterRequest, sortRequest, criteria));
     }
 
+    @Operation(summary = "Get Seedbed Sowing by ID", description =
+            "Finds a seedbed sowing by its ID, verifying that it belongs to the specified seedbed and slot")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Founded seedbed sowing"),
+            @ApiResponse(responseCode = "404", description = "Seedbed sowing doesn't exist for the specified seedbed and slot")
+    })
     @GetMapping("/{id}/slots/{slotId}/sowings/{sowingId}")
     public ApiResponseWrapper<SeedbedSowingResponse> getSeedbedSowingByIdAndSeedbedIdAndSlotId(
             @PathVariable Long id, @PathVariable Long slotId, @PathVariable Long sowingId) {
         return new ApiResponseWrapper<>(seedbedSowingService.getSeedbedSowingByIdAndSeedbedIdAndSlotId(sowingId, id, slotId));
     }
 
+    @Operation(summary = "Creates a Seedbed Sowing", description =
+            "Creates a new seedbed sowing in the specified seedbed slot, provided the slot has no active sowing")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Seedbed sowing created successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error"),
+            @ApiResponse(responseCode = "404", description = "Seedbed slot or seed packet does not exist"),
+            @ApiResponse(responseCode = "409", description = "Seedbed slot already contains an active sowing")
+    })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}/slots/{slotId}/sowings")
     public ApiResponseWrapper<SeedbedSowingResponse> createSeedbedSowingBySeedbedIdAndSlotId(
@@ -128,6 +147,15 @@ public class SeedbedController {
         return new ApiResponseWrapper<>(seedbedSowingService.createSeedbedSowing(id, slotId, request));
     }
 
+    @Operation(summary = "Update a Seedbed Sowing by ID", description =
+            "Update an existing seedbed sowing by its ID, belonging to the specified seedbed and slot. " +
+                    "Terminal sowings cannot be modified")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sowing updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error"),
+            @ApiResponse(responseCode = "404", description = "Sowing or seed packet does not exist"),
+            @ApiResponse(responseCode = "409", description = "sowing cannot be updated because status is terminal")
+    })
     @PutMapping("/{id}/slots/{slotId}/sowings/{sowingId}")
     public ApiResponseWrapper<SeedbedSowingResponse> updateSeedbedSowingByIdAndSeedbedIdAndSlotId(
             @PathVariable Long id, @PathVariable Long slotId, @PathVariable Long sowingId,
@@ -135,6 +163,14 @@ public class SeedbedController {
         return new ApiResponseWrapper<>(seedbedSowingService.updateSeedbedSowingById(sowingId, id, slotId, request));
     }
 
+    @Operation(summary = "Update a Seedbed Sowing Status by ID", description =
+            "Update a seedbed sowing status by its ID and seedbed ID and slot ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Sowing status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Validation error"),
+            @ApiResponse(responseCode = "404", description = "Sowing doesn't exist for the specified seedbed and slot"),
+            @ApiResponse(responseCode = "409", description = "Invalid sowing status transition")
+    })
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PatchMapping("/{id}/slots/{slotId}/sowings/{sowingId}/status")
     public void updateSeedbedSowingStatusByIdAndSeedbedIdAndSlotId(

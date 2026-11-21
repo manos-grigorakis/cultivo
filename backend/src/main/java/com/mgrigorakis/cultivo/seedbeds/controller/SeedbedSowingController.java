@@ -24,7 +24,7 @@ public class SeedbedSowingController {
 
     @Operation(summary = "Get All Seedbed Sowings", description =
             "Lists all seedbed sowings with pagination and optional filtering by criteria")
-    @ApiResponse(responseCode = "200", description = "List of all seedbeds with pagination")
+    @ApiResponse(responseCode = "200", description = "Paginated list of all seedbed sowing")
     @GetMapping
     public ApiResponseWrapper<Page<SeedbedSowingResponse>> getAllSeedbedSowings(
             @ModelAttribute @Valid PageFilterRequest filterRequest, @ModelAttribute PageSortRequest sortRequest,
@@ -35,7 +35,7 @@ public class SeedbedSowingController {
     @Operation(summary = "Get Seedbed Sowing by ID", description = "Finds a seedbed sowing by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Founded seedbed sowing"),
-            @ApiResponse(responseCode = "404", description = "Seedbed sowing doesn't exist")
+            @ApiResponse(responseCode = "404", description = "Sowing doesn't exist")
     })
     @GetMapping("/{id}")
     public ApiResponseWrapper<SeedbedSowingResponse> getSeedbedSowingById(@PathVariable Long id) {
