@@ -67,7 +67,7 @@ onMounted(() => {
   <div>
     <AppErrorContainer v-if="definedError" :error-message="definedError" />
 
-    <div v-else>
+    <div v-if="seedbedSowingsList.length > 0">
       <SeedbedSowingTable
         :sowing-list="seedbedSowingsList"
         :is-loading="isLoading"
@@ -76,12 +76,17 @@ onMounted(() => {
         @edit="onSowingEditClick($event)"
         @delete="onSowingDeleteClick($event)"
       />
+
       <AppPagination
         :data="page"
         @page-changed="
           (pageNumber) => fetchSeedbedSowingsBySeedbedId({ pageNumber, seedbedId: seedbed.id })
         "
       />
+    </div>
+
+    <div v-else>
+      <p class="text-center">There are no sowings recorded yet</p>
     </div>
   </div>
 </template>
