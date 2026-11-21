@@ -288,7 +288,7 @@ export function useSeedbeds() {
 
     try {
       await axios.put<ApiResponse<SeedbedSowingResponse>>(
-        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}/status`,
+        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}`,
         payload,
       )
       return true
@@ -322,7 +322,7 @@ export function useSeedbeds() {
 
     try {
       await axios.patch<void>(
-        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}`,
+        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}/status`,
         { status },
       )
       return true
