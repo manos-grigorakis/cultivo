@@ -25,6 +25,7 @@ export function useSeedbeds() {
   // Seedbed Sowings
   const seedbedSowingsList = ref<SeedbedSowingResponse[]>([])
   const seedbedSowing = ref<SeedbedSowingResponse | null>(null)
+  const totalSeedbedSowingsCount = ref(0)
 
   // Misc
   const page = ref<Page>()
@@ -206,9 +207,11 @@ export function useSeedbeds() {
 
       seedbedSowingsList.value = data.data.content
       page.value = data.data.page
+      totalSeedbedSowingsCount.value = data.data.page.totalElements
     } catch (error) {
       seedbedSowingsList.value = []
       page.value = undefined
+      totalSeedbedSowingsCount.value = 0
       errorMessage.value = handleDefaultApiError(error)
     } finally {
       isLoading.value = false
@@ -347,6 +350,9 @@ export function useSeedbeds() {
     seedbed,
     seedbedSlotsList,
     seedbedSlot,
+    seedbedSowingsList,
+    seedbedSowing,
+    totalSeedbedSowingsCount,
 
     page,
     isLoading,

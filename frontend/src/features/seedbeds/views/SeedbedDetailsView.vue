@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
-import SeedbedDetailsFeaturesCard from '@/features/seedbeds/components/SeedbedDetailsFeaturesCard.vue'
 import SeedbedDetailsHeader from '@/features/seedbeds/components/SeedbedDetailsHeader.vue'
-import SeedbedDetailsRecordCard from '@/features/seedbeds/components/SeedbedDetailsRecordCard.vue'
-import SeedbedDetailsSizeCard from '@/features/seedbeds/components/SeedbedDetailsSizeCard.vue'
 import SeedbedDetailsSkeleton from '@/features/seedbeds/components/SeedbedDetailsSkeleton.vue'
-import SeedbedDetailsSlotsTable from '@/features/seedbeds/components/SeedbedDetailsSlotsTable.vue'
+import SeedbedDetailsTabs from '@/features/seedbeds/components/SeedbedDetailsTabs.vue'
 import SeedbedForm from '@/features/seedbeds/components/SeedbedForm.vue'
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import { onMounted, ref } from 'vue'
@@ -17,11 +14,13 @@ const seedbedId = Number(useRoute().params.id)
 const {
   seedbed,
   seedbedSlotsList,
+  totalSeedbedSowingsCount,
   isLoading,
   isDeleting,
   errorMessage,
   fetchSeedbedById,
   deleteSeedbedById,
+  fetchSeedbedSowingsBySeedbedId,
 } = useSeedbeds()
 
 const isEditFormOpen = ref<boolean>(false)
@@ -41,7 +40,10 @@ const onSeedbedDeleteClick = async () => {
   }
 }
 
-onMounted(() => fetchSeedbedById(seedbedId))
+onMounted(() => {
+  fetchSeedbedById(seedbedId)
+  fetchSeedbedSowingsBySeedbedId({ seedbedId })
+})
 </script>
 
 <template>
@@ -79,25 +81,14 @@ onMounted(() => fetchSeedbedById(seedbedId))
           @delete="isDeleteDialogOpen = true"
         />
 
-        <!-- Size & Features -->
-        <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <SeedbedDetailsSizeCard :seedbed="seedbed" />
-          <SeedbedDetailsFeaturesCard :seedbed="seedbed" />
-        </div>
+        <SeedbedDetailsTabs
+          :seedbed-id="seedbedId.toString()"
+          :sowings-count="totalSeedbedSowingsCount"
+        />
 
-        <!-- Slots -->
-        <SeedbedDetailsSlotsTable :seedbed="seedbed" :seedbed-slots-list="seedbedSlotsList" />
-
-        <!-- Notes -->
-        <div class="rounded-card mt-4 bg-white p-4">
-          <h2 class="font-display mb-3 text-xl">Notes</h2>
-          <p class="text-sm" :class="seedbed.notes ? 'text-content' : 'text-content-muted'">
-            {{ seedbed.notes ?? 'No notes yet' }}
-          </p>
-        </div>
-
-        <!-- Record -->
-        <SeedbedDetailsRecordCard :seedbed="seedbed" />
+        <RouterView v-slot="{ Component }">
+          <component :is="Component" :seedbed="seedbed" :seedbed-slots-list="seedbedSlotsList" />
+        </RouterView>
       </template>
     </template>
   </section>

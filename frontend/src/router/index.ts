@@ -117,8 +117,20 @@ const router = createRouter({
     },
     {
       path: '/seedbeds/:id',
-      name: 'seedbed-details',
       component: () => import('@/features/seedbeds/views/SeedbedDetailsView.vue'),
+      children: [
+        { path: '', name: 'seedbed-details', redirect: { name: 'seedbed-details-overview' } },
+        {
+          path: 'overview',
+          name: 'seedbed-details-overview',
+          component: () => import('@/features/seedbeds/views/tabs/SeedbedOverviewView.vue'),
+        },
+        {
+          path: 'sowings',
+          name: 'seedbed-details-sowings',
+          component: () => import('@/features/seedbeds/views/tabs/SeedbedSowingsView.vue'),
+        },
+      ],
     },
   ],
 })
