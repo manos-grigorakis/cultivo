@@ -17,5 +17,6 @@ public record SeedbedSowingResponse(
         LocalDateTime createdAt,
         LocalDate updatedAt,
         SeedbedSlotSummaryResponse seedbedSlot,
-        SeedPacketSummaryResponse seedPacket
+        SeedPacketSummaryResponse seedPacket,
+        SeedbedSummaryResponse seedbed
 ) {}

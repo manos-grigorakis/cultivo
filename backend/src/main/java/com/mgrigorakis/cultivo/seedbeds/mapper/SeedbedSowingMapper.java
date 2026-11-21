@@ -23,5 +23,6 @@ public interface SeedbedSowingMapper {
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "seedbedSlot", source = "slot")
     @Mapping(target = "seedPacket", source = "packet")
+    @Mapping(target = "seedbed", source = "slot.seedbed")
     SeedbedSowingResponse toResponse(SeedbedSowing entity);
 }

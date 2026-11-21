@@ -16,11 +16,11 @@ import java.util.Optional;
 @Repository
 public interface SeedbedSowingRepository extends JpaRepository<SeedbedSowing, Long>, JpaSpecificationExecutor<SeedbedSowing> {
     @Override
-    @EntityGraph(attributePaths = {"slot", "packet"})
+    @EntityGraph(attributePaths = {"slot", "packet", "slot.seedbed"})
     Page<SeedbedSowing> findAll(Specification<SeedbedSowing> spec, Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = {"slot", "packet"})
+    @EntityGraph(attributePaths = {"slot", "packet", "slot.seedbed"})
     Optional<SeedbedSowing> findById(Long id);
 
     Optional<SeedbedSowing> findByIdAndSlot_IdAndSlot_Seedbed_Id(Long sowingId, Long slotId, Long seedbedId);
