@@ -115,8 +115,9 @@ public class SeedbedController {
             @PathVariable Long id, @ModelAttribute @Valid PageFilterRequest filterRequest,
             @ModelAttribute PageSortRequest sortRequest,
             @RequestParam(required = false) Long slotId,
+            @RequestParam(required = false) Long seedPacketId,
             @RequestParam(required = false) SeedbedSowingStatus status) {
-        SeedbedSowingSearchCriteria criteria = new SeedbedSowingSearchCriteria(null, slotId, id, status);
+        SeedbedSowingSearchCriteria criteria = new SeedbedSowingSearchCriteria(id, slotId, seedPacketId, status);
 
         return new ApiResponseWrapper<>(seedbedSowingService.getAllSeedbedSowings(filterRequest, sortRequest, criteria));
     }
