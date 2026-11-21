@@ -113,6 +113,18 @@ onBeforeUnmount(() => {
       @open="onOpen"
       @close="onClose"
     >
+      <template #option="option">
+        <slot name="option" :option="option">
+          {{ option[optionLabel] }}
+        </slot>
+      </template>
+
+      <template #selected-option="option">
+        <slot name="selected-option" :option="option">
+          {{ option[optionLabel] }}
+        </slot>
+      </template>
+
       <template #no-options>No options found</template>
       <template #list-footer>
         <li v-show="hasNextPage" ref="loadMoreElements" class="text-center">

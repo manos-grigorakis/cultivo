@@ -19,14 +19,19 @@ export function useSeedPackets() {
   const isDeleting = ref<boolean>(false)
   const errorMessage = ref<string | null>(null)
 
-  async function fetchSeedPackets(pageNumber: number = 0) {
+  async function fetchSeedPackets({
+    pageNumber = 0,
+    size = 10,
+    brand,
+    code,
+  }: { pageNumber?: number; size?: number; brand?: string; code?: string } = {}) {
     isLoading.value = true
     errorMessage.value = null
 
     try {
       const { data } = await axios.get<ApiResponse<Pagination<SeedPacketResponse>>>(
         SEED_PACKETS_API_URL,
-        { params: { page: pageNumber } },
+        { params: { page: pageNumber, size, brand, code } },
       )
 
       seedPackets.value = data.data.content

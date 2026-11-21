@@ -9,6 +9,7 @@ withDefaults(
   defineProps<{
     sowingList: SeedbedSowingResponse[]
     isLoading: boolean
+    isDeleting: boolean
     showActions?: boolean
   }>(),
   { showActions: false },
@@ -16,7 +17,7 @@ withDefaults(
 
 const emit = defineEmits<{
   edit: [sowing: SeedbedSowingResponse]
-  delete: [sowing: SeedbedSowingResponse]
+  delete: [sowingId: number]
 }>()
 </script>
 
@@ -84,15 +85,15 @@ const emit = defineEmits<{
               <div class="flex gap-2">
                 <AppButton
                   :icon="LucidePencil"
-                  :disabled="sowing.status !== 'FAILED' && sowing.status !== 'TRANSPLANTED'"
+                  :disabled="sowing.status === 'FAILED' || sowing.status === 'TRANSPLANTED'"
                   variant="outline"
                   @on-click="emit('edit', sowing)"
                 />
                 <AppButton
                   :icon="Trash2"
-                  :disabled="sowing.status !== 'SOWN'"
+                  :disabled="sowing.status !== 'SOWN' || isDeleting"
                   variant="danger"
-                  @on-click="emit('delete', sowing)"
+                  @on-click="emit('delete', sowing.id)"
                 />
               </div>
             </td>

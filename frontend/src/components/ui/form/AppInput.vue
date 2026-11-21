@@ -9,7 +9,7 @@ const generatedId = useId()
 const props = withDefaults(
   defineProps<{
     label: string
-    type?: 'text' | 'password' | 'email' | 'date' | 'time' | 'number'
+    type?: 'text' | 'password' | 'email' | 'date' | 'datetime-local' | 'time' | 'number'
     inputId?: string
     placeholder?: string
     required?: boolean

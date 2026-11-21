@@ -1,11 +1,17 @@
 <script setup lang="ts">
+import AppButton from '@/components/ui/AppButton.vue'
 import type { SeedbedResponse } from '@/features/seedbeds/types/seedbed-response.interface.ts'
 import type { SeedbedSlotSummaryResponse } from '@/features/seedbeds/types/seedbed-slot-summary-response.interface.ts'
+import { Plus } from '@lucide/vue'
 import { ref } from 'vue'
 
 const props = defineProps<{
   seedbed: SeedbedResponse
   seedbedSlotsList: SeedbedSlotSummaryResponse[]
+}>()
+
+const emit = defineEmits<{
+  addSowing: [slotId: number]
 }>()
 
 const selectedSlot = ref<number | null>(null)
@@ -66,22 +72,25 @@ const getSlot = (row: number, col: number) => {
       </table>
     </div>
 
-    <div
-      v-if="selectedSlot !== null"
-      class="bg-accent-100 rounded-card mt-3 flex items-center justify-between p-4"
-    >
-      <div>
-        <h3 class="text-primary-900 font-semibold">Selected Slot</h3>
-        <p class="text-content-muted text-sm">Slot ID: {{ selectedSlot }}</p>
+    <div v-if="selectedSlot !== null" class="bg-accent-100 rounded-card mt-3 p-4">
+      <div class="flex flex-wrap items-center justify-between">
+        <div>
+          <h3 class="text-primary-900 font-semibold">Selected Slot</h3>
+          <p class="text-content-muted text-sm">Slot ID: {{ selectedSlot }}</p>
+        </div>
+
+        <button
+          type="button"
+          class="text-content-muted hover:text-primary-900"
+          @click="selectedSlot = null"
+        >
+          Clear
+        </button>
       </div>
 
-      <button
-        type="button"
-        class="text-content-muted hover:text-primary-900"
-        @click="selectedSlot = null"
-      >
-        Clear
-      </button>
+      <div class="mt-4">
+        <AppButton label="Add sowing" :icon="Plus" @click="emit('addSowing', selectedSlot)" />
+      </div>
     </div>
   </div>
 </template>
