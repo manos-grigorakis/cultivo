@@ -150,7 +150,7 @@ const loadSeedPackets = async (
   pageNumber: number,
   term: string,
 ): Promise<{ items: SeedPacketResponse[]; hasNext: boolean }> => {
-  await fetchSeedPackets({ pageNumber, brand: term, code: term, size: 20 })
+  await fetchSeedPackets({ pageNumber, search: term, size: 20 })
 
   if (seedPacketsError.value) throw new Error(seedPacketsError.value)
 

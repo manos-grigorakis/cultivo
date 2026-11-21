@@ -31,7 +31,7 @@ const refreshSeedPackets = async () => {
   isRefreshing.value = true
 
   try {
-    await fetchSeedPackets(page.value?.number ?? 0)
+    await fetchSeedPackets({ pageNumber: page.value?.number ?? 0 })
   } finally {
     isRefreshing.value = false
   }
@@ -39,7 +39,7 @@ const refreshSeedPackets = async () => {
 
 const onSeedPacketCreateSuccess = async () => {
   isCreateFormOpen.value = false
-  await fetchSeedPackets(page.value?.number ?? 0)
+  await fetchSeedPackets({ pageNumber: page.value?.number ?? 0 })
 }
 
 const onOpenUpdateForm = (packet: SeedPacketResponse) => {
@@ -54,7 +54,7 @@ const onCloseUpdateForm = () => {
 
 const onSeedPacketUpdateSuccess = async () => {
   onCloseUpdateForm()
-  await fetchSeedPackets(page.value?.number ?? 0)
+  await fetchSeedPackets({ pageNumber: page.value?.number ?? 0 })
 }
 
 const onOpenDeleteDialog = (packet: SeedPacketResponse) => {
@@ -80,7 +80,9 @@ const onSeedPacketDelete = async () => {
   // Otherwise the current page
   const currentPage = page.value?.number ?? 0
   const isLastItemOnPage = seedPackets.value.length === 1
-  await fetchSeedPackets(isLastItemOnPage && currentPage > 0 ? currentPage - 1 : currentPage)
+  await fetchSeedPackets({
+    pageNumber: isLastItemOnPage && currentPage > 0 ? currentPage - 1 : currentPage,
+  })
 }
 
 onMounted(() => fetchSeedPackets())
@@ -149,7 +151,7 @@ onMounted(() => fetchSeedPackets())
 
     <p v-else class="mt-4 text-center">There are no seed packets recorded yet.</p>
 
-    <AppPagination :data="page" @page-changed="fetchSeedPackets" />
+    <AppPagination :data="page" @page-changed="(pageNumber) => fetchSeedPackets({ pageNumber })" />
   </AppSectionWrapper>
 </template>
 

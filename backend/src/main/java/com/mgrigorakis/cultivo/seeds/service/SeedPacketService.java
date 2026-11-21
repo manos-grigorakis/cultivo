@@ -9,7 +9,8 @@ import com.mgrigorakis.cultivo.seeds.model.SeedPacket;
 import org.springframework.data.domain.Page;
 
 public interface SeedPacketService {
-    Page<SeedPacketResponse> getAllSeedPackets(PageFilterRequest filterRequest, PageSortRequest sortRequest);
+    Page<SeedPacketResponse> getAllSeedPackets(PageFilterRequest filterRequest, PageSortRequest sortRequest,
+                                               String search);
 
     SeedPacketResponse getSeedPacketById(Long id);
 

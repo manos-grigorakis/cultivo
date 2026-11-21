@@ -22,16 +22,15 @@ export function useSeedPackets() {
   async function fetchSeedPackets({
     pageNumber = 0,
     size = 10,
-    brand,
-    code,
-  }: { pageNumber?: number; size?: number; brand?: string; code?: string } = {}) {
+    search,
+  }: { pageNumber?: number; size?: number; search?: string } = {}) {
     isLoading.value = true
     errorMessage.value = null
 
     try {
       const { data } = await axios.get<ApiResponse<Pagination<SeedPacketResponse>>>(
         SEED_PACKETS_API_URL,
-        { params: { page: pageNumber, size, brand, code } },
+        { params: { page: pageNumber, size, search } },
       )
 
       seedPackets.value = data.data.content

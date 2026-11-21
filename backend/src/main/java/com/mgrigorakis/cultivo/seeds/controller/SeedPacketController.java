@@ -24,13 +24,14 @@ import org.springframework.web.bind.annotation.*;
 public class SeedPacketController {
     private final SeedPacketService seedPacketService;
 
-    @Operation(summary = "Get All Seed Packets", description = "Lists all seed packets with pagination")
+    @Operation(summary = "Get All Seed Packets", description = "Lists all seed packets with pagination and optional search by brand or code")
     @ApiResponse(responseCode = "200", description = "List of all seed packets with pagination")
     @GetMapping
     public ApiResponseWrapper<Page<SeedPacketResponse>> getAllSeedPackets(
             @ModelAttribute @Valid PageFilterRequest filterRequest,
-            @ModelAttribute PageSortRequest sortRequest) {
-        return new ApiResponseWrapper<>(seedPacketService.getAllSeedPackets(filterRequest, sortRequest));
+            @ModelAttribute PageSortRequest sortRequest,
+            @RequestParam(required = false) String search) {
+        return new ApiResponseWrapper<>(seedPacketService.getAllSeedPackets(filterRequest, sortRequest, search));
     }
 
     @Operation(summary = "Get Seed Packet by ID", description = "Finds a seed packet by its ID")
