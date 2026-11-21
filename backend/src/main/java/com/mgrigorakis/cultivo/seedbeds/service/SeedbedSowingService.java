@@ -24,4 +24,6 @@ public interface SeedbedSowingService {
     SeedbedSowingResponse updateSeedbedSowingById(Long id, Long seedbedId, Long slotId, SeedbedSowingRequest request);
 
     void updateSeedbedSowingStatusById(Long id, Long seedbedId, Long slotId, SeedbedSowingStatusRequest request);
+
+    void deleteSeedbedSowingById(Long id);
 }

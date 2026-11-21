@@ -156,6 +156,21 @@ public class SeedbedSowingServiceImpl implements SeedbedSowingService {
         log.info("Seedbed status updated with id {}", saved.getId());
     }
 
+    @Override
+    public void deleteSeedbedSowingById(Long id) {
+        SeedbedSowing sowing = findSeedbedSowingById(id);
+
+        if(!sowing.getStatus().equals(SeedbedSowingStatus.SOWN)) {
+            log.warn("Sowing with id {} cannot be deleted because its status is {}", id, sowing.getStatus());
+            throw new ConflictException(
+                    "Seedbed sowing with id " + id + " cannot be deleted because only sowings with SOWN status can be deleted",
+                    "SOWING_DELETION_NOT_ALLOWED");
+        }
+
+        seedbedSowingRepository.delete(sowing);
+        log.info("Seedbed status deleted with id {}", id);
+    }
+
     /**
      * Finds a seedbed sowing by the provided arguments if exists
      *

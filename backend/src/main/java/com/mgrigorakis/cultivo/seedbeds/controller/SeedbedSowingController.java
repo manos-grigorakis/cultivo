@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Seedbed Sowings")
@@ -40,5 +41,18 @@ public class SeedbedSowingController {
     @GetMapping("/{id}")
     public ApiResponseWrapper<SeedbedSowingResponse> getSeedbedSowingById(@PathVariable Long id) {
         return new ApiResponseWrapper<>(seedbedSowingService.getSeedbedSowingById(id));
+    }
+
+    @Operation(summary = "Delete Seedbed Sowing by ID", description =
+            "Deletes a sowing by its ID. Only sowings with SOWN status can be deleted")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Sowing deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Sowing doesn't exist"),
+            @ApiResponse(responseCode = "409", description = "Sowing cannot be deleted because its status is not SOWN")
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}")
+    public void deleteSeedbedSowingById(@PathVariable Long id) {
+        seedbedSowingService.deleteSeedbedSowingById(id);
     }
 }
