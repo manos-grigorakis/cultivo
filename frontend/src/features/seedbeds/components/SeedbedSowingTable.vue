@@ -65,7 +65,7 @@ const emit = defineEmits<{
               >
             </td>
             <td class="text-content-muted px-2 py-4">
-              {{ sowing.seedbedSlot.rowIndex }}, {{ sowing.seedbedSlot.columnIndex }}
+              R{{ sowing.seedbedSlot.rowIndex + 1 }}, C{{ sowing.seedbedSlot.columnIndex + 1 }}
             </td>
             <td class="px-2 py-4">
               <span
