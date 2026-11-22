@@ -14,7 +14,11 @@ const props = defineProps<{
   seedbedSlotsList: SeedbedSlotSummaryResponse[]
 }>()
 
-const { seedbedsList, fetchSeedbedById } = useSeedbeds()
+const emit = defineEmits<{
+  (e: 'sowings-count-changed'): void
+}>()
+
+const { fetchSeedbedById } = useSeedbeds()
 
 const isSowingFormOpen = ref<boolean>(false)
 const selectedSlot = ref<number | null>(null)
@@ -27,6 +31,7 @@ const onSowingAddClick = async (slotId: number) => {
 const onSowingCreateSuccess = async () => {
   try {
     await fetchSeedbedById(props.seedbed.id)
+    emit('sowings-count-changed')
   } finally {
     isSowingFormOpen.value = false
   }

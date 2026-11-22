@@ -87,7 +87,12 @@ onMounted(() => {
         />
 
         <RouterView v-slot="{ Component }">
-          <component :is="Component" :seedbed="seedbed" :seedbed-slots-list="seedbedSlotsList" />
+          <component
+            :is="Component"
+            :seedbed="seedbed"
+            :seedbed-slots-list="seedbedSlotsList"
+            @sowings-count-changed="totalSeedbedSowingsCount++"
+          />
         </RouterView>
       </template>
     </template>
