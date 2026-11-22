@@ -1,4 +1,5 @@
 import { SEEDBED_SOWINGS_API_URL } from '@/constant/api.ts'
+import type { SeedbedSowingStatus } from '@/features/seedbeds/enums/seedbed-sowing-status.enum.ts'
 import type { SeedbedSowingResponse } from '@/features/seedbeds/types/seedbed-sowing-response.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Page, Pagination } from '@/types/pagination.interface.ts'
@@ -16,14 +17,17 @@ export function useSeedbedSowings() {
   const isDeleting = ref<boolean>(false)
   const errorMessage = ref<string | null>(null)
 
-  async function fetchSeedbedSowings({ pageNumber = 0 }: { pageNumber?: number } = {}) {
+  async function fetchSeedbedSowings({
+    pageNumber = 0,
+    status,
+  }: { pageNumber?: number; status?: SeedbedSowingStatus } = {}) {
     isLoading.value = true
     errorMessage.value = null
 
     try {
       const { data } = await axios.get<ApiResponse<Pagination<SeedbedSowingResponse>>>(
         SEEDBED_SOWINGS_API_URL,
-        { params: { pageNumber } },
+        { params: { pageNumber, status } },
       )
 
       seedbedSowingList.value = data.data.content

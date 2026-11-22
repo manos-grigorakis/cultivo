@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
+import SeedbedSowingFilters from '@/features/seedbeds/components/SeedbedSowingFilters.vue'
 import SeedbedSowingForm from '@/features/seedbeds/components/SeedbedSowingForm.vue'
 import SeedbedSowingTable from '@/features/seedbeds/components/SeedbedSowingTable.vue'
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import { useSeedbedSowings } from '@/features/seedbeds/composables/useSeedbedSowings.ts'
+import { SeedbedSowingStatus } from '@/features/seedbeds/enums/seedbed-sowing-status.enum.ts'
 import type { SeedbedResponse } from '@/features/seedbeds/types/seedbed-response.interface.ts'
 import type { SeedbedSowingResponse } from '@/features/seedbeds/types/seedbed-sowing-response.interface.ts'
-import { RefreshCcw } from '@lucide/vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{
   seedbed: SeedbedResponse
@@ -23,6 +23,7 @@ const {
 const { seedbedSowingsList, page, isLoading, errorMessage, fetchSeedbedSowingsBySeedbedId } =
   useSeedbeds()
 
+const selectedStatusForFilter = ref<SeedbedSowingStatus | null>(null)
 const isRefreshing = ref<boolean>(false)
 const isSowingFormOpen = ref<boolean>(false)
 const selectedSowing = ref<SeedbedSowingResponse | null>(null)
@@ -66,6 +67,14 @@ const onSowingDeleteClick = async (sowingId: number) => {
 
 const definedError = computed(() => errorMessage.value || sowingErrorMessage.value)
 
+watch(selectedStatusForFilter, async (status) => {
+  await fetchSeedbedSowingsBySeedbedId({
+    seedbedId: props.seedbed.id,
+    pageNumber: 0,
+    status: status ?? undefined,
+  })
+})
+
 onMounted(() => {
   fetchSeedbedSowingsBySeedbedId({ seedbedId: props.seedbed.id })
 })
@@ -83,15 +92,11 @@ onMounted(() => {
   />
 
   <div>
-    <div class="flex justify-end">
-      <AppButton
-        :icon="RefreshCcw"
-        variant="outline"
-        @click="onRefreshClick"
-        :disabled="isRefreshing"
-        :icon-class="isRefreshing ? 'animate-spin' : ''"
-      />
-    </div>
+    <SeedbedSowingFilters
+      v-model="selectedStatusForFilter"
+      :is-refreshing="isRefreshing"
+      @refresh="onRefreshClick"
+    />
 
     <AppErrorContainer v-if="definedError" :error-message="definedError" class="my-2" />
 

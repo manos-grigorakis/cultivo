@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import AppButton from '@/components/ui/AppButton.vue'
 import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSectionWrapper from '@/components/ui/AppSectionWrapper.vue'
+import SeedbedSowingFilters from '@/features/seedbeds/components/SeedbedSowingFilters.vue'
 import SeedbedSowingTable from '@/features/seedbeds/components/SeedbedSowingTable.vue'
 import { useSeedbedSowings } from '@/features/seedbeds/composables/useSeedbedSowings.ts'
-import { RefreshCcw } from '@lucide/vue'
-import { onMounted, ref } from 'vue'
+import { SeedbedSowingStatus } from '@/features/seedbeds/enums/seedbed-sowing-status.enum.ts'
+import { onMounted, ref, watch } from 'vue'
 
 const { seedbedSowingList, page, isLoading, errorMessage, fetchSeedbedSowings } =
   useSeedbedSowings()
 
+const selectedStatusForFilter = ref<SeedbedSowingStatus | null>(null)
 const isRefreshing = ref<boolean>(false)
 
 const onRefreshClick = async () => {
@@ -25,22 +26,25 @@ const onRefreshClick = async () => {
   }
 }
 
+watch(selectedStatusForFilter, async (status) => {
+  await fetchSeedbedSowings({
+    pageNumber: 0,
+    status: status ?? undefined,
+  })
+})
+
 onMounted(() => fetchSeedbedSowings())
 </script>
 
 <template>
   <AppSectionWrapper title="Sowings">
-    <div class="flex items-center justify-between">
-      <span class="text-content-muted block">{{ page?.totalElements ?? 0 }} total</span>
+    <span class="text-content-muted mb-4 block">{{ page?.totalElements ?? 0 }} total</span>
 
-      <AppButton
-        :icon="RefreshCcw"
-        variant="outline"
-        @click="onRefreshClick"
-        :disabled="isRefreshing"
-        :icon-class="isRefreshing ? 'animate-spin' : ''"
-      />
-    </div>
+    <SeedbedSowingFilters
+      v-model="selectedStatusForFilter"
+      :is-refreshing="isRefreshing"
+      @refresh="onRefreshClick"
+    />
 
     <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-2" />
 
