@@ -7,11 +7,13 @@ import SeedbedSowingForm from '@/features/seedbeds/components/SeedbedSowingForm.
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import type { SeedbedResponse } from '@/features/seedbeds/types/seedbed-response.interface.ts'
 import type { SeedbedSlotSummaryResponse } from '@/features/seedbeds/types/seedbed-slot-summary-response.interface.ts'
+import type { SeedbedSowingResponse } from '@/features/seedbeds/types/seedbed-sowing-response.interface.ts'
 import { ref } from 'vue'
 
 const props = defineProps<{
   seedbed: SeedbedResponse
   seedbedSlotsList: SeedbedSlotSummaryResponse[]
+  seedbedSowingsList: SeedbedSowingResponse[]
 }>()
 
 const emit = defineEmits<{
@@ -59,6 +61,7 @@ const onSowingCreateSuccess = async () => {
     <SeedbedDetailsSlotsTable
       :seedbed="seedbed"
       :seedbed-slots-list="seedbedSlotsList"
+      :seedbed-sowings-list="seedbedSowingsList"
       @add-sowing="onSowingAddClick($event)"
     />
 

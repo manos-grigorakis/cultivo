@@ -12,6 +12,7 @@ import { useRoute, useRouter } from 'vue-router'
 const router = useRouter()
 const seedbedId = Number(useRoute().params.id)
 const {
+  seedbedSowingsList,
   seedbed,
   seedbedSlotsList,
   totalSeedbedSowingsCount,
@@ -38,6 +39,12 @@ const onSeedbedDeleteClick = async () => {
   } finally {
     isDeleteDialogOpen.value = false
   }
+}
+
+const onSowingsChanged = async () => {
+  totalSeedbedSowingsCount.value++
+
+  await fetchSeedbedSowingsBySeedbedId({ seedbedId })
 }
 
 onMounted(() => {
@@ -91,7 +98,8 @@ onMounted(() => {
             :is="Component"
             :seedbed="seedbed"
             :seedbed-slots-list="seedbedSlotsList"
-            @sowings-count-changed="totalSeedbedSowingsCount++"
+            :seedbed-sowings-list="seedbedSowingsList"
+            @sowings-count-changed="onSowingsChanged"
           />
         </RouterView>
       </template>
