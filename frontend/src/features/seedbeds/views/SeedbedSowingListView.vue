@@ -42,7 +42,7 @@ onMounted(() => fetchSeedbedSowings())
       />
     </div>
 
-    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" />
+    <AppErrorContainer v-if="errorMessage" :error-message="errorMessage" class="my-2" />
 
     <div v-if="seedbedSowingList.length > 0">
       <SeedbedSowingTable :sowing-list="seedbedSowingList" :is-loading="isLoading" />
@@ -51,7 +51,7 @@ onMounted(() => fetchSeedbedSowings())
         @page-changed="(pageNumber) => fetchSeedbedSowings({ pageNumber })"
       />
     </div>
-    <div v-else>
+    <div v-else-if="!isLoading && !errorMessage">
       <p class="text-center">There are no sowings recorded yet</p>
     </div>
   </AppSectionWrapper>

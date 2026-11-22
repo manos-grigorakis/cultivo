@@ -83,8 +83,6 @@ onMounted(() => {
   />
 
   <div>
-    <AppErrorContainer v-if="definedError" :error-message="definedError" />
-
     <div class="flex justify-end">
       <AppButton
         :icon="RefreshCcw"
@@ -94,6 +92,8 @@ onMounted(() => {
         :icon-class="isRefreshing ? 'animate-spin' : ''"
       />
     </div>
+
+    <AppErrorContainer v-if="definedError" :error-message="definedError" class="my-2" />
 
     <div v-if="seedbedSowingsList.length > 0">
       <SeedbedSowingTable
@@ -113,7 +113,7 @@ onMounted(() => {
       />
     </div>
 
-    <div v-else>
+    <div v-else-if="!definedError && !isLoading">
       <p class="text-center">There are no sowings recorded yet</p>
     </div>
   </div>
