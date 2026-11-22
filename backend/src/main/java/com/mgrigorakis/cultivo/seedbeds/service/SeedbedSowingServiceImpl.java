@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class SeedbedSowingServiceImpl implements SeedbedSowingService {
         Pageable pageable = PageRequest.of(
                 filterRequest.page(),
                 filterRequest.size(),
-                sortRequest.createSort("id"));
+                sortRequest.createSort("sownAt", Sort.Direction.DESC));
 
         Specification<SeedbedSowing> spec = Specification.allOf(
                 SeedbedSowingSpecs.hasSeedbedId(criteria.seedbedId()),
