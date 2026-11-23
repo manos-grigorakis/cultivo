@@ -5,6 +5,7 @@ import AppErrorContainer from '@/components/ui/AppErrorContainer.vue'
 import SeedbedSowingDetails from '@/features/seedbeds/components/SeedbedSowingDetails.vue'
 import SeedbedSowingDetailsCount from '@/features/seedbeds/components/SeedbedSowingDetailsCount.vue'
 import SeedbedSowingDetailsStatus from '@/features/seedbeds/components/SeedbedSowingDetailsStatus.vue'
+import SeedbedSowingForm from '@/features/seedbeds/components/SeedbedSowingForm.vue'
 import { useSeedbeds } from '@/features/seedbeds/composables/useSeedbeds.ts'
 import { useSeedbedSowings } from '@/features/seedbeds/composables/useSeedbedSowings.ts'
 import { SeedbedSowingStatus } from '@/features/seedbeds/enums/seedbed-sowing-status.enum.ts'
@@ -31,6 +32,14 @@ const {
 
 const isSowingEditFormOpen = ref<boolean>(false)
 const isSowingDeleteDialogOpen = ref<boolean>(false)
+
+const onSowingUpdateSuccess = async () => {
+  try {
+    await fetchSeedbedSowingById(sowingId)
+  } finally {
+    isSowingEditFormOpen.value = false
+  }
+}
 
 const onStatusUpdate = async (status: SeedbedSowingStatus) => {
   if (!sowing.value) return
@@ -70,6 +79,16 @@ onMounted(() => {
     confirm-button-text="Yes, delete"
     @confirm="onSowingDeleteClick"
     @close="isSowingDeleteDialogOpen = false"
+  />
+
+  <SeedbedSowingForm
+    v-if="isSowingEditFormOpen && sowing"
+    mode="update"
+    :seedbed-id="sowing.seedbed.id"
+    :data="sowing"
+    :slot-id="sowing.seedbedSlot.id"
+    @success="onSowingUpdateSuccess"
+    @close="isSowingEditFormOpen = false"
   />
 
   <section class="mx-auto w-full max-w-5xl">
@@ -125,6 +144,12 @@ onMounted(() => {
         />
         <SeedbedSowingDetailsCount :sowing="sowing" />
         <SeedbedSowingDetails :sowing="sowing" />
+
+        <div class="rounded-card mt-6 bg-white px-4 py-3 drop-shadow-sm">
+          <h2 class="text-primary-900 font-display mb-2 text-xl">Notes</h2>
+          <p v-if="sowing.notes">{{ sowing.notes }}</p>
+          <p v-else class="text-content-muted text-sm">No notes provided</p>
+        </div>
       </template>
     </template>
   </section>
