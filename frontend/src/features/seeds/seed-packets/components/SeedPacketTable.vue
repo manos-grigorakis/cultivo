@@ -30,10 +30,9 @@ const emit = defineEmits<{
         <tr>
           <th scope="col" class="px-6 py-3 font-medium">#</th>
           <th scope="col" class="px-6 py-3 font-medium">Variety</th>
-          <th scope="col" class="px-6 py-3 font-medium">Brand</th>
+          <th scope="col" class="px-6 py-3 font-medium">Seed packet</th>
           <th scope="col" class="px-6 py-3 font-medium">Supplier</th>
           <th scope="col" class="px-6 py-3 font-medium">Status</th>
-          <th scope="col" class="px-6 py-3 font-medium">Code</th>
           <th scope="col" class="px-6 py-3 font-medium">Created</th>
           <th scope="col" class="px-6 py-3 font-medium">Last Update</th>
           <th scope="col" class="px-6 py-3 font-medium" v-if="showActions">Actions</th>
@@ -62,7 +61,7 @@ const emit = defineEmits<{
             <RouterLink
               :to="{ name: 'seed-packet-details', params: { id: packet.id } }"
               class="font-semibold capitalize hover:underline"
-              >{{ packet.brand }}</RouterLink
+              >{{ packet.brand }} - {{ packet.code ?? '-' }}</RouterLink
             >
           </th>
           <td class="text-content-secondary px-6 py-4">{{ packet.supplier }}</td>
@@ -74,7 +73,6 @@ const emit = defineEmits<{
               {{ packet.status.replace('_', ' ') }}
             </span>
           </td>
-          <td class="text-content-secondary px-6 py-4">{{ packet.code }}</td>
           <td class="text-content-secondary px-6 py-4">{{ formatDate(packet.createdAt) }}</td>
           <td class="text-content-secondary px-6 py-4">
             {{ packet.updatedAt !== null ? formatDate(packet.updatedAt) : '-' }}
