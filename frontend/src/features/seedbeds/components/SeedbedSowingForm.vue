@@ -189,7 +189,7 @@ const loadSeedPackets = async (
 
       <AppInput
         v-model="sownAt"
-        label="date"
+        label="sown date"
         type="datetime-local"
         required
         :error-message="errors.sownAt"
