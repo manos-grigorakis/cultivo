@@ -20,6 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Locale;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -30,10 +33,18 @@ public class SeedPacketServiceImpl implements SeedPacketService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<SeedPacketResponse> getAllSeedPackets(PageFilterRequest filterRequest, PageSortRequest sortRequest) {
+    public Page<SeedPacketResponse> getAllSeedPackets(PageFilterRequest filterRequest, PageSortRequest sortRequest, String search) {
         Pageable pageable = PageRequest.of(filterRequest.page(), filterRequest.size(), sortRequest.createSort("brand"));
+        Page<SeedPacket> packets;
 
-        return seedPacketRepository.findAll(pageable).map(seedPacketMapper::toResponse);
+        if(search == null || search.isBlank()) {
+            packets = seedPacketRepository.findAll(pageable);
+        } else {
+            String pattern = "%" + search.trim().toLowerCase(Locale.ROOT) + "%";
+            packets = seedPacketRepository.searchByBrandOrCode(pattern, pageable);
+        }
+
+        return packets.map(seedPacketMapper::toResponse);
     }
 
     @Transactional(readOnly = true)

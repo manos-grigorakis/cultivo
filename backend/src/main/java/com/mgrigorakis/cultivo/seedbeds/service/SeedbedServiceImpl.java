@@ -9,6 +9,7 @@ import com.mgrigorakis.cultivo.seedbeds.dto.*;
 import com.mgrigorakis.cultivo.seedbeds.mapper.SeedbedMapper;
 import com.mgrigorakis.cultivo.seedbeds.model.Seedbed;
 import com.mgrigorakis.cultivo.seedbeds.repository.SeedbedRepository;
+import com.mgrigorakis.cultivo.seedbeds.repository.SeedbedSowingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import java.util.List;
 @Service
 public class SeedbedServiceImpl implements SeedbedService {
     private final SeedbedRepository seedbedRepository;
+    private final SeedbedSowingRepository seedbedSowingRepository;
     private final SeedbedMapper seedbedMapper;
     private final SeedbedSlotService seedbedSlotService;
 
@@ -89,6 +91,11 @@ public class SeedbedServiceImpl implements SeedbedService {
     @Override
     public void deleteSeedbedById(Long id) {
         Seedbed seedbed = findSeedbedById(id);
+
+        if(seedbedSowingRepository.existsBySlot_Seedbed_id(id)) {
+            log.warn("Seedbed cannot be deleted because it has sowings");
+            throw new ConflictException("Seedbed cannot be deleted because it has sowings", "SOWINGS_EXIST");
+        }
 
         seedbedSlotService.deleteAllSeedbedSlotsBySeedbedId(id);
         seedbedRepository.delete(seedbed);

@@ -1,8 +1,11 @@
 import { SEEDBED_API_URL } from '@/constant/api.ts'
+import type { SeedbedSowingStatus } from '@/features/seedbeds/enums/seedbed-sowing-status.enum.ts'
 import type { SeedbedCreateRequest } from '@/features/seedbeds/types/seedbed-create-request.interface.ts'
 import type { SeedbedDetailResponse } from '@/features/seedbeds/types/seedbed-detail-response.interface.ts'
 import type { SeedbedResponse } from '@/features/seedbeds/types/seedbed-response.interface.ts'
 import type { SeedbedSlotSummaryResponse } from '@/features/seedbeds/types/seedbed-slot-summary-response.interface.ts'
+import type { SeedbedSowingRequest } from '@/features/seedbeds/types/seedbed-sowing-request.interface.ts'
+import type { SeedbedSowingResponse } from '@/features/seedbeds/types/seedbed-sowing-response.interface.ts'
 import type { SeedbedUpdateRequest } from '@/features/seedbeds/types/seedbed-update-request.interface.ts'
 import type { ApiResponse } from '@/types/api-response.interface.ts'
 import type { Page, Pagination } from '@/types/pagination.interface.ts'
@@ -18,6 +21,11 @@ export function useSeedbeds() {
   // Seedbed Slots
   const seedbedSlotsList = ref<SeedbedSlotSummaryResponse[]>([])
   const seedbedSlot = ref<SeedbedSlotSummaryResponse | null>(null)
+
+  // Seedbed Sowings
+  const seedbedSowingsList = ref<SeedbedSowingResponse[]>([])
+  const seedbedSowing = ref<SeedbedSowingResponse | null>(null)
+  const totalSeedbedSowingsCount = ref(0)
 
   // Misc
   const page = ref<Page>()
@@ -121,8 +129,14 @@ export function useSeedbeds() {
     } catch (error) {
       errorMessage.value = handleDefaultApiError(error)
 
-      if (error instanceof AxiosError && error.response?.status === 404) {
-        errorMessage.value = 'Seedbed not found'
+      if (error instanceof AxiosError) {
+        const status = error.response?.status
+
+        if (status === 404) {
+          errorMessage.value = 'Seedbed not found'
+        } else if (status === 409) {
+          errorMessage.value = 'Seedbed cannot be deleted because it contains sowings'
+        }
       }
 
       return false
@@ -167,11 +181,178 @@ export function useSeedbeds() {
     }
   }
 
+  async function fetchSeedbedSowingsBySeedbedId({
+    seedbedId,
+    pageNumber = 0,
+    slotId,
+    packetId,
+    status,
+  }: {
+    seedbedId: number
+    pageNumber?: number
+    slotId?: number
+    packetId?: number
+    status?: SeedbedSowingStatus
+  }) {
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      const { data } = await axios.get<ApiResponse<Pagination<SeedbedSowingResponse>>>(
+        `${SEEDBED_API_URL}/${seedbedId}/sowings`,
+        {
+          params: { pageNumber, slotId, packetId, status },
+        },
+      )
+
+      seedbedSowingsList.value = data.data.content
+      page.value = data.data.page
+      totalSeedbedSowingsCount.value = data.data.page.totalElements
+    } catch (error) {
+      seedbedSowingsList.value = []
+      page.value = undefined
+      totalSeedbedSowingsCount.value = 0
+      errorMessage.value = handleDefaultApiError(error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function fetchSeedbedSowingByIdAndBySlotIdBySeedbedId(
+    seedbedId: number,
+    slotId: number,
+    sowingId: number,
+  ) {
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      const { data } = await axios.get<ApiResponse<SeedbedSowingResponse>>(
+        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}`,
+      )
+
+      seedbedSowing.value = data.data
+    } catch (error) {
+      seedbedSowing.value = null
+      errorMessage.value = handleDefaultApiError(error)
+
+      if (error instanceof AxiosError && error.response?.status === 404) {
+        errorMessage.value = 'Seedbed sowing not found for the specified seedbed and slot'
+      }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function createSeedbedSowingBySlotIdAndSeedbedId(
+    seedbedId: number,
+    slotId: number,
+    payload: SeedbedSowingRequest,
+  ): Promise<boolean> {
+    isSubmitting.value = true
+    errorMessage.value = null
+
+    try {
+      await axios.post<ApiResponse<SeedbedSowingResponse>>(
+        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings`,
+        payload,
+      )
+      return true
+    } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
+      if (error instanceof AxiosError) {
+        const status = error.response?.status
+
+        if (status === 404) {
+          errorMessage.value = 'Seedbed slot or seed packet not found'
+        } else if (status === 409) {
+          errorMessage.value = 'Slot already contains an active sowing'
+        }
+      }
+
+      return false
+    } finally {
+      isSubmitting.value = false
+    }
+  }
+
+  async function updateSeedbedSowingByIdAndBySlotIdAndSeedbedId(
+    sowingId: number,
+    seedbedId: number,
+    slotId: number,
+    payload: SeedbedSowingRequest,
+  ): Promise<boolean> {
+    isSubmitting.value = true
+    errorMessage.value = null
+
+    try {
+      await axios.put<ApiResponse<SeedbedSowingResponse>>(
+        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}`,
+        payload,
+      )
+      return true
+    } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
+      if (error instanceof AxiosError) {
+        const status = error.response?.status
+
+        if (status === 404) {
+          errorMessage.value = 'Sowing or seed packet not found'
+        } else if (status === 409) {
+          errorMessage.value = 'Completed sowings cannot be modified'
+        }
+      }
+
+      return false
+    } finally {
+      isSubmitting.value = false
+    }
+  }
+
+  async function updateSeedbedSowingStatusByIdAndSeedbedIdAndSlotId(
+    sowingId: number,
+    slotId: number,
+    seedbedId: number,
+    status: SeedbedSowingStatus,
+  ): Promise<boolean> {
+    isSubmitting.value = true
+    errorMessage.value = null
+
+    try {
+      await axios.patch<void>(
+        `${SEEDBED_API_URL}/${seedbedId}/slots/${slotId}/sowings/${sowingId}/status`,
+        { status },
+      )
+      return true
+    } catch (error) {
+      errorMessage.value = handleDefaultApiError(error)
+
+      if (error instanceof AxiosError) {
+        const status = error.response?.status
+
+        if (status === 404) {
+          errorMessage.value = 'Sowing not found for the specified seedbed and slot'
+        } else if (status === 409) {
+          errorMessage.value = 'This status transition is not allowed'
+        }
+      }
+
+      return false
+    } finally {
+      isSubmitting.value = false
+    }
+  }
+
   return {
     seedbedsList,
     seedbed,
     seedbedSlotsList,
     seedbedSlot,
+    seedbedSowingsList,
+    seedbedSowing,
+    totalSeedbedSowingsCount,
 
     page,
     isLoading,
@@ -187,5 +368,10 @@ export function useSeedbeds() {
     deleteSeedbedById,
     fetchSeedbedSlotsBySeedbedId,
     fetchSeedbedSlotByIdAndSeedbedId,
+    fetchSeedbedSowingsBySeedbedId,
+    fetchSeedbedSowingByIdAndBySlotIdBySeedbedId,
+    createSeedbedSowingBySlotIdAndSeedbedId,
+    updateSeedbedSowingByIdAndBySlotIdAndSeedbedId,
+    updateSeedbedSowingStatusByIdAndSeedbedIdAndSlotId,
   }
 }
